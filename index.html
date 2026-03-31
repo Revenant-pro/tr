@@ -332,7 +332,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 <!-- DASHBOARD -->
 <div id="dashboard">
   <div class="topbar">
-    <div class="topbar-brand"><div class="topbar-logo">H</div>Espace Personnel</div>
+    <div class="topbar-brand"><div class="topbar-logo">H</div>Bienvenue</div>
     <div class="topbar-right">
       <div class="topbar-clock" id="topbar-clock">00:00:00</div>
       <div class="notif-bell-wrap">
@@ -340,6 +340,13 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <div class="notif-panel" id="notif-panel">
           <div class="notif-panel-header"><span class="notif-panel-title">🔔 Notifications</span><button class="notif-clear" onclick="clearAllNotifs()">Tout effacer</button></div>
           <div class="notif-list" id="notif-list"><div class="notif-empty">Aucune notification</div></div>
+        </div>
+      </div>
+      <div class="notif-bell-wrap">
+        <div class="notif-bell" id="msg-bell-btn" onclick="toggleMsgPanel()">✉️<span class="notif-badge hidden" id="msg-badge">0</span></div>
+        <div class="notif-panel" id="msg-panel">
+          <div class="notif-panel-header"><span class="notif-panel-title">✉️ Messages</span><button class="notif-clear" onclick="openMessaging()">Ouvrir</button></div>
+          <div class="notif-list" id="msg-preview-list"><div class="notif-empty">Aucun message</div></div>
         </div>
       </div>
       <div class="user-badge" onclick="goToProfile()"><div class="user-dot"></div><span id="topbar-username">hans</span></div>
@@ -365,16 +372,25 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <button class="btn btn-outline" style="font-size:12px;padding:7px 14px" onclick="triggerFileInput('me',event)">🔒 Personnel</button>
       </div>
     </div>
-    <div class="card">
-      <div class="card-title">🌐 Fichiers partagés — tous les utilisateurs</div>
-      <div id="files-shared"><div class="empty-state"><div class="empty-icon">📂</div><p>Aucun fichier partagé.</p></div></div>
+    <!-- Sous-onglets fichiers -->
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:18px;">
+      <button class="tab-btn active" id="files-subtab-btn-all" onclick="showFilesSubTab('all',this)" style="padding:10px 20px;font-size:13px">🌐 Tous les utilisateurs</button>
+      <button class="tab-btn" id="files-subtab-btn-personal" onclick="showFilesSubTab('personal',this)" style="padding:10px 20px;font-size:13px">🔒 Personnel</button>
     </div>
-    <div class="card" style="margin-top:18px">
-      <div class="card-title">🔒 Mes fichiers personnels <span class="private-badge">Privé</span></div>
-      <div id="files-private"><div class="empty-state"><div class="empty-icon">🗂️</div><p>Aucun fichier personnel.</p></div></div>
-      <div class="storage-bar-wrap">
-        <div class="storage-label"><span>Stockage utilisé</span><span id="storage-text">0 Ko / 100 Mo</span></div>
-        <div class="storage-bar"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+    <div id="files-subtab-all">
+      <div class="card">
+        <div class="card-title">🌐 Fichiers partagés — tous les utilisateurs</div>
+        <div id="files-shared"><div class="empty-state"><div class="empty-icon">📂</div><p>Aucun fichier partagé.</p></div></div>
+      </div>
+    </div>
+    <div id="files-subtab-personal" style="display:none">
+      <div class="card">
+        <div class="card-title">🔒 Mes fichiers personnels <span class="private-badge">Privé</span></div>
+        <div id="files-private"><div class="empty-state"><div class="empty-icon">🗂️</div><p>Aucun fichier personnel.</p></div></div>
+        <div class="storage-bar-wrap">
+          <div class="storage-label"><span>Stockage utilisé</span><span id="storage-text">0 Ko / 100 Mo</span></div>
+          <div class="storage-bar"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -415,12 +431,15 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div class="grid-2">
         <div class="card">
           <div class="card-title">🕵️ Historique des connexions</div>
+          <div style="margin-bottom:10px">
+            <input type="text" id="connlog-search" placeholder="🔍 Rechercher un utilisateur..." oninput="renderConnLog()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          </div>
           <div id="conn-log"><div class="empty-state"><p>Aucune connexion enregistrée.</p></div></div>
         </div>
         <div class="card">
           <div class="card-title">📊 Activité des utilisateurs</div>
-          <div class="activity-chart-wrap" id="activity-chart"></div>
-          <div class="activity-labels" id="activity-labels"></div>
+          <canvas id="activity-pie-chart" width="260" height="260" style="display:block;margin:0 auto;max-width:260px;max-height:260px;"></canvas>
+          <div id="activity-pie-legend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
         </div>
       </div>
     </div>
@@ -498,7 +517,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- COMPTE -->
   <div class="tab-content" id="tab-compte">
-    <div class="page-header"><div class="page-title">💰 Suivi de compte</div><div class="page-desc">Entrées, sorties et évolution financière</div></div>
+    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div><div class="page-title">💰 Suivi de compte</div><div class="page-desc">Entrées, sorties et évolution financière</div></div>
+      <button class="btn btn-outline" onclick="downloadCompteExcel()" style="font-size:13px">📥 Télécharger en Excel</button>
+    </div>
     <div class="grid-3" style="margin-bottom:18px">
       <div class="stat-card"><div class="stat-label">Solde actuel</div><div class="stat-value" id="stat-solde" style="color:var(--success)">0,00 €</div></div>
       <div class="stat-card"><div class="stat-label">Total entrées</div><div class="stat-value pos" id="stat-in">0,00 €</div><div class="stat-change pos" id="stat-in-count">0 opération(s)</div></div>
@@ -519,6 +541,38 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <button class="btn btn-primary" onclick="addTx()">Ajouter</button>
       </div>
       <div class="tx-list" id="tx-list"><div class="empty-state"><div class="empty-icon">💳</div><p>Aucune opération.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MESSAGING MODAL -->
+<div class="viewer-modal" id="messaging-modal" style="z-index:450">
+  <div class="viewer-header">
+    <h3>✉️ Messagerie</h3>
+    <button class="btn btn-outline" onclick="closeMessaging()">✕ Fermer</button>
+  </div>
+  <div style="display:flex;height:calc(100vh - 60px);overflow:hidden">
+    <!-- Sidebar -->
+    <div style="width:220px;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface);">
+      <div style="padding:12px">
+        <button class="btn btn-primary" style="width:100%;font-size:13px" onclick="showMsgCompose()">✏️ Nouveau message</button>
+      </div>
+      <div style="padding:4px 8px;display:flex;flex-direction:column;gap:2px">
+        <button class="tab-btn active" id="msg-nav-inbox" onclick="showMsgFolder('inbox',this)" style="padding:9px 12px;justify-content:flex-start;font-size:13px">📥 Boîte de réception <span id="msg-unread-count" style="margin-left:auto;background:var(--accent);color:white;border-radius:99px;font-size:10px;font-weight:700;min-width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;display:none">0</span></button>
+        <button class="tab-btn" id="msg-nav-sent" onclick="showMsgFolder('sent',this)" style="padding:9px 12px;justify-content:flex-start;font-size:13px">📤 Messages envoyés</button>
+        <button class="tab-btn" id="msg-nav-trash" onclick="showMsgFolder('trash',this)" style="padding:9px 12px;justify-content:flex-start;font-size:13px">🗑️ Corbeille</button>
+      </div>
+    </div>
+    <!-- Message list + detail -->
+    <div style="flex:1;display:flex;overflow:hidden">
+      <!-- List -->
+      <div id="msg-list-panel" style="width:280px;border-right:1px solid var(--border);overflow-y:auto;background:var(--surface2)">
+        <div id="msg-list-content"><div class="empty-state"><p>Aucun message</p></div></div>
+      </div>
+      <!-- Detail / Compose -->
+      <div id="msg-detail-panel" style="flex:1;overflow-y:auto;padding:22px;background:var(--bg)">
+        <div id="msg-detail-content" class="empty-state"><div class="empty-icon">✉️</div><p>Sélectionnez un message</p></div>
+      </div>
     </div>
   </div>
 </div>
@@ -716,6 +770,7 @@ async function initDashboard(){
   renderTx(); updateStats(); drawChart();
   renderNotifBell(); initMechClock();
   loadMyProfileForm();
+  loadMessages();
 }
 
 // ============ CLOCK ============
@@ -1220,7 +1275,262 @@ function toast(msg,type='success'){
   setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3500);
 }
 
-// ============ INIT (auto-login) ============
+// ============ FILES SUB-TABS ============
+function showFilesSubTab(tab, btn){
+  document.getElementById('files-subtab-all').style.display = tab==='all' ? 'block' : 'none';
+  document.getElementById('files-subtab-personal').style.display = tab==='personal' ? 'block' : 'none';
+  document.querySelectorAll('[id^="files-subtab-btn-"]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ============ ACTIVITY PIE CHART ============
+function renderActivityChart(){
+  const canvas=document.getElementById('activity-pie-chart');
+  const legendEl=document.getElementById('activity-pie-legend');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const userCounts={};
+  connLog.forEach(l=>{ userCounts[l.username]=(userCounts[l.username]||0)+1; });
+  const entries=Object.entries(userCounts);
+  if(!entries.length){ctx.clearRect(0,0,260,260);legendEl.innerHTML='<span style="color:var(--muted);font-size:12px">Aucune donnée</span>';return;}
+  const total=entries.reduce((s,e)=>s+e[1],0);
+  const colors=['#e63946','#f4a261','#2ecc71','#3498db','#9b59b6','#e67e22','#1abc9c'];
+  const cx=130,cy=130,r=100;
+  ctx.clearRect(0,0,260,260);
+  let startAngle=-Math.PI/2;
+  entries.forEach(([uname,count],i) => {
+    const slice=(count/total)*2*Math.PI;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,startAngle,startAngle+slice);
+    ctx.closePath();
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.fill();
+    ctx.strokeStyle='var(--bg)';
+    ctx.lineWidth=2;
+    ctx.stroke();
+    startAngle+=slice;
+  });
+  // Center hole for donut effect
+  ctx.beginPath();
+  ctx.arc(cx,cy,48,0,2*Math.PI);
+  ctx.fillStyle='#111118';
+  ctx.fill();
+  // Total text
+  ctx.fillStyle='#f0f0f5';
+  ctx.font='bold 20px Syne,sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText(total,cx,cy-4);
+  ctx.font='11px DM Sans,sans-serif';
+  ctx.fillStyle='#6b6b85';
+  ctx.fillText('connexions',cx,cy+14);
+  // Legend
+  legendEl.innerHTML=entries.map(([uname,count],i)=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;border-radius:3px;background:${colors[i%colors.length]};flex-shrink:0"></div><span>${uname} (${count})</span></div>`).join('');
+}
+
+// ============ CONN LOG WITH SEARCH ============
+function renderConnLog(){
+  const el=document.getElementById('conn-log'); if(!el)return;
+  const searchEl=document.getElementById('connlog-search');
+  const query=searchEl?searchEl.value.trim().toLowerCase():'';
+  const filtered=query?connLog.filter(l=>l.username.toLowerCase().includes(query)):connLog;
+  if(!filtered.length){el.innerHTML='<div class="empty-state"><p>'+(query?'Aucun résultat pour "'+query+'"':'Aucune connexion.')+'</p></div>';return;}
+  el.innerHTML=filtered.slice(0,50).map(l=>{
+    const online=!l.logoutTime;
+    const dt=l.loginTime instanceof Date?l.loginTime:new Date(l.loginTime);
+    const dateStr=dt.toLocaleDateString('fr-FR');
+    const loginTimeStr=dt.toLocaleTimeString('fr-FR');
+    const logoutStr=l.logoutTime?(l.logoutTime instanceof Date?l.logoutTime.toLocaleTimeString('fr-FR'):new Date(l.logoutTime).toLocaleTimeString('fr-FR')):'En cours';
+    return`<div class="log-item"><div class="log-dot ${online?'online':'offline'}"></div><div style="flex:1"><strong>@${l.username}</strong><div style="font-size:11px;color:var(--muted);margin-top:2px">📅 ${dateStr} · 🕐 Connexion : ${loginTimeStr} · 🏁 Fin : <span style="color:${online?'var(--success)':'var(--muted)'}">${logoutStr}</span></div></div></div>`;
+  }).join('');
+}
+
+// ============ MESSAGING ============
+let messages = [];
+let currentMsgFolder = 'inbox';
+
+function toggleMsgPanel(){
+  const panel=document.getElementById('msg-panel');
+  const notifPanel=document.getElementById('notif-panel');
+  notifPanel.classList.remove('open');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')) renderMsgPreview();
+}
+
+function renderMsgPreview(){
+  const list=document.getElementById('msg-preview-list');
+  if(!currentUser){list.innerHTML='<div class="notif-empty">Non connecté</div>';return;}
+  const inbox=messages.filter(m=>m.to===currentUser.username&&!m.trashedBy?.includes(currentUser.username));
+  if(!inbox.length){list.innerHTML='<div class="notif-empty">Aucun message</div>';return;}
+  list.innerHTML=inbox.slice(0,5).map(m=>`<div class="notif-item ${m.readBy?.includes(currentUser.username)?'':'unread'}" onclick="openMessaging();showMsgDetail('${m.id}')">
+    <div class="notif-icon">✉️</div>
+    <div><div class="notif-title-txt">De : @${m.from}</div><div class="notif-desc">${m.subject||'(sans objet)'}</div><div class="notif-time">${new Date(m.date).toLocaleString('fr-FR')}</div></div>
+  </div>`).join('');
+  updateMsgBadge();
+}
+
+function updateMsgBadge(){
+  if(!currentUser)return;
+  const unread=messages.filter(m=>m.to===currentUser.username&&!m.readBy?.includes(currentUser.username)&&!m.trashedBy?.includes(currentUser.username)).length;
+  const badge=document.getElementById('msg-badge');
+  if(badge){badge.textContent=unread;badge.style.display=unread?'flex':'none';}
+}
+
+function openMessaging(){
+  document.getElementById('msg-panel').classList.remove('open');
+  document.getElementById('messaging-modal').classList.add('open');
+  showMsgFolder('inbox',document.getElementById('msg-nav-inbox'));
+}
+
+function closeMessaging(){
+  document.getElementById('messaging-modal').classList.remove('open');
+}
+
+function showMsgFolder(folder, btn){
+  currentMsgFolder=folder;
+  document.querySelectorAll('#messaging-modal .tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMsgList();
+  document.getElementById('msg-detail-content').innerHTML='<div class="empty-state"><div class="empty-icon">✉️</div><p>Sélectionnez un message</p></div>';
+}
+
+function renderMsgList(){
+  const el=document.getElementById('msg-list-content');
+  if(!currentUser){el.innerHTML='<div class="empty-state"><p>Non connecté</p></div>';return;}
+  let list=[];
+  if(currentMsgFolder==='inbox') list=messages.filter(m=>m.to===currentUser.username&&!m.trashedBy?.includes(currentUser.username));
+  else if(currentMsgFolder==='sent') list=messages.filter(m=>m.from===currentUser.username&&!m.trashedBySender);
+  else if(currentMsgFolder==='trash') list=messages.filter(m=>m.trashedBy?.includes(currentUser.username)||(m.from===currentUser.username&&m.trashedBySender));
+  list=list.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(!list.length){el.innerHTML='<div class="empty-state"><p>Aucun message</p></div>';return;}
+  el.innerHTML=list.map(m=>{
+    const isUnread=currentMsgFolder==='inbox'&&!m.readBy?.includes(currentUser.username);
+    return`<div onclick="showMsgDetail('${m.id}')" style="padding:12px 14px;border-bottom:1px solid var(--border);cursor:pointer;${isUnread?'border-left:3px solid var(--accent);':''}" onmouseover="this.style.background='var(--surface)'" onmouseout="this.style.background=''">
+      <div style="font-size:12px;font-weight:${isUnread?700:500};color:${isUnread?'var(--text)':'var(--muted)'}">
+        ${currentMsgFolder==='sent'?'À : @'+m.to:'De : @'+m.from}
+      </div>
+      <div style="font-size:12px;font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.subject||'(sans objet)'}</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:2px">${new Date(m.date).toLocaleString('fr-FR')}</div>
+    </div>`;
+  }).join('');
+}
+
+function showMsgDetail(id){
+  const m=messages.find(x=>x.id===id); if(!m)return;
+  if(!m.readBy)m.readBy=[];
+  if(currentUser&&!m.readBy.includes(currentUser.username)){ m.readBy.push(currentUser.username); fbSave('messages',m.id,m); updateMsgBadge(); renderMsgPreview(); }
+  const el=document.getElementById('msg-detail-content');
+  const canTrash=currentMsgFolder!=='trash';
+  el.innerHTML=`<div style="max-width:680px">
+    <h2 style="font-family:'Syne',sans-serif;font-size:18px;margin-bottom:14px">${m.subject||'(sans objet)'}</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:12px;color:var(--muted)">De : <strong style="color:var(--text)">@${m.from}</strong></div>
+        <div style="font-size:12px;color:var(--muted)">À : <strong style="color:var(--text)">@${m.to}</strong></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">${new Date(m.date).toLocaleString('fr-FR')}</div>
+      </div>
+      <div style="display:flex;gap:7px">
+        ${m.to===currentUser.username?`<button class="btn btn-outline" style="font-size:12px" onclick="replyMsg('${m.id}')">↩️ Répondre</button>`:''}
+        ${canTrash?`<button class="btn btn-danger" style="font-size:12px" onclick="trashMsg('${m.id}')">🗑️ Supprimer</button>`:''}
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:18px;font-size:14px;line-height:1.8;white-space:pre-wrap">${m.body}</div>
+  </div>`;
+}
+
+function showMsgCompose(prefillTo='',prefillSubject=''){
+  const otherUsers=users.filter(u=>u.username!==currentUser.username);
+  const el=document.getElementById('msg-detail-content');
+  el.innerHTML=`<div style="max-width:600px">
+    <h2 style="font-family:'Syne',sans-serif;font-size:17px;margin-bottom:16px">✏️ Nouveau message</h2>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">À</label>
+      <select id="msg-to" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+        <option value="">— Choisir un destinataire —</option>
+        ${otherUsers.map(u=>`<option value="${u.username}" ${u.username===prefillTo?'selected':''}>${u.fullname||u.username} (@${u.username})</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">Objet</label>
+      <input type="text" id="msg-subject" value="${prefillSubject}" placeholder="Objet du message" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">Message</label>
+      <textarea id="msg-body" placeholder="Rédigez votre message..." style="width:100%;min-height:160px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="sendMsg()">📤 Envoyer</button>
+      <button class="btn btn-outline" onclick="showMsgFolder('inbox',document.getElementById('msg-nav-inbox'))">Annuler</button>
+    </div>
+  </div>`;
+}
+
+function replyMsg(id){
+  const m=messages.find(x=>x.id===id); if(!m)return;
+  showMsgCompose(m.from,'Re: '+(m.subject||''));
+}
+
+async function sendMsg(){
+  const to=document.getElementById('msg-to').value;
+  const subject=document.getElementById('msg-subject').value.trim();
+  const body=document.getElementById('msg-body').value.trim();
+  if(!to){toast('Veuillez choisir un destinataire','error');return;}
+  if(!body){toast('Le message ne peut pas être vide','error');return;}
+  const msg={id:'msg'+Date.now(),from:currentUser.username,to,subject,body,date:new Date().toISOString(),readBy:[],trashedBy:[]};
+  messages.unshift(msg);
+  await fbSave('messages',msg.id,msg);
+  addNotif(users.find(u=>u.username===to)?.id,{icon:'✉️',title:'Nouveau message',desc:`De @${currentUser.username} : ${subject||'(sans objet)'}`});
+  toast('Message envoyé ✅','success');
+  showMsgFolder('sent',document.getElementById('msg-nav-sent'));
+  renderMsgPreview();
+}
+
+async function trashMsg(id){
+  const m=messages.find(x=>x.id===id); if(!m)return;
+  if(!m.trashedBy)m.trashedBy=[];
+  if(m.from===currentUser.username) m.trashedBySender=true;
+  else if(!m.trashedBy.includes(currentUser.username)) m.trashedBy.push(currentUser.username);
+  await fbSave('messages',m.id,m);
+  renderMsgList();
+  document.getElementById('msg-detail-content').innerHTML='<div class="empty-state"><div class="empty-icon">🗑️</div><p>Message supprimé</p></div>';
+  toast('Message déplacé dans la corbeille','success');
+}
+
+document.addEventListener('click',e=>{
+  const msgBtn=document.getElementById('msg-bell-btn');
+  const msgPanel=document.getElementById('msg-panel');
+  if(msgBtn&&msgPanel&&!msgBtn.contains(e.target)&&!msgPanel.contains(e.target))msgPanel.classList.remove('open');
+});
+
+// ============ EXCEL EXPORT ============
+function downloadCompteExcel(){
+  if(!transactions.length){toast('Aucune opération à exporter','error');return;}
+  const header=['Date','Description','Type','Montant (€)'];
+  const rows=transactions.map(t=>[t.date,t.label,t.type==='credit'?'Entrée':'Sortie',t.type==='credit'?t.amount:-t.amount]);
+  const cr=transactions.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0);
+  const db=transactions.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0);
+  rows.push([]);
+  rows.push(['','Total entrées','',cr.toFixed(2)]);
+  rows.push(['','Total sorties','',-db.toFixed(2)]);
+  rows.push(['','Solde','',( cr-db).toFixed(2)]);
+  const csvContent='data:text/csv;charset=utf-8,\uFEFF'
+    +[header,...rows].map(r=>r.map(c=>'"'+(c===undefined||c===null?'':String(c).replace(/"/g,'""'))+'"').join(';')).join('\n');
+  const a=document.createElement('a');
+  a.href=encodeURI(csvContent);
+  a.download='suivi_compte.csv';
+  a.click();
+  toast('Export téléchargé ✅','success');
+}
+
+// ============ LOAD MESSAGES ============
+async function loadMessages(){
+  const fbMsgs=await fbGetAll('messages');
+  messages=fbMsgs.sort((a,b)=>new Date(b.date)-new Date(a.date));
+  updateMsgBadge();
+  renderMsgPreview();
+}
+
+// ============ END NEW FEATURES ============
 document.getElementById('tx-date').valueAsDate=new Date();
 
 // Attendre Firebase puis tenter auto-login
