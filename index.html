@@ -1010,7 +1010,7 @@ async function doLogin(){
     const otherActive=fbLogs.filter(l=>l.username===u&&!l.logoutTime&&l.sessionId!==mySessionId);
     // Admins : max 1 autre appareil (total 1 connexion simultanée)
     // Autres rôles (editor/personnel) : max 2 appareils simultanés
-    const maxDevices=found.role==='admin'?1:2;
+    const maxDevices=found.role==='admin'?2:2;
     if(otherActive.length>=maxDevices){
       const msg=found.role==='admin'
         ?'⚠️ Ce compte est déjà connecté sur un autre appareil. Déconnectez-vous d\'abord.'
