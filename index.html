@@ -294,11 +294,16 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 /* NEWS */
 .news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;grid-auto-rows:80px;}
-.news-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;overflow:hidden;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;justify-content:space-between;}
+.news-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
 .news-card:hover{border-color:var(--accent);transform:translateY(-2px);}
 .news-card.s3x3{grid-column:span 1;grid-row:span 3;}
 .news-card.s5x5{grid-column:span 2;grid-row:span 5;}
 .news-card.s7x5{grid-column:span 3;grid-row:span 5;}
+.news-card-img{width:100%;object-fit:cover;border-radius:10px 10px 0 0;flex-shrink:0;}
+.news-card.s3x3 .news-card-img{height:90px;}
+.news-card.s5x5 .news-card-img{height:160px;}
+.news-card.s7x5 .news-card-img{height:180px;}
+.news-card-body{padding:12px;display:flex;flex-direction:column;justify-content:space-between;flex:1;}
 .news-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
 .news-source{font-size:10px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:.6px;}
 .news-date{font-size:10px;color:var(--muted);}
@@ -573,35 +578,57 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
     <div class="card">
       <div class="card-title">➕ Nouvelle opération</div>
-      <div class="tx-form">
-        <input type="text" id="tx-label" placeholder="Description">
-        <input type="number" id="tx-amount" placeholder="Montant (€)" step="0.01" min="0">
-        <select id="tx-type">
-          <option value="credit">📈 Entrée</option>
-          <option value="debit">📉 Sortie</option>
-          <option value="bilan_actif_immo">Actif immobilisé (Cl.2)</option>
-          <option value="bilan_actif_circ">Actif circulant (Cl.3)</option>
-          <option value="bilan_cap_propres">Capitaux propres (Cl.1)</option>
-          <option value="bilan_dettes_fin">Dettes financières (Cl.1)</option>
-          <option value="bilan_dettes_fourn">Dettes fournisseurs (Cl.4)</option>
-          <option value="bilan_tresorerie">Trésorerie (Cl.5)</option>
-          <option value="bilan_stocks">Stocks (Cl.3)</option>
-          <option value="bilan_immo_incorp">Immobilisations incorporelles (211)</option>
-          <option value="bilan_immo_corp">Immobilisations corporelles (212)</option>
-          <option value="bilan_immo_fin">Immobilisations financières (26)</option>
-          <option value="cpc_achats">Achats (Cl.6)</option>
-          <option value="cpc_ventes">Ventes (Cl.7)</option>
-          <option value="cpc_charges_ext">Charges externes (61)</option>
-          <option value="cpc_impots">Impôts et taxes (63)</option>
-          <option value="cpc_charges_pers">Charges de personnel (64)</option>
-          <option value="cpc_dot_amort">Dotations aux amortissements (68)</option>
-          <option value="cpc_prod_fin">Produits financiers (76)</option>
-          <option value="cpc_charges_fin">Charges financières (66)</option>
-        </select>
-        <input type="date" id="tx-date">
-        <button class="btn btn-primary" onclick="addTx()">Ajouter</button>
+      <!-- Ligne 1 : description + montant + date -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text" id="tx-label" placeholder="Description" style="flex:2;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
+        <input type="number" id="tx-amount" placeholder="Montant (€)" step="0.01" min="0" style="flex:1;min-width:100px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
+        <input type="date" id="tx-date" style="flex:1;min-width:130px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
       </div>
-      <div class="tx-list" id="tx-list"><div class="empty-state"><div class="empty-icon">💳</div><p>Aucune opération.</p></div></div>
+      <!-- Ligne 2 : sélection du poste comptable avec groupes -->
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">
+          Poste comptable <span class="pcg-tag">PCG</span>
+          <span id="tx-type-preview" style="margin-left:8px;font-size:11px;color:var(--gold);font-weight:400;text-transform:none;letter-spacing:0"></span>
+        </label>
+        <select id="tx-type" onchange="onTxTypeChange()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;cursor:pointer;">
+          <optgroup label="── Opérations courantes ──">
+            <option value="credit">📈 Entrée (recette générale)</option>
+            <option value="debit">📉 Sortie (dépense générale)</option>
+          </optgroup>
+          <optgroup label="── Bilan — ACTIF ──">
+            <option value="bilan_actif_immo">⚙️ Actif immobilisé — Cl.2</option>
+            <option value="bilan_immo_incorp">📄 Immobilisations incorporelles — 211</option>
+            <option value="bilan_immo_corp">🏭 Immobilisations corporelles — 212</option>
+            <option value="bilan_immo_fin">💹 Immobilisations financières — 26</option>
+            <option value="bilan_actif_circ">🔄 Actif circulant — Cl.3</option>
+            <option value="bilan_stocks">📦 Stocks — Cl.3</option>
+            <option value="bilan_tresorerie">💵 Trésorerie — Cl.5</option>
+          </optgroup>
+          <optgroup label="── Bilan — PASSIF ──">
+            <option value="bilan_cap_propres">🏦 Capitaux propres — Cl.1</option>
+            <option value="bilan_dettes_fin">💳 Dettes financières — Cl.1</option>
+            <option value="bilan_dettes_fourn">🛒 Dettes fournisseurs — Cl.4</option>
+          </optgroup>
+          <optgroup label="── CPC — PRODUITS ──">
+            <option value="cpc_ventes">🛍️ Ventes — Cl.7</option>
+            <option value="cpc_prod_fin">📊 Produits financiers — 76</option>
+          </optgroup>
+          <optgroup label="── CPC — CHARGES ──">
+            <option value="cpc_achats">🧾 Achats — Cl.6</option>
+            <option value="cpc_charges_ext">🔧 Charges externes — 61</option>
+            <option value="cpc_impots">🏛️ Impôts et taxes — 63</option>
+            <option value="cpc_charges_pers">👷 Charges de personnel — 64</option>
+            <option value="cpc_dot_amort">📉 Dotations aux amortissements — 68</option>
+            <option value="cpc_charges_fin">💸 Charges financières — 66</option>
+          </optgroup>
+        </select>
+        <!-- Indicateur visuel : destination dans Comptabilité -->
+        <div id="tx-compta-dest" style="margin-top:8px;padding:8px 12px;background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.2);border-radius:7px;font-size:12px;color:var(--gold);display:none">
+          📒 Cette opération sera retranscrite dans : <strong id="tx-compta-dest-label"></strong>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addTx()" style="width:100%">➕ Ajouter l'opération</button>
+      <div class="tx-list" style="margin-top:16px" id="tx-list"><div class="empty-state"><div class="empty-icon">💳</div><p>Aucune opération.</p></div></div>
     </div>
   </div>
 
@@ -760,13 +787,16 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 <!-- NEWS DETAIL MODAL -->
 <div class="news-detail-modal" id="news-detail-modal">
   <div class="news-detail-card">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:16px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;gap:16px">
       <div style="flex:1">
         <div id="news-detail-source" style="font-size:11px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px"></div>
         <h2 id="news-detail-title" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700;line-height:1.4"></h2>
         <div id="news-detail-date" style="color:var(--muted);font-size:12px;margin-top:6px"></div>
       </div>
       <button class="btn btn-outline" onclick="closeNewsDetail()">✕</button>
+    </div>
+    <div id="news-detail-img-wrap" style="margin-bottom:20px;display:none">
+      <img id="news-detail-img" src="" alt="" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;border:1px solid var(--border);">
     </div>
     <div id="news-detail-body" style="font-size:14px;line-height:1.8;color:var(--text)"></div>
     <div id="news-detail-link" style="margin-top:16px"></div>
@@ -1406,6 +1436,44 @@ function renderEventsList(){
 function formatDate(str){const[y,m,d]=str.split('-');return`${d}/${m}/${y}`;}
 
 // ============ COMPTE ============
+
+// Mapping poste → section Comptabilité (pour l'indicateur visuel)
+const TX_COMPTA_DEST={
+  credit:'CPC — Produits (Autres entrées)',
+  debit:'CPC — Charges (Autres sorties)',
+  bilan_actif_immo:'Bilan — Actif immobilisé (Cl.2)',
+  bilan_immo_incorp:'Bilan — Actif : Immobilisations incorporelles (211)',
+  bilan_immo_corp:'Bilan — Actif : Immobilisations corporelles (212)',
+  bilan_immo_fin:'Bilan — Actif : Immobilisations financières (26)',
+  bilan_actif_circ:'Bilan — Actif circulant (Cl.3)',
+  bilan_stocks:'Bilan — Actif : Stocks (Cl.3)',
+  bilan_tresorerie:'Bilan — Actif : Trésorerie (Cl.5)',
+  bilan_cap_propres:'Bilan — Passif : Capitaux propres (Cl.1)',
+  bilan_dettes_fin:'Bilan — Passif : Dettes financières (Cl.1)',
+  bilan_dettes_fourn:'Bilan — Passif : Dettes fournisseurs (Cl.4)',
+  cpc_ventes:'CPC — Produits : Ventes (Cl.7)',
+  cpc_prod_fin:'CPC — Produits financiers (76)',
+  cpc_achats:'CPC — Charges : Achats (Cl.6)',
+  cpc_charges_ext:'CPC — Charges externes (61)',
+  cpc_impots:'CPC — Impôts et taxes (63)',
+  cpc_charges_pers:'CPC — Charges de personnel (64)',
+  cpc_dot_amort:'CPC — Dotations aux amortissements (68)',
+  cpc_charges_fin:'CPC — Charges financières (66)',
+};
+
+function onTxTypeChange(){
+  const type=document.getElementById('tx-type').value;
+  const dest=TX_COMPTA_DEST[type];
+  const destEl=document.getElementById('tx-compta-dest');
+  const destLabel=document.getElementById('tx-compta-dest-label');
+  if(dest&&destEl&&destLabel){
+    destLabel.textContent=dest;
+    destEl.style.display='block';
+  } else if(destEl){
+    destEl.style.display='none';
+  }
+}
+
 async function addTx(){
   const label=document.getElementById('tx-label').value.trim();
   const amount=parseFloat(document.getElementById('tx-amount').value);
@@ -1416,8 +1484,13 @@ async function addTx(){
   transactions.unshift(tx);await fbSave('transactions',tx.id,tx);
   document.getElementById('tx-label').value='';document.getElementById('tx-amount').value='';
   renderTx();updateStats();drawEvolutionChart();renderPostes();
-  if(currentUser.role==='admin')renderCompta();
-  toast('Opération enregistrée ✅','success');
+  // Toujours mettre à jour la Comptabilité (admin ou non, pour que les données soient prêtes)
+  renderCompta();
+  // Feedback visuel sur la destination comptable
+  const dest=TX_COMPTA_DEST[type];
+  const destEl=document.getElementById('tx-compta-dest');
+  toast(`Opération enregistrée${dest?' → '+dest.split(' — ')[0]:''} ✅`,'success');
+  if(destEl)setTimeout(()=>{destEl.style.display='none';},3000);
 }
 
 function renderTx(){
@@ -1656,31 +1729,52 @@ function closeFinModal(){document.getElementById('fin-modal').classList.remove('
 const NEWS_SIZES=['s3x3','s5x5','s7x5'];
 let newsCache=[];
 
+// Images illustratives associées aux thèmes financiers (Unsplash, libres de droits)
+const NEWS_IMAGES=[
+  'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80', // bourse
+  'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=600&q=80', // bitcoin
+  'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?w=600&q=80', // tesla
+  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&q=80', // federal reserve
+  'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80', // oil
+  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80', // tech/nvidia
+  'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=600&q=80', // gold
+  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80', // europe economy
+  'https://images.unsplash.com/photo-1483721310020-03333e577078?w=600&q=80', // cloud/amazon
+  'https://images.unsplash.com/photo-1565372915614-d8e2b69a2a52?w=600&q=80', // china gold
+  'https://images.unsplash.com/photo-1621761311921-1a6a83b73da2?w=600&q=80', // ethereum
+  'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=600&q=80', // emerging markets
+  'https://images.unsplash.com/photo-1633265486064-086b219458ec?w=600&q=80', // microsoft/AI
+  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80', // PMI/manufacturing
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80', // berkshire/apple
+];
+
 async function loadNewsData(){
   document.getElementById('news-loading').style.display='block';
   document.getElementById('news-grid-container').style.display='none';
   try{
-    // Use NewsAPI via allorigins CORS proxy or RSS-to-JSON
     const resp=await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&lang=en-US&region=US&count=30');
     const data=await resp.json();
     if(data.items&&data.items.length>0){
       newsCache=data.items.filter(item=>{
         const d=new Date(item.pubDate);return(Date.now()-d.getTime())<7*24*60*60*1000;
-      }).map(item=>({
-        id:'n'+Math.random().toString(36).slice(2),
-        title:item.title,
-        source:item.author||'Yahoo Finance',
-        date:new Date(item.pubDate).toLocaleString('fr-FR'),
-        rawDate:new Date(item.pubDate),
-        description:item.description?.replace(/<[^>]+>/g,'')||'',
-        link:item.link,
-        size:NEWS_SIZES[Math.floor(Math.random()*3)]
-      }));
+      }).map((item,i)=>{
+        // Try to extract image from description HTML
+        const imgMatch=item.description&&item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
+        const imgUrl=imgMatch?imgMatch[1]:(item.enclosure?.link||NEWS_IMAGES[i%NEWS_IMAGES.length]);
+        return{
+          id:'n'+Math.random().toString(36).slice(2),
+          title:item.title,
+          source:item.author||'Yahoo Finance',
+          date:new Date(item.pubDate).toLocaleString('fr-FR'),
+          rawDate:new Date(item.pubDate),
+          description:item.description?.replace(/<[^>]+>/g,'')||'',
+          link:item.link,
+          image:imgUrl,
+          size:NEWS_SIZES[Math.floor(Math.random()*3)]
+        };
+      });
     }
-    // Fallback: curated financial news
-    if(!newsCache.length){
-      newsCache=generateFallbackNews();
-    }
+    if(!newsCache.length){newsCache=generateFallbackNews();}
     renderNewsGrid();
     document.getElementById('news-loading').style.display='none';
     document.getElementById('news-grid-container').style.display='block';
@@ -1694,21 +1788,21 @@ async function loadNewsData(){
 
 function generateFallbackNews(){
   const items=[
-    {title:'Les marchés boursiers mondiaux en hausse après les données économiques positives',source:'Bloomberg',desc:"Les principaux indices boursiers ont progressé suite à la publication de données macroéconomiques encourageantes. Le S&P 500 a gagné 0,8% à l'ouverture, porté par les valeurs technologiques."},
-    {title:'Bitcoin dépasse les 70 000 $ — analyse des facteurs de la hausse',source:'CoinDesk',desc:'La cryptomonnaie phare a atteint un nouveau sommet mensuel, soutenue par l\'afflux de capitaux institutionnels et l\'anticipation d\'une baisse des taux directeurs.'},
-    {title:'Tesla annonce de nouveaux records de livraisons au T1',source:'Reuters',desc:'Le constructeur de véhicules électriques a livré plus de 480 000 véhicules au premier trimestre, dépassant les attentes des analystes de 12%.'},
-    {title:'La Fed maintient ses taux directeurs — déclarations de Powell',source:'WSJ',desc:"Jerome Powell a confirmé l'intention de la Réserve Fédérale de maintenir une politique monétaire restrictive jusqu'à ce que l'inflation revienne durablement vers l'objectif de 2%."},
-    {title:'Le pétrole Brent recule sous les 80$ — craintes de récession',source:'FT',desc:"Les cours du brut ont cédé du terrain face aux inquiétudes persistantes sur la demande mondiale et aux signaux de ralentissement économique en Europe et en Asie."},
-    {title:'NVIDIA dépasse Apple en capitalisation boursière',source:'Bloomberg',desc:"La société spécialisée dans les puces pour l'intelligence artificielle est désormais la deuxième entreprise mondiale par capitalisation, reflet de l'engouement pour l'IA générative."},
-    {title:'L\'or atteint un nouveau record historique à 2400$/oz',source:'Reuters',desc:"Le métal précieux continue son ascension, porté par les tensions géopolitiques et une demande soutenue des banques centrales, notamment en Asie."},
-    {title:'Zone euro : légère reprise de la croissance au T1 2025',source:'Eurostat',desc:"Le PIB de la zone euro a progressé de 0,3% au premier trimestre selon les premières estimations d'Eurostat, un signe de résistance face aux vents contraires économiques."},
-    {title:'Amazon Web Services : revenus cloud en forte hausse',source:'CNBC',desc:"La division cloud d'Amazon a publié une croissance de 17% de ses revenus au dernier trimestre, confortant sa position de leader mondial du cloud computing."},
-    {title:'La Chine augmente ses réserves d\'or pour le 17e mois consécutif',source:'Bloomberg',desc:"La Banque Populaire de Chine continue d'accumuler de l'or, dans le cadre d'une stratégie de diversification de ses réserves de change loin du dollar américain."},
-    {title:'Ethereum : la mise à jour Pectra améliore la scalabilité',source:'CoinTelegraph',desc:"La dernière mise à jour majeure du réseau Ethereum améliore sensiblement les performances de la blockchain et réduit les frais de transaction, selon les développeurs."},
-    {title:'Marchés émergents : reprise des flux entrants en Asie',source:'IMF News',desc:"Les économistes du FMI constatent un retour des investisseurs vers les marchés émergents asiatiques, attirés par des valorisations attractives et une croissance robuste."},
-    {title:'Microsoft et OpenAI renforcent leur partenariat stratégique',source:'WSJ',desc:"Les deux géants ont annoncé une extension de leur accord de collaboration portant sur le déploiement de modèles d'IA dans les produits Microsoft 365 et Azure."},
-    {title:'Indice PMI manufacturier : signaux mitigés en Europe',source:'Markit',desc:"L'indice PMI manufacturier de la zone euro est resté sous le seuil de 50 en mars, indiquant une contraction du secteur industriel pour le sixième mois consécutif."},
-    {title:'Berkshire Hathaway maintient sa position sur Apple malgré la volatilité',source:'Fortune',desc:"Warren Buffett a confirmé lors de l'assemblée annuelle de Berkshire Hathaway que le groupe maintient son importante participation dans Apple, malgré la volatilité récente du titre."},
+    {title:'Les marchés boursiers mondiaux en hausse après les données économiques positives',source:'Bloomberg',desc:"Les principaux indices boursiers ont progressé suite à la publication de données macroéconomiques encourageantes. Le S&P 500 a gagné 0,8% à l'ouverture, porté par les valeurs technologiques.",img:NEWS_IMAGES[0]},
+    {title:'Bitcoin dépasse les 70 000 $ — analyse des facteurs de la hausse',source:'CoinDesk',desc:"La cryptomonnaie phare a atteint un nouveau sommet mensuel, soutenue par l'afflux de capitaux institutionnels et l'anticipation d'une baisse des taux directeurs.",img:NEWS_IMAGES[1]},
+    {title:'Tesla annonce de nouveaux records de livraisons au T1',source:'Reuters',desc:"Le constructeur de véhicules électriques a livré plus de 480 000 véhicules au premier trimestre, dépassant les attentes des analystes de 12%.",img:NEWS_IMAGES[2]},
+    {title:'La Fed maintient ses taux directeurs — déclarations de Powell',source:'WSJ',desc:"Jerome Powell a confirmé l'intention de la Réserve Fédérale de maintenir une politique monétaire restrictive jusqu'à ce que l'inflation revienne durablement vers l'objectif de 2%.",img:NEWS_IMAGES[3]},
+    {title:'Le pétrole Brent recule sous les 80$ — craintes de récession',source:'FT',desc:"Les cours du brut ont cédé du terrain face aux inquiétudes persistantes sur la demande mondiale et aux signaux de ralentissement économique en Europe et en Asie.",img:NEWS_IMAGES[4]},
+    {title:'NVIDIA dépasse Apple en capitalisation boursière',source:'Bloomberg',desc:"La société spécialisée dans les puces pour l'intelligence artificielle est désormais la deuxième entreprise mondiale par capitalisation, reflet de l'engouement pour l'IA générative.",img:NEWS_IMAGES[5]},
+    {title:"L'or atteint un nouveau record historique à 2400$/oz",source:'Reuters',desc:"Le métal précieux continue son ascension, porté par les tensions géopolitiques et une demande soutenue des banques centrales, notamment en Asie.",img:NEWS_IMAGES[6]},
+    {title:'Zone euro : légère reprise de la croissance au T1 2025',source:'Eurostat',desc:"Le PIB de la zone euro a progressé de 0,3% au premier trimestre selon les premières estimations d'Eurostat, un signe de résistance face aux vents contraires économiques.",img:NEWS_IMAGES[7]},
+    {title:'Amazon Web Services : revenus cloud en forte hausse',source:'CNBC',desc:"La division cloud d'Amazon a publié une croissance de 17% de ses revenus au dernier trimestre, confortant sa position de leader mondial du cloud computing.",img:NEWS_IMAGES[8]},
+    {title:"La Chine augmente ses réserves d'or pour le 17e mois consécutif",source:'Bloomberg',desc:"La Banque Populaire de Chine continue d'accumuler de l'or, dans le cadre d'une stratégie de diversification de ses réserves de change loin du dollar américain.",img:NEWS_IMAGES[9]},
+    {title:'Ethereum : la mise à jour Pectra améliore la scalabilité',source:'CoinTelegraph',desc:"La dernière mise à jour majeure du réseau Ethereum améliore sensiblement les performances de la blockchain et réduit les frais de transaction, selon les développeurs.",img:NEWS_IMAGES[10]},
+    {title:'Marchés émergents : reprise des flux entrants en Asie',source:'IMF News',desc:"Les économistes du FMI constatent un retour des investisseurs vers les marchés émergents asiatiques, attirés par des valorisations attractives et une croissance robuste.",img:NEWS_IMAGES[11]},
+    {title:'Microsoft et OpenAI renforcent leur partenariat stratégique',source:'WSJ',desc:"Les deux géants ont annoncé une extension de leur accord de collaboration portant sur le déploiement de modèles d'IA dans les produits Microsoft 365 et Azure.",img:NEWS_IMAGES[12]},
+    {title:'Indice PMI manufacturier : signaux mitigés en Europe',source:'Markit',desc:"L'indice PMI manufacturier de la zone euro est resté sous le seuil de 50 en mars, indiquant une contraction du secteur industriel pour le sixième mois consécutif.",img:NEWS_IMAGES[13]},
+    {title:'Berkshire Hathaway maintient sa position sur Apple malgré la volatilité',source:'Fortune',desc:"Warren Buffett a confirmé lors de l'assemblée annuelle de Berkshire Hathaway que le groupe maintient son importante participation dans Apple, malgré la volatilité récente du titre.",img:NEWS_IMAGES[14]},
   ];
   return items.map(item=>({
     id:'n'+Math.random().toString(36).slice(2),
@@ -1716,6 +1810,7 @@ function generateFallbackNews(){
     date:new Date(Date.now()-Math.random()*5*24*60*60*1000).toLocaleString('fr-FR'),
     rawDate:new Date(Date.now()-Math.random()*5*24*60*60*1000),
     description:item.desc,link:'#',
+    image:item.img,
     size:NEWS_SIZES[Math.floor(Math.random()*3)]
   }));
 }
@@ -1725,11 +1820,14 @@ function renderNewsGrid(){
   if(!newsCache.length){grid.innerHTML='<div class="empty-state"><p>Aucune news disponible.</p></div>';return;}
   grid.innerHTML=newsCache.map(n=>`
     <div class="news-card ${n.size}" onclick="openNewsDetail('${n.id}')">
-      <div>
-        <div class="news-source">${n.source}</div>
-        <div class="news-title">${n.title}</div>
+      ${n.image?`<img class="news-card-img" src="${n.image}" alt="${n.title}" onerror="this.style.display='none'">`:''}
+      <div class="news-card-body">
+        <div>
+          <div class="news-source">${n.source}</div>
+          <div class="news-title">${n.title}</div>
+        </div>
+        <div class="news-date">${n.date}</div>
       </div>
-      <div class="news-date">${n.date}</div>
     </div>`).join('');
 }
 
@@ -1740,6 +1838,14 @@ function openNewsDetail(id){
   document.getElementById('news-detail-date').textContent=n.date;
   document.getElementById('news-detail-body').textContent=n.description||n.title;
   document.getElementById('news-detail-link').innerHTML=n.link&&n.link!=='#'?`<a href="${n.link}" target="_blank" class="btn btn-outline" style="font-size:12px">🔗 Lire la source</a>`:'';
+  // Image
+  const imgWrap=document.getElementById('news-detail-img-wrap');
+  const imgEl=document.getElementById('news-detail-img');
+  if(n.image&&imgWrap&&imgEl){
+    imgEl.src=n.image;imgEl.alt=n.title;
+    imgWrap.style.display='block';
+    imgEl.onerror=()=>{imgWrap.style.display='none';};
+  } else if(imgWrap){imgWrap.style.display='none';}
   document.getElementById('news-detail-modal').classList.add('open');
 }
 function closeNewsDetail(){document.getElementById('news-detail-modal').classList.remove('open');}
