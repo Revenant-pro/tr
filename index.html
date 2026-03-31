@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Espace Personnel</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- ✅ FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAChtwstofSGIdNu1OGivoHcvymDODF0Co",
+    authDomain: "site-revenant.firebaseapp.com",
+    projectId: "site-revenant",
+    storageBucket: "site-revenant.firebasestorage.app",
+    messagingSenderId: "492360431114",
+    appId: "1:492360431114:web:0546f252b9f89b3162d1f3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // Expose globally
+  window.firebaseDB = db;
+  window.firebaseAuth = auth;
+  window.firebaseFns = { collection, addDoc, getDocs, deleteDoc, doc, setDoc, onSnapshot, query, orderBy, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged };
+  window.firebaseReady = true;
+  console.log('✅ Firebase initialisé');
+</script>
+
+<style>
+  :root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--accent:#e63946;--accent2:#ff6b6b;--gold:#f4a261;--text:#f0f0f5;--muted:#6b6b85;--success:#2ecc71;--warning:#f39c12;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  #login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;}
+  .login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 40%,rgba(230,57,70,.15) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 80% 70%,rgba(244,162,97,.08) 0%,transparent 60%);pointer-events:none;}
+  .login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(42,42,58,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(42,42,58,.4) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 0%,transparent 100%);}
+  .login-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:50px 44px;width:420px;max-width:95vw;box-shadow:0 40px 80px rgba(0,0,0,.6);animation:cardIn .6s cubic-bezier(.16,1,.3,1) both;}
+  @keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .login-brand{text-align:center;margin-bottom:36px;}
+  .login-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(230,57,70,.35);}
+  .login-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;}
+  .login-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+  .field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
+  .field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(230,57,70,.15);}
+  .btn-login{width:100%;background:linear-gradient(135deg,var(--accent),#c1121f);border:none;border-radius:10px;padding:14px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:8px;box-shadow:0 8px 20px rgba(230,57,70,.3);}
+  .btn-login:hover{transform:translateY(-1px);}
+  .login-error{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-top:14px;display:none;text-align:center;}
+  .firebase-status{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .fb-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  #dashboard{display:none;min-height:100vh;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:64px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+  .topbar-brand{display:flex;align-items:center;gap:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:18px;}
+  .topbar-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;}
+  .topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .topbar-clock{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--gold);background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;letter-spacing:1px;}
+  .notif-bell-wrap{position:relative;}
+  .notif-bell{cursor:pointer;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;display:flex;align-items:center;gap:6px;font-size:18px;transition:border-color .2s;}
+  .notif-bell:hover{border-color:var(--accent);}
+  .notif-badge{position:absolute;top:-6px;right:-6px;background:var(--accent);color:white;border-radius:99px;font-size:10px;font-weight:800;font-family:'Syne',sans-serif;min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--bg);}
+  .notif-badge.hidden{display:none;}
+  .notif-panel{position:absolute;top:calc(100% + 8px);right:0;width:320px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.6);z-index:999;display:none;flex-direction:column;max-height:400px;overflow:hidden;}
+  .notif-panel.open{display:flex;}
+  .notif-panel-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .notif-panel-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;}
+  .notif-clear{font-size:11px;cursor:pointer;background:none;border:none;color:var(--accent2);}
+  .notif-list{overflow-y:auto;flex:1;}
+  .notif-item{display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(42,42,58,.4);cursor:pointer;transition:background .15s;}
+  .notif-item:hover{background:var(--surface2);}
+  .notif-item.unread{border-left:3px solid var(--accent);}
+  .notif-icon{font-size:18px;flex-shrink:0;}
+  .notif-title-txt{font-size:12px;font-weight:600;margin-bottom:2px;}
+  .notif-desc{font-size:11px;color:var(--muted);line-height:1.4;}
+  .notif-time{font-size:10px;color:var(--border);margin-top:2px;}
+  .notif-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;}
+  .user-badge{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;display:flex;align-items:center;gap:8px;}
+  .user-dot{width:8px;height:8px;background:var(--success);border-radius:50%;}
+  .btn-logout{background:transparent;border:1px solid var(--border);border-radius:8px;padding:7px 14px;color:var(--muted);font-size:13px;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+  .btn-logout:hover{border-color:var(--accent);color:var(--accent);}
+  .tabs-bar{display:flex;align-items:center;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+  .tab-btn{display:flex;align-items:center;gap:7px;padding:14px 18px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
+  .tab-btn:hover{color:var(--text);}
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab-content{display:none;padding:28px;max-width:1200px;margin:0 auto;}
+  .tab-content.active{display:block;animation:fadeIn .3s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .page-header{margin-bottom:24px;}
+  .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
+  .page-desc{color:var(--muted);font-size:13px;margin-top:4px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
+  .card-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:none;}
+  .btn-primary{background:linear-gradient(135deg,var(--accent),#c1121f);color:white;box-shadow:0 4px 12px rgba(230,57,70,.3);}
+  .btn-primary:hover{transform:translateY(-1px);}
+  .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
+  .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-danger{background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.3);color:var(--accent2);}
+  .btn-danger:hover{background:rgba(230,57,70,.25);}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media(max-width:700px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+  .dropzone{border:2px dashed var(--border);border-radius:14px;padding:36px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:20px;position:relative;}
+  .dropzone:hover,.dropzone.drag-over{border-color:var(--accent);background:rgba(230,57,70,.05);}
+  .dropzone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+  .user-section{margin-bottom:20px;}
+  .user-section-title{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;}
+  .user-av{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--gold));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;}
+  .files-list{display:flex;flex-direction:column;gap:7px;}
+  .file-item{display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;}
+  .file-icon{font-size:22px;flex-shrink:0;}
+  .file-info{flex:1;}
+  .file-name{font-size:13px;font-weight:500;}
+  .file-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+  .file-actions{display:flex;gap:5px;}
+  .file-actions button{background:var(--surface);border:1px solid var(--border);cursor:pointer;color:var(--muted);font-size:13px;transition:all .2s;padding:5px 9px;border-radius:6px;}
+  .file-actions button:hover{color:var(--text);border-color:var(--accent);}
+  .file-actions .del:hover{color:var(--accent2);border-color:var(--accent2);}
+  .storage-bar-wrap{margin-top:18px;}
+  .storage-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .storage-bar{height:5px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .storage-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;transition:width .5s ease;}
+  .private-badge{font-size:10px;background:rgba(244,162,97,.15);border:1px solid rgba(244,162,97,.3);color:var(--gold);border-radius:5px;padding:1px 6px;margin-left:6px;}
+  .viewer-modal{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:none;flex-direction:column;}
+  .viewer-modal.open{display:flex;}
+  .viewer-header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--surface);border-bottom:1px solid var(--border);}
+  .viewer-header h3{font-family:'Syne',sans-serif;font-size:15px;}
+  .viewer-body{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .viewer-body iframe{width:100%;max-width:900px;height:78vh;border:none;border-radius:10px;background:white;}
+  .viewer-body img{max-width:100%;max-height:78vh;border-radius:10px;}
+  .viewer-text{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:24px;max-width:800px;width:100%;font-size:14px;line-height:1.7;}
+  .access-form{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
+  .access-form .row{display:flex;gap:9px;flex-wrap:wrap;}
+  .access-form .row input,.access-form .row select{flex:1;min-width:130px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+  .access-form .row input:focus,.access-form .row select:focus{border-color:var(--accent);}
+  .access-form .row select option{background:var(--surface2);}
+  .readonly-notice{background:rgba(107,107,133,.1);border:1px solid var(--border);border-radius:9px;padding:12px;font-size:13px;color:var(--muted);text-align:center;margin-bottom:14px;}
+  .users-table{width:100%;border-collapse:collapse;}
+  .users-table th{text-align:left;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;padding:9px 13px;border-bottom:1px solid var(--border);}
+  .users-table td{padding:11px 13px;font-size:13px;border-bottom:1px solid rgba(42,42,58,.4);}
+  .users-table tr:hover td{background:var(--surface2);}
+  .role-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:600;}
+  .role-admin{background:rgba(230,57,70,.15);color:var(--accent2);}
+  .role-editor{background:rgba(244,162,97,.15);color:var(--gold);}
+  .role-viewer{background:rgba(107,107,133,.2);color:var(--muted);}
+  .diagram-center{display:flex;flex-direction:column;align-items:center;gap:16px;padding:10px;}
+  .diagram-admin-node{background:linear-gradient(135deg,var(--accent),#c1121f);border-radius:10px;padding:10px 20px;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;box-shadow:0 4px 14px rgba(230,57,70,.35);}
+  .diagram-line{width:2px;height:24px;background:var(--border);}
+  .diagram-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+  .diagram-node{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 15px;font-size:12px;text-align:center;min-width:100px;}
+  .log-item{display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid rgba(42,42,58,.3);font-size:12px;}
+  .log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .log-dot.online{background:var(--success);}
+  .log-dot.offline{background:var(--muted);}
+  .agenda-clock-wrap{display:flex;align-items:center;justify-content:center;padding:10px;}
+  .mech-clock{position:relative;width:160px;height:160px;flex-shrink:0;}
+  .mech-clock svg{width:100%;height:100%;}
+  .clock-date-block{text-align:center;margin-left:20px;}
+  .clock-date-day{font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--accent);line-height:1;}
+  .clock-date-month{font-family:'Syne',sans-serif;font-size:14px;font-weight:600;color:var(--gold);text-transform:uppercase;letter-spacing:1px;}
+  .clock-date-year{font-size:12px;color:var(--muted);}
+  .clock-weekday{font-size:13px;color:var(--text);font-weight:500;margin-top:2px;text-transform:capitalize;}
+  .agenda-user-select{display:flex;gap:7px;flex-wrap:wrap;}
+  .agenda-user-btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .2s;}
+  .agenda-user-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(230,57,70,.1);}
+  .cal-nav{display:flex;gap:7px;}
+  .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;}
+  .cal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;}
+  .cal-nav button{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 12px;color:var(--text);cursor:pointer;font-size:13px;transition:all .2s;}
+  .cal-nav button:hover{border-color:var(--accent);color:var(--accent);}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:14px;}
+  .cal-day-label{text-align:center;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;padding:5px 0;}
+  .cal-day{min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px;cursor:pointer;transition:all .2s;}
+  .cal-day:hover{border-color:var(--accent);}
+  .cal-day.today{border-color:var(--accent);background:rgba(230,57,70,.08);}
+  .cal-day.other-month .day-num{color:var(--border);}
+  .day-num{font-size:11px;font-weight:600;margin-bottom:2px;}
+  .day-event{border-radius:3px;padding:1px 4px;font-size:9px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .day-event.red{background:var(--accent);color:white;}
+  .day-event.yellow{background:var(--gold);color:#1a1a24;}
+  .day-event.green{background:var(--success);color:#0a0a0f;}
+  .event-form{background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:18px;margin-top:14px;}
+  .event-form h3{font-family:'Syne',sans-serif;font-size:13px;margin-bottom:10px;}
+  .event-form input,.event-form select,.event-form textarea{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:7px;transition:border-color .2s;}
+  .event-form input:focus,.event-form select:focus,.event-form textarea:focus{border-color:var(--accent);}
+  .event-form textarea{resize:vertical;min-height:55px;}
+  .event-form select option{background:var(--surface);}
+  .events-list{display:flex;flex-direction:column;gap:7px;}
+  .event-item{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;}
+  .event-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+  .event-name{font-size:13px;font-weight:500;}
+  .event-date{font-size:11px;color:var(--muted);}
+  .stat-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:7px;}
+  .stat-value{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;}
+  .stat-change{font-size:11px;margin-top:3px;}
+  .pos{color:var(--success);}.neg{color:var(--accent2);}
+  .tx-form{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;}
+  .tx-form input,.tx-form select{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;flex:1;min-width:110px;}
+  .tx-form input:focus,.tx-form select:focus{border-color:var(--accent);}
+  .tx-form select option{background:var(--surface2);}
+  .tx-list{display:flex;flex-direction:column;gap:7px;}
+  .tx-item{display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
+  .tx-left{display:flex;align-items:center;gap:10px;}
+  .tx-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+  .tx-icon.credit{background:rgba(46,204,113,.15);}
+  .tx-icon.debit{background:rgba(230,57,70,.15);}
+  .tx-name{font-size:13px;font-weight:500;}
+  .tx-date{font-size:11px;color:var(--muted);}
+  .tx-amount{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+  .tx-amount.credit{color:var(--success);}
+  .tx-amount.debit{color:var(--accent2);}
+  .chart-wrap{height:130px;display:flex;align-items:flex-end;gap:5px;}
+  .chart-bar{flex:1;border-radius:4px 4px 0 0;background:linear-gradient(180deg,var(--accent),rgba(230,57,70,.3));transition:height .6s ease;cursor:pointer;position:relative;min-height:4px;}
+  .chart-bar.credit-bar{background:linear-gradient(180deg,var(--success),rgba(46,204,113,.3));}
+  .chart-bar:hover::after{content:attr(data-label);position:absolute;top:-26px;left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:10px;white-space:nowrap;color:var(--text);}
+  .chart-labels{display:flex;gap:5px;margin-top:5px;}
+  .chart-label{flex:1;text-align:center;font-size:10px;color:var(--muted);}
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:26px;width:420px;max-width:95vw;animation:cardIn .3s ease;}
+  .modal h3{font-family:'Syne',sans-serif;font-size:17px;margin-bottom:14px;}
+  .modal-footer{display:flex;gap:9px;justify-content:flex-end;margin-top:18px;}
+  .scope-option{display:flex;align-items:center;gap:14px;padding:14px;border:2px solid var(--border);border-radius:12px;cursor:pointer;transition:all .2s;margin-bottom:10px;}
+  .scope-option:hover,.scope-option.selected{border-color:var(--accent);background:rgba(230,57,70,.07);}
+  .scope-icon{font-size:28px;}
+  .scope-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;}
+  .scope-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+  .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:400;display:flex;flex-direction:column;gap:8px;}
+  .toast{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:11px 16px;font-size:13px;min-width:200px;display:flex;align-items:center;gap:9px;animation:toastIn .3s ease;box-shadow:0 8px 24px rgba(0,0,0,.4);}
+  @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+  .toast.success{border-color:rgba(46,204,113,.3);}
+  .toast.error{border-color:rgba(230,57,70,.3);}
+  .empty-state{text-align:center;padding:36px 20px;color:var(--muted);}
+  .empty-state .empty-icon{font-size:36px;margin-bottom:9px;}
+  .empty-state p{font-size:13px;}
+  input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:pointer;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+  .syncing{opacity:.5;pointer-events:none;}
+  .fb-badge{font-size:10px;background:rgba(255,152,0,.15);border:1px solid rgba(255,152,0,.3);color:#ff9800;border-radius:5px;padding:1px 7px;margin-left:6px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-page">
+  <div class="login-bg"></div><div class="login-grid"></div>
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="login-logo">H</div>
+      <div class="login-title">Espace Privé</div>
+      <div class="login-sub">Accès sécurisé — connexion requise</div>
+    </div>
+    <div class="field"><label>Nom d'utilisateur</label><input type="text" id="inp-user" placeholder="Nom d'utilisateur"></div>
+    <div class="field"><label>Mot de passe</label><input type="password" id="inp-pass" placeholder="••••••••••"></div>
+    <button class="btn-login" id="btn-login-main" onclick="doLogin()">Se connecter →</button>
+    <div class="login-error" id="login-err">❌ Identifiants incorrects. Réessayez.</div>
+    <div class="firebase-status"><div class="fb-dot"></div><span>Connecté à Firebase — données synchronisées</span></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-brand"><div class="topbar-logo">H</div>Espace Personnel <span class="fb-badge">🔥 Firebase</span></div>
+    <div class="topbar-right">
+      <div class="topbar-clock" id="topbar-clock">00:00:00</div>
+      <div class="notif-bell-wrap">
+        <div class="notif-bell" onclick="toggleNotifPanel()" id="notif-bell-btn">🔔<span class="notif-badge hidden" id="notif-badge">0</span></div>
+        <div class="notif-panel" id="notif-panel">
+          <div class="notif-panel-header"><span class="notif-panel-title">🔔 Notifications</span><button class="notif-clear" onclick="clearAllNotifs()">Tout effacer</button></div>
+          <div class="notif-list" id="notif-list"><div class="notif-empty">Aucune notification</div></div>
+        </div>
+      </div>
+      <div class="user-badge"><div class="user-dot"></div><span id="topbar-username">hans</span></div>
+      <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
+    </div>
+  </div>
+  <div class="tabs-bar">
+    <button class="tab-btn active" onclick="showTab('fichiers',this)">📁 Fichiers</button>
+    <button class="tab-btn" onclick="showTab('acces',this)">👥 Accès</button>
+    <button class="tab-btn" onclick="showTab('agenda',this)">📅 Agenda</button>
+    <button class="tab-btn" onclick="showTab('compte',this)">💰 Suivi de compte</button>
+  </div>
+
+  <!-- FICHIERS -->
+  <div class="tab-content active" id="tab-fichiers">
+    <div class="page-header"><div class="page-title">📁 Stockage de fichiers</div><div class="page-desc">Fichiers partagés et personnels — synchronisés via Firebase</div></div>
+    <div class="dropzone" id="dropzone">
+      <input type="file" multiple id="file-input">
+      <div style="font-size:38px;margin-bottom:10px">☁️</div>
+      <div style="font-size:14px;color:var(--muted)"><strong style="color:var(--text)">Cliquez ou déposez vos fichiers ici</strong><br>PDF et images visualisables directement</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📄 Fichiers partagés <span class="fb-badge">🔥 Sync</span></div>
+      <div id="files-shared"><div class="empty-state"><div class="empty-icon">📂</div><p>Aucun fichier partagé.</p></div></div>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <div class="card-title">🔒 Mes fichiers personnels <span class="private-badge">Privé</span></div>
+      <div id="files-private"><div class="empty-state"><div class="empty-icon">🗂️</div><p>Aucun fichier personnel.</p></div></div>
+      <div class="storage-bar-wrap">
+        <div class="storage-label"><span>Stockage utilisé</span><span id="storage-text">0 Ko / 100 Mo</span></div>
+        <div class="storage-bar"><div class="storage-fill" id="storage-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACCÈS -->
+  <div class="tab-content" id="tab-acces">
+    <div class="page-header"><div class="page-title">👥 Gestion des accès</div><div class="page-desc">Comptes synchronisés via Firebase — accessibles depuis tous les appareils</div></div>
+    <div id="acces-readonly-notice" class="readonly-notice" style="display:none">👁 Mode Lecteur — consultation uniquement.</div>
+    <div id="acces-edit-zone">
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-title">➕ Créer un accès</div>
+        <div class="access-form">
+          <div class="row">
+            <input type="text" id="new-user" placeholder="Nom d'utilisateur">
+            <input type="password" id="new-pass" placeholder="Mot de passe">
+          </div>
+          <div class="row">
+            <input type="text" id="new-name" placeholder="Nom complet">
+            <input type="email" id="new-email" placeholder="Email">
+          </div>
+          <div class="row">
+            <select id="new-role"><option value="viewer">👁 Lecteur</option><option value="editor">✏️ Éditeur</option><option value="admin">🔑 Administrateur</option></select>
+          </div>
+          <button class="btn btn-primary" onclick="addUser()" style="width:fit-content">Créer le compte</button>
+        </div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="card-title">👤 Utilisateurs <span class="fb-badge">🔥 Sync</span></div>
+        <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🔗 Diagramme</div>
+        <div id="diagram-wrap"></div>
+      </div>
+    </div>
+    <div class="card" id="log-card" style="display:none">
+      <div class="card-title">🕵️ Historique des connexions <span style="color:var(--accent2);font-size:10px">(Admin uniquement)</span></div>
+      <div id="conn-log"></div>
+    </div>
+  </div>
+
+  <!-- AGENDA -->
+  <div class="tab-content" id="tab-agenda">
+    <div class="page-header"><div class="page-title">📅 Agenda</div><div class="page-desc">Agendas personnels synchronisés — événements partagés ou privés</div></div>
+    <div class="card" style="margin-bottom:16px;padding:16px"><div class="agenda-clock-wrap" id="agenda-clock-wrap"></div></div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">👤 Agenda de</div>
+      <div class="agenda-user-select" id="agenda-user-select"></div>
+    </div>
+    <div class="grid-2">
+      <div>
+        <div class="cal-header">
+          <div class="cal-title" id="cal-month-label"></div>
+          <div class="cal-nav"><button onclick="prevMonth()">‹</button><button onclick="nextMonth()">›</button></div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+        <div class="event-form">
+          <h3>➕ Ajouter un événement</h3>
+          <input type="text" id="evt-title" placeholder="Titre de l'événement">
+          <input type="date" id="evt-date">
+          <input type="time" id="evt-time">
+          <select id="evt-color"><option value="red">🔴 Rouge (urgent)</option><option value="yellow">🟡 Jaune (important)</option><option value="green">🟢 Vert (normal)</option></select>
+          <textarea id="evt-note" placeholder="Note (optionnel)"></textarea>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="addEvent(false)">🔒 Personnel</button>
+            <button class="btn btn-outline" onclick="addEvent(true)">🌐 Partager avec tous</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-title">🗓 Événements — <span id="agenda-current-label" style="color:var(--accent)"></span></div>
+          <div class="events-list" id="events-list"><div class="empty-state"><div class="empty-icon">📅</div><p>Aucun événement.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPTE -->
+  <div class="tab-content" id="tab-compte">
+    <div class="page-header"><div class="page-title">💰 Suivi de compte</div><div class="page-desc">Transactions synchronisées via Firebase</div></div>
+    <div class="grid-3" style="margin-bottom:18px">
+      <div class="stat-card"><div class="stat-label">Solde actuel</div><div class="stat-value" id="stat-solde" style="color:var(--success)">0,00 €</div></div>
+      <div class="stat-card"><div class="stat-label">Total entrées</div><div class="stat-value pos" id="stat-in">0,00 €</div><div class="stat-change pos" id="stat-in-count">0 opération(s)</div></div>
+      <div class="stat-card"><div class="stat-label">Total sorties</div><div class="stat-value neg" id="stat-out">0,00 €</div><div class="stat-change neg" id="stat-out-count">0 opération(s)</div></div>
+    </div>
+    <div class="card" style="margin-bottom:18px">
+      <div class="card-title">📊 Évolution (6 derniers mois)</div>
+      <div class="chart-wrap" id="chart-bars"></div>
+      <div class="chart-labels" id="chart-labels"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">➕ Nouvelle opération</div>
+      <div class="tx-form">
+        <input type="text" id="tx-label" placeholder="Description">
+        <input type="number" id="tx-amount" placeholder="Montant (€)" step="0.01" min="0">
+        <select id="tx-type"><option value="credit">📈 Entrée</option><option value="debit">📉 Sortie</option></select>
+        <input type="date" id="tx-date">
+        <button class="btn btn-primary" onclick="addTx()">Ajouter</button>
+      </div>
+      <div class="tx-list" id="tx-list"><div class="empty-state"><div class="empty-icon">💳</div><p>Aucune opération.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIEWER -->
+<div class="viewer-modal" id="viewer-modal">
+  <div class="viewer-header"><h3 id="viewer-title">Aperçu</h3><button class="btn btn-outline" onclick="closeViewer()">✕ Fermer</button></div>
+  <div class="viewer-body" id="viewer-body"></div>
+</div>
+
+<!-- CONFIRM -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal">
+    <h3>⚠️ Confirmer la suppression</h3>
+    <p id="confirm-msg" style="color:var(--muted);font-size:13px"></p>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      <button class="btn btn-danger" id="confirm-ok">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCOPE -->
+<div class="modal-overlay" id="scope-modal">
+  <div class="modal">
+    <h3 id="scope-modal-title">📤 Portée</h3>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:18px" id="scope-modal-desc"></p>
+    <div class="scope-option" id="scope-all" onclick="selectScope('all')">
+      <div class="scope-icon">🌐</div>
+      <div><div class="scope-title">Tous les utilisateurs</div><div class="scope-desc">Visible par tout le monde, sauvegardé dans Firebase.</div></div>
+    </div>
+    <div class="scope-option" id="scope-me" onclick="selectScope('me')">
+      <div class="scope-icon">🔒</div>
+      <div><div class="scope-title">Seulement moi</div><div class="scope-desc">Stocké dans mon espace personnel uniquement.</div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeScopeModal()">Annuler</button>
+      <button class="btn btn-primary" onclick="confirmScope()">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ============ CONSTANTES ============
+const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const DAYS=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+
+// ============ DONNÉES LOCALES (fallback + cache) ============
+let currentUser = null;
+// users stockés dans Firestore : { id, username, pass, fullname, email, role, created }
+let users = [];
+let files = []; // stockés dans Firestore
+let agendas = {}; // { username: [{id,title,date,time,color,note,global}] }
+let transactions = [];
+let connLog = [];
+let currentAgendaUser = 'hans';
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let pendingDelete = null;
+let selectedScope = null;
+let pendingScopeAction = null;
+let notifications = {}; // { userId: [{...}] }
+
+// ============ FIREBASE HELPERS ============
+function getDB() { return window.firebaseDB; }
+function getFns() { return window.firebaseFns; }
+
+async function fbSave(collectionName, id, data) {
+  try {
+    const { doc, setDoc } = getFns();
+    await setDoc(doc(getDB(), collectionName, String(id)), data);
+  } catch(e) { console.error('Firebase save error:', e); }
+}
+
+async function fbDelete(collectionName, id) {
+  try {
+    const { doc, deleteDoc } = getFns();
+    await deleteDoc(doc(getDB(), collectionName, String(id)));
+  } catch(e) { console.error('Firebase delete error:', e); }
+}
+
+async function fbGetAll(collectionName) {
+  try {
+    const { collection, getDocs } = getFns();
+    const snap = await getDocs(collection(getDB(), collectionName));
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { console.error('Firebase get error:', e); return []; }
+}
+
+// ============ AUTH ============
+async function doLogin() {
+  const u = document.getElementById('inp-user').value.trim();
+  const p = document.getElementById('inp-pass').value;
+  const err = document.getElementById('login-err');
+  const btn = document.getElementById('btn-login-main');
+  btn.textContent = 'Connexion en cours...';
+  btn.disabled = true;
+
+  // Load users from Firebase
+  const fbUsers = await fbGetAll('users');
+  if (fbUsers.length > 0) users = fbUsers.map(u => ({...u, created: u.created ? new Date(u.created) : new Date()}));
+
+  // Check if hans exists, create if not
+  if (!users.find(x => x.username === 'hans')) {
+    const hansUser = { id:'u0', username:'hans', fullname:'Hans', email:'coffihans520@gmail.com', role:'admin', created: new Date().toISOString(), pass:'KILIan2@@3' };
+    await fbSave('users', 'u0', hansUser);
+    users.push({...hansUser, created: new Date()});
+  }
+
+  const found = users.find(x => x.username === u && x.pass === p);
+  btn.textContent = 'Se connecter →';
+  btn.disabled = false;
+
+  if (found) {
+    currentUser = found;
+    currentAgendaUser = found.username;
+    connLog.unshift({ id: Date.now(), username: u, loginTime: new Date(), logoutTime: null });
+    await fbSave('connlog', String(Date.now()), { username: u, loginTime: new Date().toISOString(), logoutTime: null });
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('topbar-username').textContent = found.fullname || u;
+    err.style.display = 'none';
+    await initDashboard();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('inp-pass').value = '';
+  }
+}
+
+document.getElementById('inp-pass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('inp-user').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('inp-user').value = '';
+  document.getElementById('inp-pass').value = '';
+}
+
+// ============ INIT ============
+async function initDashboard() {
+  // Load all data from Firebase
+  toast('🔥 Chargement des données Firebase...', 'success');
+
+  const [fbUsers, fbFiles, fbEvents, fbTx, fbLogs] = await Promise.all([
+    fbGetAll('users'),
+    fbGetAll('files'),
+    fbGetAll('events'),
+    fbGetAll('transactions'),
+    fbGetAll('connlog')
+  ]);
+
+  if (fbUsers.length > 0) users = fbUsers.map(u => ({...u, created: u.created ? new Date(u.created) : new Date()}));
+  files = fbFiles.map(f => ({...f, date: f.date ? new Date(f.date) : new Date()}));
+  transactions = fbTx.sort((a,b) => new Date(b.date) - new Date(a.date));
+  connLog = fbLogs.map(l => ({...l, loginTime: new Date(l.loginTime), logoutTime: l.logoutTime ? new Date(l.logoutTime) : null}));
+
+  // Build agendas from events
+  agendas = {};
+  fbEvents.forEach(e => {
+    if (!agendas[e.owner]) agendas[e.owner] = [];
+    agendas[e.owner].push(e);
+  });
+
+  renderFiles();
+  renderUsersTable();
+  renderDiagram();
+  renderConnLog();
+  initAccessZone();
+  initAgendaUserSelect();
+  initCalendar();
+  renderTx();
+  updateStats();
+  drawChart();
+  renderNotifBell();
+  initMechClock();
+  toast('✅ Données synchronisées depuis Firebase', 'success');
+}
+
+// ============ CLOCK ============
+function updateClock() {
+  const now = new Date();
+  const tc = document.getElementById('topbar-clock');
+  if(tc) tc.textContent = now.toLocaleTimeString('fr-FR');
+  updateMechClock(now);
+}
+setInterval(updateClock, 1000); updateClock();
+
+function initMechClock() {
+  const wrap = document.getElementById('agenda-clock-wrap');
+  if(!wrap) return;
+  const now = new Date();
+  wrap.innerHTML = `
+    <div class="mech-clock">
+      <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="80" cy="80" r="76" fill="#111118" stroke="#2a2a3a" stroke-width="3"/>
+        <circle cx="80" cy="80" r="70" fill="none" stroke="#e63946" stroke-width=".5" opacity=".5"/>
+        ${Array.from({length:12},(_,i)=>{const a=(i*30-90)*(Math.PI/180);return`<line x1="${80+55*Math.cos(a)}" y1="${80+55*Math.sin(a)}" x2="${80+63*Math.cos(a)}" y2="${80+63*Math.sin(a)}" stroke="${i%3===0?'#f4a261':'#4a4a5a'}" stroke-width="${i%3===0?2.5:1.2}" stroke-linecap="round"/>`;}).join('')}
+        <circle cx="80" cy="80" r="48" fill="#0f0f16" stroke="#1a1a24" stroke-width="1"/>
+        <line id="hand-hour" x1="80" y1="80" x2="80" y2="52" stroke="#f0f0f5" stroke-width="3.5" stroke-linecap="round"/>
+        <line id="hand-min" x1="80" y1="80" x2="80" y2="40" stroke="#e63946" stroke-width="2.5" stroke-linecap="round"/>
+        <line id="hand-sec" x1="80" y1="90" x2="80" y2="36" stroke="#f4a261" stroke-width="1.2" stroke-linecap="round"/>
+        <circle cx="80" cy="80" r="4" fill="#e63946"/>
+        <circle cx="80" cy="80" r="2" fill="#f0f0f5"/>
+      </svg>
+    </div>
+    <div class="clock-date-block">
+      <div class="clock-date-day">${now.getDate()}</div>
+      <div class="clock-date-month">${MONTHS[now.getMonth()]}</div>
+      <div class="clock-date-year">${now.getFullYear()}</div>
+      <div class="clock-weekday">${now.toLocaleDateString('fr-FR',{weekday:'long'})}</div>
+    </div>`;
+  updateMechClock(now);
+}
+
+function updateMechClock(now) {
+  const hs=document.getElementById('hand-hour'),ms=document.getElementById('hand-min'),ss=document.getElementById('hand-sec');
+  if(!hs)return;
+  const h=now.getHours()%12,m=now.getMinutes(),s=now.getSeconds();
+  setHand(hs,(h/12)*360+(m/60)*30-90,80,80,80,52);
+  setHand(ms,(m/60)*360+(s/60)*6-90,80,80,80,40);
+  setHand(ss,(s/60)*360-90,80,90,80,36);
+}
+function setHand(el,deg,cx,cy,x2,y2){const r=deg*(Math.PI/180),dx=x2-cx,dy=y2-cy;el.setAttribute('x2',(cx+dx*Math.cos(r)-dy*Math.sin(r)).toFixed(2));el.setAttribute('y2',(cy+dx*Math.sin(r)+dy*Math.cos(r)).toFixed(2));}
+
+// ============ TABS ============
+function showTab(id,btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='agenda'){initAgendaUserSelect();renderCalendar();}
+  if(id==='acces'){renderUsersTable();renderDiagram();renderConnLog();}
+}
+
+// ============ NOTIFICATIONS ============
+function addNotif(userId, notif) {
+  if(!notifications[userId]) notifications[userId]=[];
+  notifications[userId].unshift({...notif,id:Date.now()+Math.random(),read:false,time:new Date()});
+  if(currentUser&&currentUser.id===userId) renderNotifBell();
+}
+function renderNotifBell(){
+  if(!currentUser)return;
+  const notifs=(notifications[currentUser.id]||[]);
+  const unread=notifs.filter(n=>!n.read).length;
+  const badge=document.getElementById('notif-badge');
+  if(badge){badge.textContent=unread;badge.classList.toggle('hidden',unread===0);}
+  renderNotifList();
+}
+function renderNotifList(){
+  const list=document.getElementById('notif-list');
+  const notifs=(currentUser&&notifications[currentUser.id])||[];
+  if(!notifs.length){list.innerHTML='<div class="notif-empty">Aucune notification</div>';return;}
+  list.innerHTML=notifs.map(n=>`<div class="notif-item ${n.read?'':'unread'}" onclick="markRead('${n.id}')"><div class="notif-icon">${n.icon||'📌'}</div><div><div class="notif-title-txt">${n.title}</div><div class="notif-desc">${n.desc}</div><div class="notif-time">${new Date(n.time).toLocaleString('fr-FR')}</div></div></div>`).join('');
+}
+function markRead(nid){if(!currentUser||!notifications[currentUser.id])return;const n=notifications[currentUser.id].find(x=>String(x.id)===String(nid));if(n)n.read=true;renderNotifBell();}
+function clearAllNotifs(){if(!currentUser)return;notifications[currentUser.id]=[];renderNotifBell();}
+function toggleNotifPanel(){
+  const panel=document.getElementById('notif-panel');
+  panel.classList.toggle('open');
+  if(panel.classList.contains('open')){(notifications[currentUser&&currentUser.id]||[]).forEach(n=>n.read=true);renderNotifBell();}
+}
+document.addEventListener('click',e=>{
+  const bell=document.getElementById('notif-bell-btn');
+  const panel=document.getElementById('notif-panel');
+  if(bell&&panel&&!bell.contains(e.target)&&!panel.contains(e.target))panel.classList.remove('open');
+});
+
+// ============ SCOPE MODAL ============
+function openScopeModal(type,data,title,desc){
+  pendingScopeAction={type,data};selectedScope=null;
+  document.getElementById('scope-modal-title').textContent=title;
+  document.getElementById('scope-modal-desc').textContent=desc;
+  document.getElementById('scope-all').classList.remove('selected');
+  document.getElementById('scope-me').classList.remove('selected');
+  document.getElementById('scope-modal').classList.add('open');
+}
+function closeScopeModal(){document.getElementById('scope-modal').classList.remove('open');pendingScopeAction=null;selectedScope=null;}
+function selectScope(s){selectedScope=s;document.getElementById('scope-all').classList.toggle('selected',s==='all');document.getElementById('scope-me').classList.toggle('selected',s==='me');}
+function confirmScope(){
+  if(!selectedScope){toast('Veuillez choisir une portée','error');return;}
+  if(!pendingScopeAction)return;
+  const{type,data}=pendingScopeAction;
+  closeScopeModal();
+  if(type==='file')finalizeAddFile(data,selectedScope==='all');
+}
+
+// ============ FILES ============
+document.getElementById('file-input').addEventListener('change', function(){processFilesWithScope(this.files);this.value='';});
+const dz=document.getElementById('dropzone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');processFilesWithScope(e.dataTransfer.files);});
+
+function processFilesWithScope(fileList){
+  if(!fileList||!fileList.length)return;
+  const arr=Array.from(fileList);
+  let pending=arr.length;
+  const results=[];
+  arr.forEach((f,i)=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
+      results[i]={id:'f'+Date.now()+i,name:f.name,size:f.size,type:f.type,date:new Date().toISOString(),owner:currentUser.username,dataUrl:e.target.result};
+      if(--pending===0) openScopeModal('file',{multi:true,files:results},'📁 Portée du fichier','Ce(s) fichier(s) seront-ils visibles par tous ou uniquement par vous ?');
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+async function finalizeAddFile(data, shared){
+  const filesToAdd = data.multi ? data.files : [data];
+  for(const f of filesToAdd){
+    f.shared = shared;
+    files.push(f);
+    // Save to Firebase (without dataUrl to save space, store dataUrl separately if needed)
+    const fbData = {...f, date: f.date||new Date().toISOString()};
+    await fbSave('files', f.id, fbData);
+  }
+  if(shared){
+    users.forEach(u=>{if(u.id!==currentUser.id)addNotif(u.id,{icon:'📁',title:'Nouveau fichier partagé',desc:`${currentUser.fullname} a ajouté "${filesToAdd[0].name}"`});});
+    toast('Fichier(s) partagé(s) et synchronisé(s) Firebase','success');
+  } else {
+    toast('Fichier(s) ajouté(s) à votre espace personnel','success');
+  }
+  renderFiles();
+}
+
+function renderFiles(){
+  if(!currentUser)return;
+  const canEdit=currentUser.role==='admin'||currentUser.role==='editor';
+  // Shared
+  const shared=files.filter(f=>f.shared);
+  const sw=document.getElementById('files-shared');
+  if(!shared.length){sw.innerHTML='<div class="empty-state"><div class="empty-icon">📂</div><p>Aucun fichier partagé.</p></div>';}
+  else{
+    const byUser={};
+    shared.forEach(f=>{if(!byUser[f.owner])byUser[f.owner]=[];byUser[f.owner].push(f);});
+    sw.innerHTML=Object.entries(byUser).map(([owner,ufiles])=>{
+      const u=users.find(x=>x.username===owner);
+      const init=(u?u.fullname:owner).charAt(0).toUpperCase();
+      return`<div class="user-section"><div class="user-section-title"><div class="user-av">${init}</div><span>${u?u.fullname:owner}</span></div><div class="files-list">${ufiles.map(f=>`<div class="file-item"><div class="file-icon">${fileIcon(f.type)}</div><div class="file-info"><div class="file-name">${f.name}</div><div class="file-meta">${formatSize(f.size)} · ${f.date?new Date(f.date).toLocaleDateString('fr-FR'):'—'}</div></div><div class="file-actions">${canView(f.type)?`<button onclick="viewFile('${f.id}')" title="Visualiser">👁</button>`:''}  <button onclick="downloadFile('${f.id}')" title="Télécharger">⬇️</button>${canEdit||f.owner===currentUser.username?`<button class="del" onclick="confirmDelete('file','${f.id}')">🗑</button>`:''}</div></div>`).join('')}</div></div>`;
+    }).join('');
+  }
+  // Private
+  const priv=files.filter(f=>!f.shared&&f.owner===currentUser.username);
+  const pw=document.getElementById('files-private');
+  if(!priv.length){pw.innerHTML='<div class="empty-state"><div class="empty-icon">🗂️</div><p>Aucun fichier personnel.</p></div>';}
+  else{pw.innerHTML=`<div class="files-list">${priv.map(f=>`<div class="file-item"><div class="file-icon">${fileIcon(f.type)}</div><div class="file-info"><div class="file-name">${f.name}<span class="private-badge">Privé</span></div><div class="file-meta">${formatSize(f.size)} · ${f.date?new Date(f.date).toLocaleDateString('fr-FR'):'—'}</div></div><div class="file-actions">${canView(f.type)?`<button onclick="viewFile('${f.id}')">👁</button>`:''}  <button onclick="downloadFile('${f.id}')">⬇️</button><button class="del" onclick="confirmDelete('file','${f.id}')">🗑</button></div></div>`).join('')}</div>`;}
+  // Storage
+  const myBytes=files.filter(f=>f.owner===currentUser.username).reduce((s,f)=>s+(f.size||0),0);
+  const pct=Math.min((myBytes/104857600)*100,100);
+  document.getElementById('storage-fill').style.width=pct+'%';
+  document.getElementById('storage-text').textContent=formatSize(myBytes)+' / 100 Mo';
+}
+
+function canView(type){if(!type)return false;return type.includes('pdf')||type.startsWith('image');}
+function viewFile(id){const f=files.find(x=>String(x.id)===String(id));if(!f)return;document.getElementById('viewer-title').textContent=f.name;const body=document.getElementById('viewer-body');if(f.type&&f.type.startsWith('image'))body.innerHTML=`<img src="${f.dataUrl}" alt="">`;else if(f.type&&f.type.includes('pdf'))body.innerHTML=`<iframe src="${f.dataUrl}"></iframe>`;else body.innerHTML=`<div class="viewer-text">Aperçu non disponible.<br><br><button class="btn btn-primary" onclick="downloadFile('${f.id}')">⬇️ Télécharger</button></div>`;document.getElementById('viewer-modal').classList.add('open');}
+function closeViewer(){document.getElementById('viewer-modal').classList.remove('open');}
+function downloadFile(id){const f=files.find(x=>String(x.id)===String(id));if(!f||!f.dataUrl)return;const a=document.createElement('a');a.href=f.dataUrl;a.download=f.name;a.click();toast('Téléchargement démarré','success');}
+function fileIcon(t){if(!t)return'📄';if(t.startsWith('image'))return'🖼️';if(t.startsWith('video'))return'🎬';if(t.startsWith('audio'))return'🎵';if(t.includes('pdf'))return'📕';if(t.includes('word')||t.includes('document'))return'📝';if(t.includes('sheet')||t.includes('excel'))return'📊';if(t.includes('zip'))return'🗜️';return'📄';}
+function formatSize(b){if(!b)return'0 o';if(b<1024)return b+' o';if(b<1048576)return(b/1024).toFixed(1)+' Ko';return(b/1048576).toFixed(2)+' Mo';}
+
+// ============ USERS ============
+function initAccessZone(){
+  const canEdit=currentUser.role==='admin'||currentUser.role==='editor';
+  document.getElementById('acces-edit-zone').style.display=canEdit?'block':'none';
+  document.getElementById('acces-readonly-notice').style.display=canEdit?'none':'block';
+}
+
+async function addUser(){
+  const username=document.getElementById('new-user').value.trim();
+  const pass=document.getElementById('new-pass').value;
+  const name=document.getElementById('new-name').value.trim();
+  const email=document.getElementById('new-email').value.trim();
+  const role=document.getElementById('new-role').value;
+  if(!username||!pass){toast('Nom d\'utilisateur et mot de passe requis','error');return;}
+  if(users.find(u=>u.username===username)){toast('Ce nom d\'utilisateur existe déjà','error');return;}
+  const newUser={id:'u'+Date.now(),username,fullname:name||username,email,role,created:new Date().toISOString(),pass};
+  await fbSave('users', newUser.id, newUser);
+  users.push({...newUser,created:new Date()});
+  ['new-user','new-pass','new-name','new-email'].forEach(id=>document.getElementById(id).value='');
+  renderUsersTable();renderDiagram();initAgendaUserSelect();
+  toast('Accès créé pour @'+username+' — synchronisé Firebase ✅','success');
+}
+
+function renderUsersTable(){
+  const canEdit=currentUser&&(currentUser.role==='admin'||currentUser.role==='editor');
+  document.getElementById('users-tbody').innerHTML=users.map(u=>`
+    <tr>
+      <td>@${u.username}</td>
+      <td style="color:var(--muted);font-size:12px">${u.email||'—'}</td>
+      <td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td>
+      <td>${u.username==='hans'?'<span style="color:var(--muted);font-size:11px">Principal</span>':canEdit?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button>`:'—'}</td>
+    </tr>`).join('');
+}
+
+function roleName(r){return r==='admin'?'🔑 Admin':r==='editor'?'✏️ Éditeur':'👁 Lecteur';}
+
+function renderDiagram(){
+  const wrap=document.getElementById('diagram-wrap');
+  const admins=users.filter(u=>u.role==='admin');
+  const editors=users.filter(u=>u.role==='editor');
+  const viewers=users.filter(u=>u.role==='viewer');
+  const node=(u,cls)=>`<div class="diagram-node"><div>${u.fullname}</div><div style="margin-top:3px"><span class="role-badge ${cls}" style="font-size:10px">${roleName(u.role)}</span></div></div>`;
+  wrap.innerHTML=`<div class="diagram-center"><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${admins.map(u=>`<div class="diagram-admin-node">🔑 ${u.fullname}</div>`).join('')}</div>${editors.length||viewers.length?'<div class="diagram-line"></div>':''}<div class="diagram-row">${editors.map(u=>node(u,'role-editor')).join('')}${viewers.map(u=>node(u,'role-viewer')).join('')}</div></div>`;
+}
+
+function renderConnLog(){
+  if(!currentUser||currentUser.role!=='admin')return;
+  document.getElementById('log-card').style.display='block';
+  const el=document.getElementById('conn-log');
+  if(!connLog.length){el.innerHTML='<div class="empty-state"><p>Aucune connexion.</p></div>';return;}
+  el.innerHTML=connLog.map(l=>`<div class="log-item"><div class="log-dot ${!l.logoutTime?'online':'offline'}"></div><div style="flex:1"><strong>@${l.username}</strong> — ${l.loginTime.toLocaleString('fr-FR')}${l.logoutTime?' → '+l.logoutTime.toLocaleTimeString('fr-FR'):' (en ligne)'}</div></div>`).join('');
+}
+
+// ============ AGENDA ============
+function initAgendaUserSelect(){
+  const wrap=document.getElementById('agenda-user-select');
+  const visible=currentUser&&currentUser.role==='admin'?users:[currentUser].filter(Boolean);
+  wrap.innerHTML=visible.map(u=>`<button class="agenda-user-btn ${u.username===currentAgendaUser?'active':''}" onclick="selectAgendaUser('${u.username}')">${u.fullname||u.username}</button>`).join('');
+  document.getElementById('agenda-current-label').textContent=currentAgendaUser;
+}
+function selectAgendaUser(username){currentAgendaUser=username;document.getElementById('agenda-current-label').textContent=username;initAgendaUserSelect();renderCalendar();}
+function initCalendar(){document.getElementById('evt-date').valueAsDate=new Date();renderCalendar();}
+function getUserEvents(){if(!agendas[currentAgendaUser])agendas[currentAgendaUser]=[];const all=agendas[currentAgendaUser];if(currentUser&&(currentUser.username===currentAgendaUser||currentUser.role==='admin'))return all;return all.filter(e=>e.global);}
+function renderCalendar(){
+  document.getElementById('cal-month-label').textContent=MONTHS[calMonth]+' '+calYear;
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML=DAYS.map(d=>`<div class="cal-day-label">${d}</div>`).join('');
+  const first=new Date(calYear,calMonth,1);let startDay=first.getDay();startDay=startDay===0?6:startDay-1;
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  for(let i=startDay-1;i>=0;i--)grid.innerHTML+=dayCell(calYear,calMonth-1,prevDays-i,true);
+  const days=new Date(calYear,calMonth+1,0).getDate();const today=new Date();
+  for(let d=1;d<=days;d++)grid.innerHTML+=dayCell(calYear,calMonth,d,false,d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear());
+  const rem=42-(startDay+days);for(let d=1;d<=rem;d++)grid.innerHTML+=dayCell(calYear,calMonth+1,d,true);
+  renderEventsList();
+}
+function dayCell(y,m,d,other,isToday=false){const realM=((m%12)+12)%12,realY=y+Math.floor(m/12);const dateStr=`${realY}-${String(realM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const dayEvts=getUserEvents().filter(e=>e.date===dateStr);const cls=[other?'other-month':'',isToday?'today':''].join(' ');const evtHtml=dayEvts.slice(0,2).map(e=>`<div class="day-event ${e.color||'red'}">${e.title}</div>`).join('');return`<div class="cal-day ${cls}"><div class="day-num">${d}</div>${evtHtml}</div>`;}
+function prevMonth(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function nextMonth(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+
+async function addEvent(global){
+  const title=document.getElementById('evt-title').value.trim();
+  const date=document.getElementById('evt-date').value;
+  const time=document.getElementById('evt-time').value;
+  const color=document.getElementById('evt-color').value;
+  const note=document.getElementById('evt-note').value.trim();
+  if(!title||!date){toast('Titre et date requis','error');return;}
+  const eventData={id:'e'+Date.now(),title,date,time,color,note,global,owner:currentAgendaUser};
+  if(!agendas[currentAgendaUser])agendas[currentAgendaUser]=[];
+  agendas[currentAgendaUser].push(eventData);
+  agendas[currentAgendaUser].sort((a,b)=>a.date.localeCompare(b.date));
+  await fbSave('events', eventData.id, eventData);
+  document.getElementById('evt-title').value='';document.getElementById('evt-note').value='';
+  if(global){
+    users.forEach(u=>{if(u.id!==currentUser.id)addNotif(u.id,{icon:'📅',title:'Événement partagé',desc:`${currentUser.fullname} — "${title}" le ${formatDate(date)}`});});
+    toast('Événement partagé et synchronisé Firebase ✅','success');
+  } else {
+    toast('Événement personnel ajouté ✅','success');
+  }
+  renderCalendar();
+}
+
+function renderEventsList(){
+  const list=document.getElementById('events-list');
+  const today=new Date().toISOString().slice(0,10);
+  const upcoming=getUserEvents().filter(e=>e.date>=today);
+  if(!upcoming.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">📅</div><p>Aucun événement à venir.</p></div>';return;}
+  const dotColor=c=>c==='red'?'#e63946':c==='yellow'?'#f4a261':'#2ecc71';
+  list.innerHTML=upcoming.slice(0,10).map(e=>`<div class="event-item"><div class="event-dot" style="background:${dotColor(e.color)}"></div><div style="flex:1"><div class="event-name">${e.title} <span style="font-size:10px;color:var(--muted)">${e.global?'🌐':'🔒'}</span></div><div class="event-date">${formatDate(e.date)}${e.time?' à '+e.time:''}</div></div>${currentUser&&(currentUser.username===currentAgendaUser||currentUser.role==='admin')?`<button class="btn btn-danger" style="padding:3px 9px;font-size:12px" onclick="confirmDelete('event','${e.id}')">×</button>`:''}</div>`).join('');
+}
+function formatDate(str){const[y,m,d]=str.split('-');return`${d}/${m}/${y}`;}
+
+// ============ COMPTE ============
+async function addTx(){
+  const label=document.getElementById('tx-label').value.trim();
+  const amount=parseFloat(document.getElementById('tx-amount').value);
+  const type=document.getElementById('tx-type').value;
+  const date=document.getElementById('tx-date').value||new Date().toISOString().slice(0,10);
+  if(!label||isNaN(amount)||amount<=0){toast('Label et montant valides requis','error');return;}
+  const tx={id:'t'+Date.now(),label,amount,type,date,owner:currentUser.username};
+  transactions.unshift(tx);
+  await fbSave('transactions', tx.id, tx);
+  document.getElementById('tx-label').value='';document.getElementById('tx-amount').value='';
+  renderTx();updateStats();drawChart();
+  toast((type==='credit'?'Entrée':'Sortie')+' enregistrée et synchronisée ✅','success');
+}
+function renderTx(){const list=document.getElementById('tx-list');if(!transactions.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">💳</div><p>Aucune opération.</p></div>';return;}list.innerHTML=transactions.map(t=>`<div class="tx-item"><div class="tx-left"><div class="tx-icon ${t.type}">${t.type==='credit'?'📈':'📉'}</div><div><div class="tx-name">${t.label}</div><div class="tx-date">${formatDate(t.date)}</div></div></div><div style="display:flex;align-items:center;gap:10px"><div class="tx-amount ${t.type}">${t.type==='credit'?'+':'-'}${t.amount.toFixed(2)} €</div><button class="btn btn-danger" style="padding:3px 9px;font-size:12px" onclick="confirmDelete('tx','${t.id}')">×</button></div></div>`).join('');}
+function updateStats(){const cr=transactions.filter(t=>t.type==='credit'),db=transactions.filter(t=>t.type==='debit');const ti=cr.reduce((s,t)=>s+t.amount,0),to=db.reduce((s,t)=>s+t.amount,0),sol=ti-to;document.getElementById('stat-solde').textContent=fmt(sol);document.getElementById('stat-solde').style.color=sol>=0?'var(--success)':'var(--accent2)';document.getElementById('stat-in').textContent=fmt(ti);document.getElementById('stat-out').textContent=fmt(to);document.getElementById('stat-in-count').textContent=cr.length+' opération(s)';document.getElementById('stat-out-count').textContent=db.length+' opération(s)';}
+function fmt(n){return n.toFixed(2).replace('.',',')+' €';}
+function drawChart(){const now=new Date(),months=[];for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:MONTHS[d.getMonth()].slice(0,3)});}const data=months.map(m=>{const txs=transactions.filter(t=>{const[y,mo]=t.date.split('-').map(Number);return y===m.year&&(mo-1)===m.month;});return{...m,credit:txs.filter(t=>t.type==='credit').reduce((s,t)=>s+t.amount,0),debit:txs.filter(t=>t.type==='debit').reduce((s,t)=>s+t.amount,0)};});const maxVal=Math.max(...data.map(d=>Math.max(d.credit,d.debit,1))),H=130;document.getElementById('chart-bars').innerHTML=data.map(d=>`<div style="flex:1;display:flex;gap:2px;align-items:flex-end;height:${H}px"><div class="chart-bar credit-bar" style="height:${Math.max((d.credit/maxVal)*H,4)}px" data-label="+${d.credit.toFixed(0)}€"></div><div class="chart-bar" style="height:${Math.max((d.debit/maxVal)*H,4)}px" data-label="-${d.debit.toFixed(0)}€"></div></div>`).join('');document.getElementById('chart-labels').innerHTML=data.map(d=>`<div class="chart-label">${d.label}</div>`).join('');}
+
+// ============ DELETE ============
+function confirmDelete(type,id){pendingDelete={type,id};const msgs={file:'ce fichier',user:'cet utilisateur',event:'cet événement',tx:'cette opération'};document.getElementById('confirm-msg').textContent='Êtes-vous sûr de vouloir supprimer '+(msgs[type]||'cet élément')+' ?';document.getElementById('confirm-modal').classList.add('open');document.getElementById('confirm-ok').onclick=executeDelete;}
+async function executeDelete(){
+  if(!pendingDelete)return;
+  const{type,id}=pendingDelete;
+  if(type==='file'){files=files.filter(f=>String(f.id)!==String(id));await fbDelete('files',id);renderFiles();}
+  else if(type==='user'){users=users.filter(u=>u.id!==id);await fbDelete('users',id);renderUsersTable();renderDiagram();initAgendaUserSelect();}
+  else if(type==='event'){if(agendas[currentAgendaUser])agendas[currentAgendaUser]=agendas[currentAgendaUser].filter(e=>String(e.id)!==String(id));await fbDelete('events',id);renderCalendar();}
+  else if(type==='tx'){transactions=transactions.filter(t=>String(t.id)!==String(id));await fbDelete('transactions',id);renderTx();updateStats();drawChart();}
+  closeModal();toast('Supprimé et synchronisé Firebase ✅','success');
+}
+function closeModal(){document.getElementById('confirm-modal').classList.remove('open');pendingDelete=null;}
+
+// ============ TOAST ============
+function toast(msg,type='success'){const wrap=document.getElementById('toasts');const el=document.createElement('div');el.className='toast '+type;el.innerHTML=(type==='success'?'✅':'❌')+' '+msg;wrap.appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300);},3500);}
+
+document.getElementById('tx-date').valueAsDate=new Date();
+</script>
+</body>
+</html>
