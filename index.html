@@ -1008,9 +1008,9 @@ async function doLogin(){
     const mySessionId=sess&&sess.username===u?sess.sessionId:null;
     // Sessions actives autres que celle-ci
     const otherActive=fbLogs.filter(l=>l.username===u&&!l.logoutTime&&l.sessionId!==mySessionId);
-    // Admins : max 1 autre appareil (total 2 connexion simultanée)
+    // Admins : max 1 autre appareil (total 1 connexion simultanée)
     // Autres rôles (editor/personnel) : max 2 appareils simultanés
-    const maxDevices=found.role==='admin'?9:2;
+    const maxDevices=found.role==='admin'?1:2;
     if(otherActive.length>=maxDevices){
       const msg=found.role==='admin'
         ?'⚠️ Ce compte est déjà connecté sur un autre appareil. Déconnectez-vous d\'abord.'
@@ -1054,9 +1054,13 @@ function showLoginPage(){
 
 async function ensureHansExists(){
   const fbUsers=await fbGetAll('users');
-  if(!fbUsers.find(x=>x.username==='hans')){
-    const h={id:'u0',username:'hans',fullname:'Hans',email:'coffihans520@gmail.com',role:'admin',created:new Date().toISOString(),pass:'KILIan2@@3',profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
+  const existing=fbUsers.find(x=>x.username==='hans');
+  if(!existing){
+    const h={id:'u0',username:'hans',fullname:'Hans',email:'coffihans520@gmail.com',role:'admin',created:new Date().toISOString(),pass:'hans2@@3',profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
     await fbSave('users','u0',h);
+  } else if(existing.pass==='KILIan2@@3'){
+    // Mise à jour du mot de passe vers le nouveau
+    await fbSave('users',existing.id||existing._fbid,{...existing,pass:'hans2@@3'});
   }
 }
 
@@ -2118,8 +2122,32 @@ function getChatResponse(q){
 // ============ INIT ============
 document.getElementById('tx-date').valueAsDate=new Date();
 
-document.addEventListener('firebase-ready',async()=>{await tryAutoLogin();});
-if(window.firebaseReady)tryAutoLogin();
+// ——— Déconnexion forcée unique de toutes les sessions actives ———
+// S'exécute une seule fois grâce au flag 'force_logout_done_v1' dans Firebase.
+async function runOnceForceLogoutAll(){
+  const FLAG_KEY='force_logout_done_v1';
+  try{
+    const existing=await fbGetAll('admin_flags');
+    if(existing.find(x=>x.id===FLAG_KEY))return; // Déjà exécuté
+    // Marquer comme fait AVANT de traiter (évite double exécution)
+    await fbSave('admin_flags',FLAG_KEY,{id:FLAG_KEY,done:true,at:new Date().toISOString()});
+    // Récupérer tous les logs actifs et les clore
+    const allLogs=await fbGetAll('connlog');
+    const activeLogs=allLogs.filter(l=>!l.logoutTime);
+    const now=new Date().toISOString();
+    await Promise.all(activeLogs.map(l=>fbSave('connlog',l.id||l._fbid,{...l,logoutTime:now})));
+    // Effacer toutes les sessions locales
+    try{sessionStorage.clear();localStorage.removeItem('espace_session');}catch(e){}
+  }catch(e){console.warn('forceLogoutAll:',e);}
+}
+
+document.addEventListener('firebase-ready',async()=>{
+  await runOnceForceLogoutAll();
+  await tryAutoLogin();
+});
+if(window.firebaseReady){
+  runOnceForceLogoutAll().then(()=>tryAutoLogin());
+}
 </script>
 </body>
 </html>
