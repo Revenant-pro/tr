@@ -1001,24 +1001,7 @@ async function doLogin(){
   btn.textContent='Se connecter →';btn.disabled=false;
   if(!found){err.style.display='block';document.getElementById('inp-pass').value='';return;}
 
-  // ——— Vérification du nombre d'appareils connectés ———
-  if(found.role!=='viewer'){
-    const fbLogs=await fbGetAll('connlog');
-    const sess=loadSession();
-    const mySessionId=sess&&sess.username===u?sess.sessionId:null;
-    // Sessions actives autres que celle-ci
-    const otherActive=fbLogs.filter(l=>l.username===u&&!l.logoutTime&&l.sessionId!==mySessionId);
-    // Admins : max 1 autre appareil (total 1 connexion simultanée)
-    // Autres rôles (editor/personnel) : max 2 appareils simultanés
-    const maxDevices=found.role==='admin'?1:2;
-    if(otherActive.length>=maxDevices){
-      const msg=found.role==='admin'
-        ?'⚠️ Ce compte est déjà connecté sur un autre appareil. Déconnectez-vous d\'abord.'
-        :`⚠️ Limite de ${maxDevices} appareils atteinte. Déconnectez-vous d'un autre appareil avant de vous reconnecter.`;
-      sessErr.textContent=msg;sessErr.style.display='block';return;
-    }
-  }
-  // Lecteurs : aucune limite → connexion directe sans vérification
+  // Aucune limite d'appareils — tous les utilisateurs peuvent se connecter en simultané
 
   const sessionId='s'+Date.now();
   found._sessionId=sessionId;
