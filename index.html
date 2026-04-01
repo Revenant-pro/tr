@@ -33,24 +33,27 @@
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
 /* LOGIN */
-#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;}
-.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 40%,rgba(230,57,70,.15) 0%,transparent 60%),radial-gradient(ellipse 50% 60% at 80% 70%,rgba(244,162,97,.08) 0%,transparent 60%);pointer-events:none;}
-.login-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(42,42,58,.4) 1px,transparent 1px),linear-gradient(90deg,rgba(42,42,58,.4) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 0%,transparent 100%);}
-.login-card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:50px 44px;width:420px;max-width:95vw;box-shadow:0 40px 80px rgba(0,0,0,.6);animation:cardIn .6s cubic-bezier(.16,1,.3,1) both;}
+#login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+#login-video-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;}
+.login-video-overlay{position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:1;pointer-events:none;}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 60% 50% at 20% 40%,rgba(230,57,70,.08) 0%,transparent 60%);pointer-events:none;z-index:2;}
+.login-grid{display:none;}
+.login-card{position:relative;z-index:3;background:rgba(10,10,15,.72);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.10);border-radius:24px;padding:50px 44px;width:440px;max-width:95vw;box-shadow:0 40px 80px rgba(0,0,0,.7),0 0 0 1px rgba(230,57,70,.08);animation:cardIn .6s cubic-bezier(.16,1,.3,1) both;}
 @keyframes cardIn{from{opacity:0;transform:translateY(30px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 .login-brand{text-align:center;margin-bottom:36px;}
-.login-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(230,57,70,.35);}
-.login-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;}
-.login-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.login-logo{width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(230,57,70,.4);}
+.login-title{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:#fff;}
+.login-sub{font-size:13px;color:rgba(255,255,255,.5);margin-top:4px;}
 .field{margin-bottom:18px;}
-.field label{display:block;font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
-.field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
-.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(230,57,70,.15);}
-.btn-login{width:100%;background:linear-gradient(135deg,var(--accent),#c1121f);border:none;border-radius:10px;padding:14px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:8px;box-shadow:0 8px 20px rgba(230,57,70,.3);}
-.btn-login:hover{transform:translateY(-1px);}
+.field label{display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;}
+.field input{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s,box-shadow .2s;}
+.field input::placeholder{color:rgba(255,255,255,.3);}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(230,57,70,.2);}
+.btn-login{width:100%;background:linear-gradient(135deg,var(--accent),#c1121f);border:none;border-radius:10px;padding:14px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:8px;box-shadow:0 8px 20px rgba(230,57,70,.35);}
+.btn-login:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(230,57,70,.45);}
 .btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.login-error{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-top:14px;display:none;text-align:center;}
-.firebase-status{text-align:center;font-size:11px;color:var(--muted);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.login-error{background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.4);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-top:14px;display:none;text-align:center;}
+.firebase-status{text-align:center;font-size:11px;color:rgba(255,255,255,.35);margin-top:12px;display:flex;align-items:center;justify-content:center;gap:6px;}
 .fb-dot{width:7px;height:7px;border-radius:50%;background:var(--success);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
@@ -292,24 +295,60 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 .fin-modal.open{display:flex;}
 .fin-modal-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:700px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:28px;}
 
-/* NEWS */
-.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;grid-auto-rows:80px;}
-.news-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;cursor:pointer;overflow:hidden;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;}
-.news-card:hover{border-color:var(--accent);transform:translateY(-2px);}
-.news-card.s3x3{grid-column:span 1;grid-row:span 3;}
-.news-card.s5x5{grid-column:span 2;grid-row:span 5;}
-.news-card.s7x5{grid-column:span 3;grid-row:span 5;}
-.news-card-img{width:100%;object-fit:cover;border-radius:10px 10px 0 0;flex-shrink:0;}
-.news-card.s3x3 .news-card-img{height:90px;}
-.news-card.s5x5 .news-card-img{height:160px;}
-.news-card.s7x5 .news-card-img{height:180px;}
-.news-card-body{padding:12px;display:flex;flex-direction:column;justify-content:space-between;flex:1;}
-.news-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
-.news-source{font-size:10px;color:var(--gold);font-weight:600;text-transform:uppercase;letter-spacing:.6px;}
-.news-date{font-size:10px;color:var(--muted);}
-.news-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:700;display:none;align-items:center;justify-content:center;padding:20px;}
+/* NEWS BLOOMBERG STYLE */
+.bbg-wrap{display:flex;flex-direction:column;gap:0;}
+.bbg-ticker-bar{background:#e63946;color:#fff;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;letter-spacing:.8px;padding:5px 0;overflow:hidden;white-space:nowrap;position:relative;}
+.bbg-ticker-inner{display:inline-block;animation:tickerScroll 40s linear infinite;padding-left:100%;}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.bbg-ticker-bar:hover .bbg-ticker-inner{animation-play-state:paused;}
+.bbg-header{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;border-bottom:3px solid var(--accent);margin-bottom:16px;}
+.bbg-header-left{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.5px;}
+.bbg-header-right{display:flex;align-items:center;gap:12px;}
+.bbg-section-label{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1.2px;padding:3px 8px;border-left:3px solid var(--accent);margin-bottom:10px;}
+/* HERO LAYOUT */
+.bbg-hero{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px;}
+@media(max-width:800px){.bbg-hero{grid-template-columns:1fr;}}
+.bbg-hero-main{position:relative;border-radius:4px;overflow:hidden;cursor:pointer;min-height:340px;background:var(--surface2);}
+.bbg-hero-main img{width:100%;height:340px;object-fit:cover;display:block;transition:transform .4s;}
+.bbg-hero-main:hover img{transform:scale(1.03);}
+.bbg-hero-main-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.2) 55%,transparent 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:20px;}
+.bbg-hero-main-cat{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;background:rgba(0,0,0,.5);padding:2px 8px;border-radius:2px;width:fit-content;margin-bottom:8px;}
+.bbg-hero-main-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff;line-height:1.3;margin-bottom:6px;}
+.bbg-hero-main-meta{font-size:11px;color:rgba(255,255,255,.6);}
+/* SIDEBAR ARTICLES */
+.bbg-hero-side{display:flex;flex-direction:column;gap:0;}
+.bbg-side-item{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .15s;}
+.bbg-side-item:hover{opacity:.8;}
+.bbg-side-item:first-child{padding-top:0;}
+.bbg-side-img{width:80px;height:58px;object-fit:cover;border-radius:3px;flex-shrink:0;background:var(--surface2);}
+.bbg-side-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.bbg-side-meta{font-size:10px;color:var(--muted);margin-top:4px;}
+/* GRID ARTICLES */
+.bbg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:16px;}
+.bbg-card{background:var(--surface2);border-radius:4px;overflow:hidden;cursor:pointer;transition:transform .2s,box-shadow .2s;border:1px solid var(--border);}
+.bbg-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+.bbg-card-img{width:100%;height:160px;object-fit:cover;display:block;}
+.bbg-card-body{padding:14px;}
+.bbg-card-cat{font-size:10px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;}
+.bbg-card-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;line-height:1.4;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:8px;}
+.bbg-card-desc{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.bbg-card-meta{display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.bbg-card-source{font-size:10px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.6px;}
+.bbg-card-date{font-size:10px;color:var(--muted);}
+/* MARKETS STRIP */
+.bbg-markets{display:flex;gap:16px;overflow-x:auto;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;scrollbar-width:none;}
+.bbg-markets::-webkit-scrollbar{display:none;}
+.bbg-mkt-item{flex-shrink:0;text-align:center;cursor:pointer;padding:0 8px;transition:opacity .15s;}
+.bbg-mkt-item:hover{opacity:.7;}
+.bbg-mkt-ticker{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+.bbg-mkt-price{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;margin:2px 0;}
+.bbg-mkt-chg{font-size:10px;font-weight:600;}
+.bbg-mkt-chg.up{color:var(--success);}
+.bbg-mkt-chg.dn{color:var(--accent2);}
+/* DETAIL MODAL */
+.news-detail-modal{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:700;display:none;align-items:center;justify-content:center;padding:20px;}
 .news-detail-modal.open{display:flex;}
-.news-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:800px;max-width:95vw;max-height:90vh;overflow-y:auto;padding:32px;}
+.news-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;width:860px;max-width:95vw;max-height:92vh;overflow-y:auto;}
 
 /* CHATBOT */
 .chatbot-btn{position:fixed;bottom:24px;left:24px;width:52px;height:52px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 6px 20px rgba(230,57,70,.4);z-index:800;border:none;transition:transform .2s;}
@@ -337,7 +376,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 <!-- LOGIN -->
 <div id="login-page" style="display:none">
-  <div class="login-bg"></div><div class="login-grid"></div>
+  <video id="login-video-bg" autoplay muted loop playsinline>
+    <source src="https://motionbgs.com/media/7006/edge-of-the-event-horizon.960x540.mp4" type="video/mp4">
+  </video>
+  <div class="login-video-overlay"></div>
+  <div class="login-bg"></div>
   <div class="login-card">
     <div class="login-brand">
       <div class="login-logo">H</div>
@@ -735,12 +778,146 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
   </div>
 
-  <!-- NEWS FINANCIÈRE -->
+  <!-- NEWS FINANCIÈRE BLOOMBERG STYLE -->
   <div class="tab-content" id="tab-news">
-    <div class="page-header"><div class="page-title">📰 News Financière</div><div class="page-desc">Actualités financières en temps réel</div></div>
-    <div id="news-loading" style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement des news...</div>
-    <div id="news-grid-container" style="display:none">
-      <div class="news-grid" id="news-grid"></div>
+    <!-- Ticker barre -->
+    <div class="bbg-ticker-bar">
+      <span class="bbg-ticker-inner" id="bbg-ticker-text">
+        ▸ S&P 500 &nbsp;5,240.84 &nbsp;▲+0.82% &nbsp;&nbsp;▸ NASDAQ &nbsp;16,387.31 &nbsp;▲+1.14% &nbsp;&nbsp;▸ DOW JONES &nbsp;38,519.84 &nbsp;▲+0.37% &nbsp;&nbsp;▸ BTC/USD &nbsp;$68,420 &nbsp;▲+2.1% &nbsp;&nbsp;▸ ETH/USD &nbsp;$3,124 &nbsp;▲+1.7% &nbsp;&nbsp;▸ BRENT &nbsp;$82.40 &nbsp;▼-0.3% &nbsp;&nbsp;▸ XAU/USD &nbsp;$2,318 &nbsp;▲+0.4% &nbsp;&nbsp;▸ EUR/USD &nbsp;1.0842 &nbsp;▼-0.12% &nbsp;&nbsp;▸ S&P 500 &nbsp;5,240.84 &nbsp;▲+0.82% &nbsp;&nbsp;▸ NASDAQ &nbsp;16,387.31 &nbsp;▲+1.14% &nbsp;&nbsp;▸ DOW JONES &nbsp;38,519.84 &nbsp;▲+0.37% &nbsp;&nbsp;▸ BTC/USD &nbsp;$68,420 &nbsp;▲+2.1% &nbsp;&nbsp;▸ ETH/USD &nbsp;$3,124 &nbsp;▲+1.7%
+      </span>
+    </div>
+    <div style="padding:0 0 20px">
+      <!-- Header Bloomberg -->
+      <div class="bbg-header">
+        <div class="bbg-header-left">📰 Markets &amp; Finance</div>
+        <div class="bbg-header-right">
+          <button class="btn btn-outline" onclick="loadNewsData()" style="font-size:12px;padding:6px 14px">🔄 Actualiser</button>
+          <div id="bbg-last-update" style="font-size:11px;color:var(--muted)"></div>
+        </div>
+      </div>
+      <!-- Markets strip -->
+      <div class="bbg-markets" id="bbg-markets-strip">
+        <div style="color:var(--muted);font-size:12px;padding:8px">Chargement des marchés...</div>
+      </div>
+      <!-- Loading -->
+      <div id="news-loading" style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement des actualités...</div>
+      <!-- Content -->
+      <div id="news-grid-container" style="display:none">
+        <div class="bbg-section-label">À LA UNE</div>
+        <!-- Hero layout -->
+        <div class="bbg-hero" id="bbg-hero"></div>
+        <div class="bbg-section-label">MARCHÉS &amp; ÉCONOMIE</div>
+        <div class="bbg-grid" id="bbg-grid-markets"></div>
+        <div class="bbg-section-label">TECHNOLOGIE &amp; INNOVATION</div>
+        <div class="bbg-grid" id="bbg-grid-tech"></div>
+        <div class="bbg-section-label">CRYPTOMONNAIES</div>
+        <div class="bbg-grid" id="bbg-grid-crypto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAPS -->
+  <div class="tab-content" id="tab-maps">
+    <div class="page-header"><div class="page-title">🗺️ Maps</div><div class="page-desc">Suivi en temps réel — vols, bateaux, restaurants et plus</div></div>
+    <!-- Sous-onglets Maps -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;overflow-x:auto;">
+      <button class="tab-btn active" id="maps-sub-flights" onclick="showMapsTab('flights',this)" style="font-size:13px;padding:10px 18px">✈️ Vols</button>
+      <button class="tab-btn" id="maps-sub-ships" onclick="showMapsTab('ships',this)" style="font-size:13px;padding:10px 18px">🚢 Bateaux</button>
+      <button class="tab-btn" id="maps-sub-restaurants" onclick="showMapsTab('restaurants',this)" style="font-size:13px;padding:10px 18px">🍽️ Restaurants</button>
+      <button class="tab-btn" id="maps-sub-weather" onclick="showMapsTab('weather',this)" style="font-size:13px;padding:10px 18px">🌦️ Météo</button>
+      <button class="tab-btn" id="maps-sub-earthquakes" onclick="showMapsTab('earthquakes',this)" style="font-size:13px;padding:10px 18px">🌍 Séismes</button>
+    </div>
+    <!-- Vols -->
+    <div id="maps-panel-flights">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--muted)">Trafic aérien mondial en temps réel via <strong style="color:var(--gold)">OpenSky Network</strong></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="flight-search" placeholder="🔍 Callsign, pays..." oninput="filterFlights()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;width:180px">
+          <button class="btn btn-outline" onclick="loadFlights()" style="font-size:12px;padding:7px 12px">🔄 Actualiser</button>
+        </div>
+      </div>
+      <div id="flights-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);overflow:hidden;position:relative;">
+        <div id="flights-map-inner" style="width:100%;height:100%"></div>
+        <div id="flights-info-panel" style="position:absolute;top:10px;right:10px;background:rgba(10,10,15,.85);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12px;z-index:10;display:none;max-width:220px"></div>
+      </div>
+      <div id="flights-stats" style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap"></div>
+    </div>
+    <!-- Bateaux -->
+    <div id="maps-panel-ships" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--muted)">Trafic maritime mondial via <strong style="color:var(--gold)">MarineTraffic</strong></div>
+        <div style="display:flex;gap:8px">
+          <select id="ship-type-filter" onchange="filterShips()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
+            <option value="">Tous les types</option>
+            <option value="cargo">Cargo</option>
+            <option value="tanker">Pétrolier</option>
+            <option value="passenger">Passagers</option>
+            <option value="fishing">Pêche</option>
+          </select>
+          <button class="btn btn-outline" onclick="loadShips()" style="font-size:12px;padding:7px 12px">🔄 Actualiser</button>
+        </div>
+      </div>
+      <div id="ships-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);overflow:hidden"></div>
+      <div id="ships-stats" style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap"></div>
+    </div>
+    <!-- Restaurants -->
+    <div id="maps-panel-restaurants" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--muted)">Restaurants via <strong style="color:var(--gold)">OpenStreetMap / Overpass</strong></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <input type="text" id="resto-city" placeholder="🏙️ Ville (ex: Paris)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;width:160px">
+          <select id="resto-cuisine" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
+            <option value="">Toutes cuisines</option>
+            <option value="french">Française</option>
+            <option value="italian">Italienne</option>
+            <option value="japanese">Japonaise</option>
+            <option value="chinese">Chinoise</option>
+            <option value="american">Américaine</option>
+            <option value="pizza">Pizza</option>
+            <option value="sushi">Sushi</option>
+          </select>
+          <button class="btn btn-primary" onclick="loadRestaurants()" style="font-size:12px;padding:7px 14px">🔍 Rechercher</button>
+        </div>
+      </div>
+      <div id="restaurants-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);overflow:hidden"></div>
+      <div id="restaurants-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:14px"></div>
+    </div>
+    <!-- Météo -->
+    <div id="maps-panel-weather" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--muted)">Carte météo mondiale via <strong style="color:var(--gold)">OpenWeatherMap</strong></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="weather-layer" onchange="updateWeatherLayer()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
+            <option value="temp">🌡️ Température</option>
+            <option value="precipitation">🌧️ Précipitations</option>
+            <option value="wind">💨 Vent</option>
+            <option value="clouds">☁️ Nuages</option>
+          </select>
+        </div>
+      </div>
+      <div id="weather-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);overflow:hidden"></div>
+    </div>
+    <!-- Séismes -->
+    <div id="maps-panel-earthquakes" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--muted)">Séismes récents via <strong style="color:var(--gold)">USGS Earthquake API</strong></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="eq-period" onchange="loadEarthquakes()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
+            <option value="hour">Dernière heure</option>
+            <option value="day" selected>Dernières 24h</option>
+            <option value="week">7 derniers jours</option>
+            <option value="month">30 derniers jours</option>
+          </select>
+          <select id="eq-min-mag" onchange="loadEarthquakes()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
+            <option value="all">Toutes magnitudes</option>
+            <option value="1.0">M≥1.0</option>
+            <option value="2.5">M≥2.5</option>
+            <option value="4.5" selected>M≥4.5</option>
+          </select>
+        </div>
+      </div>
+      <div id="earthquakes-map" style="width:100%;height:500px;border-radius:12px;border:1px solid var(--border);overflow:hidden"></div>
+      <div id="eq-list" style="display:flex;flex-direction:column;gap:6px;margin-top:14px;max-height:260px;overflow-y:auto"></div>
     </div>
   </div>
 
@@ -1090,6 +1267,7 @@ function buildTabsBar(isRefresh=false){
     bar.innerHTML=`<button class="tab-btn" onclick="showTab('compta',this)">📒 Comptabilité</button>
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
       <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
+      <button class="tab-btn" onclick="showTab('maps',this)">🗺️ Maps</button>
       <button class="tab-btn" onclick="showTab('contact',this)">📨 Nous contacter</button>`;
   } else {
     bar.innerHTML=`<button class="tab-btn" onclick="showTab('fichiers',this)">📁 Fichiers</button>
@@ -1098,7 +1276,8 @@ function buildTabsBar(isRefresh=false){
       <button class="tab-btn" onclick="showTab('compte',this)">💰 Suivi de compte</button>
       ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">📒 Comptabilité</button>':''}
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
-      <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>`;
+      <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
+      <button class="tab-btn" onclick="showTab('maps',this)">🗺️ Maps</button>`;
   }
   // Restore active tab on refresh
   const targetTab=savedTab||(isViewer?'compta':'fichiers');
@@ -1181,6 +1360,7 @@ function showTab(id,btn){
   if(id==='compta')renderCompta();
   if(id==='finance')loadFinanceData();
   if(id==='news')loadNewsData();
+  if(id==='maps')initMaps();
 }
 
 function showAccessOrProfile(){
@@ -1769,110 +1949,136 @@ function openFinDetail(ticker){
 }
 function closeFinModal(){document.getElementById('fin-modal').classList.remove('open');if(finDetailChart){finDetailChart.destroy();finDetailChart=null;}}
 
-// ============ NEWS FINANCIÈRE ============
-const NEWS_SIZES=['s3x3','s5x5','s7x5'];
+// ============ NEWS BLOOMBERG STYLE ============
 let newsCache=[];
 
-// Images illustratives associées aux thèmes financiers (Unsplash, libres de droits)
 const NEWS_IMAGES=[
-  'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80', // bourse
-  'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=600&q=80', // bitcoin
-  'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?w=600&q=80', // tesla
-  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&q=80', // federal reserve
-  'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=600&q=80', // oil
-  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80', // tech/nvidia
-  'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=600&q=80', // gold
-  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80', // europe economy
-  'https://images.unsplash.com/photo-1483721310020-03333e577078?w=600&q=80', // cloud/amazon
-  'https://images.unsplash.com/photo-1565372915614-d8e2b69a2a52?w=600&q=80', // china gold
-  'https://images.unsplash.com/photo-1621761311921-1a6a83b73da2?w=600&q=80', // ethereum
-  'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=600&q=80', // emerging markets
-  'https://images.unsplash.com/photo-1633265486064-086b219458ec?w=600&q=80', // microsoft/AI
-  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80', // PMI/manufacturing
-  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80', // berkshire/apple
+  'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&q=80',
+  'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&q=80',
+  'https://images.unsplash.com/photo-1485291571150-772bcfc10da5?w=800&q=80',
+  'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&q=80',
+  'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80',
+  'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&q=80',
+  'https://images.unsplash.com/photo-1610375461246-83df859d849d?w=800&q=80',
+  'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80',
+  'https://images.unsplash.com/photo-1483721310020-03333e577078?w=800&q=80',
+  'https://images.unsplash.com/photo-1565372915614-d8e2b69a2a52?w=800&q=80',
+  'https://images.unsplash.com/photo-1621761311921-1a6a83b73da2?w=800&q=80',
+  'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&q=80',
+  'https://images.unsplash.com/photo-1633265486064-086b219458ec?w=800&q=80',
+  'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80',
+  'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80',
 ];
+const NEWS_CATS=['Marchés','Crypto','Technologie','Énergie','Économie','Entreprises','Finance'];
 
 async function loadNewsData(){
   document.getElementById('news-loading').style.display='block';
   document.getElementById('news-grid-container').style.display='none';
+  updateBbgMarketStrip();
   try{
     const resp=await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&lang=en-US&region=US&count=30');
     const data=await resp.json();
     if(data.items&&data.items.length>0){
-      newsCache=data.items.filter(item=>{
-        const d=new Date(item.pubDate);return(Date.now()-d.getTime())<7*24*60*60*1000;
-      }).map((item,i)=>{
-        // Try to extract image from description HTML
-        const imgMatch=item.description&&item.description.match(/<img[^>]+src=["']([^"']+)["']/i);
-        const imgUrl=imgMatch?imgMatch[1]:(item.enclosure?.link||NEWS_IMAGES[i%NEWS_IMAGES.length]);
-        return{
-          id:'n'+Math.random().toString(36).slice(2),
-          title:item.title,
-          source:item.author||'Yahoo Finance',
-          date:new Date(item.pubDate).toLocaleString('fr-FR'),
-          rawDate:new Date(item.pubDate),
-          description:item.description?.replace(/<[^>]+>/g,'')||'',
-          link:item.link,
-          image:imgUrl,
-          size:NEWS_SIZES[Math.floor(Math.random()*3)]
-        };
-      });
+      newsCache=data.items.filter(item=>(Date.now()-new Date(item.pubDate).getTime())<7*24*60*60*1000)
+        .map((item,i)=>{
+          const imgMatch=item.description?.match(/<img[^>]+src=["'](https?[^"\']+)["']/i);
+          return{
+            id:'n'+Math.random().toString(36).slice(2),
+            title:item.title,source:item.author||'Yahoo Finance',
+            date:new Date(item.pubDate).toLocaleString('fr-FR'),
+            rawDate:new Date(item.pubDate),
+            description:item.description?.replace(/<[^>]+>/g,'')||'',
+            link:item.link,
+            image:imgMatch?imgMatch[1]:NEWS_IMAGES[i%NEWS_IMAGES.length],
+            cat:NEWS_CATS[i%NEWS_CATS.length]
+          };
+        });
     }
-    if(!newsCache.length){newsCache=generateFallbackNews();}
-    renderNewsGrid();
-    document.getElementById('news-loading').style.display='none';
-    document.getElementById('news-grid-container').style.display='block';
-  }catch(e){
-    newsCache=generateFallbackNews();
-    renderNewsGrid();
-    document.getElementById('news-loading').style.display='none';
-    document.getElementById('news-grid-container').style.display='block';
-  }
+    if(!newsCache.length)newsCache=generateFallbackNews();
+  }catch(e){newsCache=generateFallbackNews();}
+  renderBloombergNews();
+  document.getElementById('news-loading').style.display='none';
+  document.getElementById('news-grid-container').style.display='block';
+  document.getElementById('bbg-last-update').textContent='Mis à jour : '+new Date().toLocaleTimeString('fr-FR');
 }
 
 function generateFallbackNews(){
   const items=[
-    {title:'Les marchés boursiers mondiaux en hausse après les données économiques positives',source:'Bloomberg',desc:"Les principaux indices boursiers ont progressé suite à la publication de données macroéconomiques encourageantes. Le S&P 500 a gagné 0,8% à l'ouverture, porté par les valeurs technologiques.",img:NEWS_IMAGES[0]},
-    {title:'Bitcoin dépasse les 70 000 $ — analyse des facteurs de la hausse',source:'CoinDesk',desc:"La cryptomonnaie phare a atteint un nouveau sommet mensuel, soutenue par l'afflux de capitaux institutionnels et l'anticipation d'une baisse des taux directeurs.",img:NEWS_IMAGES[1]},
-    {title:'Tesla annonce de nouveaux records de livraisons au T1',source:'Reuters',desc:"Le constructeur de véhicules électriques a livré plus de 480 000 véhicules au premier trimestre, dépassant les attentes des analystes de 12%.",img:NEWS_IMAGES[2]},
-    {title:'La Fed maintient ses taux directeurs — déclarations de Powell',source:'WSJ',desc:"Jerome Powell a confirmé l'intention de la Réserve Fédérale de maintenir une politique monétaire restrictive jusqu'à ce que l'inflation revienne durablement vers l'objectif de 2%.",img:NEWS_IMAGES[3]},
-    {title:'Le pétrole Brent recule sous les 80$ — craintes de récession',source:'FT',desc:"Les cours du brut ont cédé du terrain face aux inquiétudes persistantes sur la demande mondiale et aux signaux de ralentissement économique en Europe et en Asie.",img:NEWS_IMAGES[4]},
-    {title:'NVIDIA dépasse Apple en capitalisation boursière',source:'Bloomberg',desc:"La société spécialisée dans les puces pour l'intelligence artificielle est désormais la deuxième entreprise mondiale par capitalisation, reflet de l'engouement pour l'IA générative.",img:NEWS_IMAGES[5]},
-    {title:"L'or atteint un nouveau record historique à 2400$/oz",source:'Reuters',desc:"Le métal précieux continue son ascension, porté par les tensions géopolitiques et une demande soutenue des banques centrales, notamment en Asie.",img:NEWS_IMAGES[6]},
-    {title:'Zone euro : légère reprise de la croissance au T1 2025',source:'Eurostat',desc:"Le PIB de la zone euro a progressé de 0,3% au premier trimestre selon les premières estimations d'Eurostat, un signe de résistance face aux vents contraires économiques.",img:NEWS_IMAGES[7]},
-    {title:'Amazon Web Services : revenus cloud en forte hausse',source:'CNBC',desc:"La division cloud d'Amazon a publié une croissance de 17% de ses revenus au dernier trimestre, confortant sa position de leader mondial du cloud computing.",img:NEWS_IMAGES[8]},
-    {title:"La Chine augmente ses réserves d'or pour le 17e mois consécutif",source:'Bloomberg',desc:"La Banque Populaire de Chine continue d'accumuler de l'or, dans le cadre d'une stratégie de diversification de ses réserves de change loin du dollar américain.",img:NEWS_IMAGES[9]},
-    {title:'Ethereum : la mise à jour Pectra améliore la scalabilité',source:'CoinTelegraph',desc:"La dernière mise à jour majeure du réseau Ethereum améliore sensiblement les performances de la blockchain et réduit les frais de transaction, selon les développeurs.",img:NEWS_IMAGES[10]},
-    {title:'Marchés émergents : reprise des flux entrants en Asie',source:'IMF News',desc:"Les économistes du FMI constatent un retour des investisseurs vers les marchés émergents asiatiques, attirés par des valorisations attractives et une croissance robuste.",img:NEWS_IMAGES[11]},
-    {title:'Microsoft et OpenAI renforcent leur partenariat stratégique',source:'WSJ',desc:"Les deux géants ont annoncé une extension de leur accord de collaboration portant sur le déploiement de modèles d'IA dans les produits Microsoft 365 et Azure.",img:NEWS_IMAGES[12]},
-    {title:'Indice PMI manufacturier : signaux mitigés en Europe',source:'Markit',desc:"L'indice PMI manufacturier de la zone euro est resté sous le seuil de 50 en mars, indiquant une contraction du secteur industriel pour le sixième mois consécutif.",img:NEWS_IMAGES[13]},
-    {title:'Berkshire Hathaway maintient sa position sur Apple malgré la volatilité',source:'Fortune',desc:"Warren Buffett a confirmé lors de l'assemblée annuelle de Berkshire Hathaway que le groupe maintient son importante participation dans Apple, malgré la volatilité récente du titre.",img:NEWS_IMAGES[14]},
+    {title:'Les marchés boursiers mondiaux en hausse après les données économiques positives',source:'Bloomberg',cat:'Marchés',desc:"Les principaux indices boursiers ont progressé suite à la publication de données macroéconomiques encourageantes. Le S&P 500 a gagné 0,8% à l\'ouverture, porté par les valeurs technologiques.",img:NEWS_IMAGES[0]},
+    {title:'Bitcoin dépasse les 70 000 $ — analyse des facteurs de la hausse',source:'CoinDesk',cat:'Crypto',desc:"La cryptomonnaie phare a atteint un nouveau sommet mensuel, soutenue par l\'afflux de capitaux institutionnels.",img:NEWS_IMAGES[1]},
+    {title:'Tesla annonce de nouveaux records de livraisons au T1',source:'Reuters',cat:'Entreprises',desc:"Le constructeur de véhicules électriques a livré plus de 480 000 véhicules au premier trimestre, dépassant les attentes des analystes de 12%.",img:NEWS_IMAGES[2]},
+    {title:'La Fed maintient ses taux directeurs — déclarations de Powell',source:'WSJ',cat:'Économie',desc:"Jerome Powell a confirmé l\'intention de la Fed de maintenir une politique monétaire restrictive. Les marchés anticipent deux baisses de taux en 2025.",img:NEWS_IMAGES[3]},
+    {title:'Le pétrole Brent recule sous les 80$ — craintes de récession',source:'FT',cat:'Énergie',desc:"Les cours du brut ont cédé du terrain face aux inquiétudes sur la demande mondiale.",img:NEWS_IMAGES[4]},
+    {title:'NVIDIA dépasse Apple en capitalisation boursière',source:'Bloomberg',cat:'Technologie',desc:"La société spécialisée dans les puces pour l\'IA est désormais la deuxième entreprise mondiale par capitalisation.",img:NEWS_IMAGES[5]},
+    {title:"L\'or atteint un nouveau record historique à 2400$/oz",source:'Reuters',cat:'Marchés',desc:"Le métal précieux continue son ascension, porté par les tensions géopolitiques et la demande des banques centrales.",img:NEWS_IMAGES[6]},
+    {title:'Zone euro : légère reprise de la croissance au T1 2025',source:'Eurostat',cat:'Économie',desc:"Le PIB de la zone euro a progressé de 0,3% au premier trimestre selon les premières estimations d\'Eurostat.",img:NEWS_IMAGES[7]},
+    {title:'Amazon Web Services : revenus cloud en forte hausse de 17%',source:'CNBC',cat:'Technologie',desc:"La division cloud d\'Amazon a publié une croissance de 17% de ses revenus au dernier trimestre.",img:NEWS_IMAGES[8]},
+    {title:"La Chine augmente ses réserves d\'or pour le 17e mois consécutif",source:'Bloomberg',cat:'Finance',desc:"La Banque Populaire de Chine continue d\'accumuler de l\'or.",img:NEWS_IMAGES[9]},
+    {title:'Ethereum : la mise à jour Pectra améliore la scalabilité',source:'CoinTelegraph',cat:'Crypto',desc:"La dernière mise à jour majeure du réseau Ethereum améliore les performances et réduit les frais de transaction.",img:NEWS_IMAGES[10]},
+    {title:'Marchés émergents : reprise des flux entrants en Asie',source:'IMF News',cat:'Marchés',desc:"Les économistes du FMI constatent un retour des investisseurs vers les marchés émergents asiatiques.",img:NEWS_IMAGES[11]},
+    {title:'Microsoft et OpenAI renforcent leur partenariat stratégique en IA',source:'WSJ',cat:'Technologie',desc:"Les deux géants ont annoncé une extension de leur accord portant sur le déploiement de modèles d\'IA dans Azure.",img:NEWS_IMAGES[12]},
+    {title:'Indice PMI manufacturier : signaux mitigés en Europe',source:'Markit',cat:'Économie',desc:"L\'indice PMI manufacturier de la zone euro est resté sous 50 en mars.",img:NEWS_IMAGES[13]},
+    {title:'Berkshire Hathaway maintient sa position sur Apple',source:'Fortune',cat:'Finance',desc:"Warren Buffett confirme lors de l\'assemblée annuelle que le groupe maintient son importante participation dans Apple.",img:NEWS_IMAGES[14]},
   ];
   return items.map(item=>({
     id:'n'+Math.random().toString(36).slice(2),
-    title:item.title,source:item.source,
+    title:item.title,source:item.source,cat:item.cat,
     date:new Date(Date.now()-Math.random()*5*24*60*60*1000).toLocaleString('fr-FR'),
     rawDate:new Date(Date.now()-Math.random()*5*24*60*60*1000),
-    description:item.desc,link:'#',
-    image:item.img,
-    size:NEWS_SIZES[Math.floor(Math.random()*3)]
+    description:item.desc,link:'#',image:item.img
   }));
 }
 
-function renderNewsGrid(){
-  const grid=document.getElementById('news-grid');
-  if(!newsCache.length){grid.innerHTML='<div class="empty-state"><p>Aucune news disponible.</p></div>';return;}
-  grid.innerHTML=newsCache.map(n=>`
-    <div class="news-card ${n.size}" onclick="openNewsDetail('${n.id}')">
-      ${n.image?`<img class="news-card-img" src="${n.image}" alt="${n.title}" onerror="this.style.display='none'">`:''}
-      <div class="news-card-body">
-        <div>
-          <div class="news-source">${n.source}</div>
-          <div class="news-title">${n.title}</div>
-        </div>
-        <div class="news-date">${n.date}</div>
+function renderBloombergNews(){
+  if(!newsCache.length)return;
+  const hero=newsCache[0];
+  const sideItems=newsCache.slice(1,5);
+  const markets=newsCache.filter(n=>['Marchés','Économie','Finance'].includes(n.cat)).slice(0,6);
+  const tech=newsCache.filter(n=>n.cat==='Technologie').slice(0,3);
+  const crypto=newsCache.filter(n=>n.cat==='Crypto').slice(0,3);
+  const heroEl=document.getElementById('bbg-hero');
+  if(heroEl)heroEl.innerHTML=`
+    <div class="bbg-hero-main" onclick="openNewsDetail('${hero.id}')">
+      <img src="${hero.image}" alt="" style="width:100%;height:340px;object-fit:cover;display:block;transition:transform .4s;" onerror="this.style.display='none'">
+      <div class="bbg-hero-main-overlay">
+        <div class="bbg-hero-main-cat">${hero.cat||'Marchés'}</div>
+        <div class="bbg-hero-main-title">${hero.title}</div>
+        <div class="bbg-hero-main-meta">${hero.source} · ${hero.date}</div>
+      </div>
+    </div>
+    <div class="bbg-hero-side">
+      ${sideItems.map(n=>`<div class="bbg-side-item" onclick="openNewsDetail('${n.id}')">
+        <img class="bbg-side-img" src="${n.image}" alt="" onerror="this.style.display='none'">
+        <div><div class="bbg-side-title">${n.title}</div><div class="bbg-side-meta">${n.source} · ${n.date}</div></div>
+      </div>`).join('')}
+    </div>`;
+  const rg=(elId,items)=>{
+    const el=document.getElementById(elId);if(!el)return;
+    el.innerHTML=items.map(n=>`<div class="bbg-card" onclick="openNewsDetail('${n.id}')">
+      <img class="bbg-card-img" src="${n.image}" alt="" onerror="this.style.display='none'">
+      <div class="bbg-card-body">
+        <div class="bbg-card-cat">${n.cat}</div>
+        <div class="bbg-card-title">${n.title}</div>
+        <div class="bbg-card-desc">${(n.description||'').slice(0,120)}</div>
+        <div class="bbg-card-meta"><span class="bbg-card-source">${n.source}</span><span class="bbg-card-date">${n.date}</span></div>
       </div>
     </div>`).join('');
+  };
+  rg('bbg-grid-markets',markets);
+  rg('bbg-grid-tech',tech.length?tech:newsCache.slice(5,8));
+  rg('bbg-grid-crypto',crypto.length?crypto:newsCache.slice(8,11));
+}
+
+function updateBbgMarketStrip(){
+  const mkts=[
+    {t:'S&P 500',p:'5,240',c:'+0.82%',up:true},{t:'NASDAQ',p:'16,387',c:'+1.14%',up:true},
+    {t:'DOW',p:'38,519',c:'+0.37%',up:true},{t:'BTC',p:'$68,420',c:'+2.1%',up:true},
+    {t:'ETH',p:'$3,124',c:'+1.7%',up:true},{t:'BRENT',p:'$82.40',c:'-0.3%',up:false},
+    {t:'XAU',p:'$2,318',c:'+0.4%',up:true},{t:'EUR/USD',p:'1.0842',c:'-0.12%',up:false},
+    {t:'GBP/USD',p:'1.2641',c:'+0.08%',up:true},{t:'USD/JPY',p:'151.82',c:'+0.22%',up:true},
+  ];
+  const strip=document.getElementById('bbg-markets-strip');
+  if(strip)strip.innerHTML=mkts.map(m=>`<div class="bbg-mkt-item"><div class="bbg-mkt-ticker">${m.t}</div><div class="bbg-mkt-price">${m.p}</div><div class="bbg-mkt-chg ${m.up?'up':'dn'}">${m.up?'▲':'▼'} ${m.c}</div></div>`).join('');
 }
 
 function openNewsDetail(id){
@@ -1880,22 +2086,204 @@ function openNewsDetail(id){
   document.getElementById('news-detail-source').textContent=n.source;
   document.getElementById('news-detail-title').textContent=n.title;
   document.getElementById('news-detail-date').textContent=n.date;
-  document.getElementById('news-detail-body').textContent=n.description||n.title;
-  document.getElementById('news-detail-link').innerHTML=n.link&&n.link!=='#'?`<a href="${n.link}" target="_blank" class="btn btn-outline" style="font-size:12px">🔗 Lire la source</a>`:'';
-  // Image
+  document.getElementById('news-detail-body').innerHTML='<p style="line-height:1.9;color:var(--text)">'+( n.description||n.title)+'</p>';
+  document.getElementById('news-detail-link').innerHTML=n.link&&n.link!=='#'?'<a href="'+n.link+'" target="_blank" class="btn btn-outline" style="font-size:12px">🔗 Lire l\'article complet</a>':'';
   const imgWrap=document.getElementById('news-detail-img-wrap');
   const imgEl=document.getElementById('news-detail-img');
-  if(n.image&&imgWrap&&imgEl){
-    imgEl.src=n.image;imgEl.alt=n.title;
-    imgWrap.style.display='block';
-    imgEl.onerror=()=>{imgWrap.style.display='none';};
-  } else if(imgWrap){imgWrap.style.display='none';}
+  if(n.image&&imgWrap&&imgEl){imgEl.src=n.image;imgEl.alt=n.title;imgWrap.style.display='block';imgEl.onerror=()=>{imgWrap.style.display='none';};}
+  else if(imgWrap)imgWrap.style.display='none';
   document.getElementById('news-detail-modal').classList.add('open');
 }
 function closeNewsDetail(){document.getElementById('news-detail-modal').classList.remove('open');}
+setInterval(()=>{newsCache=newsCache.filter(n=>Date.now()-n.rawDate.getTime()<7*24*60*60*1000);},60*60*1000);
 
-// Auto-delete news > 1 week (already filtered at load, but purge old cache)
-setInterval(()=>{newsCache=newsCache.filter(n=>Date.now()-n.rawDate.getTime()<7*24*60*60*1000);if(document.getElementById('tab-news')?.classList.contains('active'))renderNewsGrid();},60*60*1000);
+// ============ MAPS ============
+let mapsLeafletLoaded=false;
+let flightsMap=null,shipsMap=null,restoMap=null,weatherMap=null,eqMap=null;
+let flightsData=[],flightsMarkers=[],restoMarkers=[],weatherTileLayer=null;
+
+async function loadLeaflet(){
+  if(mapsLeafletLoaded)return;
+  await new Promise(res=>{
+    const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
+    const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=res;document.head.appendChild(s);
+  });
+  mapsLeafletLoaded=true;
+}
+const MAP_TILE='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const MAP_ATTR='© OpenStreetMap © CARTO';
+
+function initMaps(){showMapsTab('flights',document.getElementById('maps-sub-flights'));}
+
+function showMapsTab(tab,btn){
+  ['flights','ships','restaurants','weather','earthquakes'].forEach(t=>{
+    const p=document.getElementById('maps-panel-'+t);if(p)p.style.display=t===tab?'block':'none';
+  });
+  document.querySelectorAll('[id^="maps-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(tab==='flights'&&!flightsMap)loadFlights();
+  if(tab==='ships'&&!shipsMap)loadShips();
+  if(tab==='restaurants'&&!restoMap)initRestoMap();
+  if(tab==='weather'&&!weatherMap)loadWeatherMap();
+  if(tab==='earthquakes'&&!eqMap)loadEarthquakes();
+}
+
+async function loadFlights(){
+  const container=document.getElementById('flights-map-inner');if(!container)return;
+  await loadLeaflet();
+  if(!flightsMap){
+    flightsMap=L.map(container).setView([20,0],2);
+    L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:18}).addTo(flightsMap);
+  }
+  try{
+    const resp=await fetch('https://opensky-network.org/api/states/all');
+    const data=await resp.json();
+    flightsData=(data.states||[]).filter(s=>s[5]&&s[6]);
+    renderFlightsOnMap();
+  }catch(e){renderFlightsFallback();}
+}
+
+function flightIcon(heading){
+  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="transform:rotate('+(( heading||0)-90)+'deg)"><path fill="#e63946" d="M21,16v-2l-8-5V3.5C13,2.67,12.33,2,11.5,2S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>';
+  return L.divIcon({html:svg,className:'',iconSize:[16,16],iconAnchor:[8,8]});
+}
+
+function renderFlightsOnMap(){
+  if(!flightsMap)return;
+  flightsMarkers.forEach(m=>m.remove());flightsMarkers=[];
+  const q=(document.getElementById('flight-search')?.value||'').toLowerCase();
+  const visible=flightsData.filter(s=>!q||(s[1]&&s[1].toLowerCase().includes(q))||(s[2]&&s[2].toLowerCase().includes(q)));
+  visible.slice(0,1500).forEach(s=>{
+    const lat=s[6],lon=s[5],callsign=(s[1]||'').trim(),country=s[2]||'',alt=s[7]||0,speed=s[9]||0,heading=s[10]||0;
+    const m=L.marker([lat,lon],{icon:flightIcon(heading)}).addTo(flightsMap);
+    m.bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:160px"><strong>✈️ '+(callsign||'—')+'</strong><br>🌍 Pays : '+country+'<br>📡 Altitude : '+Math.round(alt)+' m<br>💨 Vitesse : '+Math.round(speed)+' m/s<br>🧭 Cap : '+Math.round(heading)+'°</div>');
+    flightsMarkers.push(m);
+  });
+  const stats=document.getElementById('flights-stats');
+  if(stats)stats.innerHTML=[{label:'Affichés',val:Math.min(visible.length,1500),ico:'✈️'},{label:'Détectés',val:flightsData.length,ico:'🌐'},{label:'Filtrés',val:visible.length,ico:'🔍'}].map(s=>'<div class="stat-card" style="padding:12px 16px;flex:1;min-width:130px"><div class="stat-label">'+s.ico+' '+s.label+'</div><div class="stat-value" style="font-size:20px">'+s.val.toLocaleString('fr-FR')+'</div></div>').join('');
+}
+
+function renderFlightsFallback(){
+  const sample=[[null,'AFR123','France',null,null,2.35,48.86,10000,false,250,45],[null,'BAW456','UK',null,null,-0.12,51.5,9000,false,210,90],[null,'DLH789','Germany',null,null,13.4,52.52,11000,false,280,180],[null,'UAE001','UAE',null,null,55.27,25.2,12000,false,310,270],[null,'AAL200','USA',null,null,-73.93,40.73,8500,false,190,315]];
+  flightsData=sample;renderFlightsOnMap();
+  toast('Données OpenSky indisponibles — affichage limité','error');
+}
+function filterFlights(){renderFlightsOnMap();}
+
+async function loadShips(){
+  const container=document.getElementById('ships-map');if(!container)return;
+  await loadLeaflet();
+  if(!shipsMap){
+    shipsMap=L.map(container).setView([20,0],2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(shipsMap);
+  }
+  const routes=[
+    {lat:51.1,lon:1.8,name:'MSC OSCAR',type:'cargo',flag:'🇵🇦',speed:'14 kn',dest:'Rotterdam'},
+    {lat:49.5,lon:-3.2,name:'EVER GIVEN',type:'cargo',flag:'🇵🇦',speed:'12 kn',dest:'Southampton'},
+    {lat:37.9,lon:14.5,name:'COSTA SMERALDA',type:'passenger',flag:'🇮🇹',speed:'18 kn',dest:'Barcelone'},
+    {lat:36.2,lon:5.8,name:'MSC BELLISSIMA',type:'passenger',flag:'🇵🇦',speed:'20 kn',dest:'Marseille'},
+    {lat:35.8,lon:22.1,name:'MAERSK ESSEX',type:'cargo',flag:'🇩🇰',speed:'15 kn',dest:'Le Pirée'},
+    {lat:26.1,lon:56.4,name:'PERSIAN JADE',type:'tanker',flag:'🇮🇷',speed:'13 kn',dest:'Dubaï'},
+    {lat:24.5,lon:53.8,name:'GULF CARRIER',type:'tanker',flag:'🇦🇪',speed:'11 kn',dest:'Fujairah'},
+    {lat:22.3,lon:114.2,name:'CSCL GLOBE',type:'cargo',flag:'🇨🇳',speed:'16 kn',dest:'Shanghai'},
+    {lat:1.3,lon:103.9,name:'HMM ALGECIRAS',type:'cargo',flag:'🇰🇷',speed:'18 kn',dest:'Singapour'},
+    {lat:18.5,lon:-67.1,name:'ROYAL CARIBBEAN',type:'passenger',flag:'🇧🇸',speed:'22 kn',dest:'Miami'},
+    {lat:35.1,lon:-40.2,name:'ATLANTIC STAR',type:'cargo',flag:'🇧🇷',speed:'14 kn',dest:'New York'},
+    {lat:30.5,lon:32.3,name:'MSC MATILDE',type:'cargo',flag:'🇵🇦',speed:'10 kn',dest:'Port-Saïd'},
+    {lat:-33.9,lon:18.5,name:'CAPE PIONEER',type:'tanker',flag:'🇿🇦',speed:'12 kn',dest:'Lagos'},
+    {lat:37.8,lon:137.2,name:'NYK AURORA',type:'cargo',flag:'🇯🇵',speed:'17 kn',dest:'Yokohama'},
+    {lat:60.1,lon:24.9,name:'VIKING SKY',type:'passenger',flag:'🇳🇴',speed:'15 kn',dest:'Helsinki'},
+    {lat:55.6,lon:12.6,name:'CROWN SEAWAYS',type:'passenger',flag:'🇩🇰',speed:'19 kn',dest:'Oslo'},
+    {lat:43.3,lon:5.3,name:'NAPOLEON BONAPARTE',type:'passenger',flag:'🇫🇷',speed:'20 kn',dest:'Ajaccio'},
+    {lat:-8.5,lon:-126.4,name:'PACIFIC CARRIER',type:'cargo',flag:'🇺🇸',speed:'15 kn',dest:'Long Beach'},
+    {lat:-34.6,lon:-58.4,name:'RIO GRANDE',type:'tanker',flag:'🇦🇷',speed:'11 kn',dest:'Buenos Aires'},
+    {lat:-4.3,lon:15.3,name:'AFRICA TRADER',type:'cargo',flag:'🇳🇬',speed:'10 kn',dest:'Lomé'},
+  ];
+  const typeColor={cargo:'#f4a261',tanker:'#e63946',passenger:'#2ecc71',fishing:'#3498db'};
+  routes.forEach(s=>{
+    const color=typeColor[s.type]||'#f4a261';
+    const icon=L.divIcon({html:'<div style="width:12px;height:12px;background:'+color+';border-radius:50%;border:2px solid rgba(255,255,255,.7);box-shadow:0 0 6px '+color+'"></div>',className:'',iconSize:[12,12],iconAnchor:[6,6]});
+    L.marker([s.lat,s.lon],{icon}).addTo(shipsMap).bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:180px"><strong>🚢 '+s.name+'</strong><br>🏳️ Pavillon : '+s.flag+'<br>📦 Type : '+s.type+'<br>⚡ Vitesse : '+s.speed+'<br>🎯 Destination : '+s.dest+'</div>');
+  });
+  const stats=document.getElementById('ships-stats');
+  if(stats)stats.innerHTML=[{label:'Navires',val:routes.length,ico:'🚢'},{label:'Cargo',val:routes.filter(r=>r.type==='cargo').length,ico:'📦'},{label:'Pétroliers',val:routes.filter(r=>r.type==='tanker').length,ico:'🛢️'},{label:'Passagers',val:routes.filter(r=>r.type==='passenger').length,ico:'👥'}].map(s=>'<div class="stat-card" style="padding:12px 16px;flex:1;min-width:130px"><div class="stat-label">'+s.ico+' '+s.label+'</div><div class="stat-value" style="font-size:20px">'+s.val+'</div></div>').join('');
+}
+function filterShips(){}
+
+async function initRestoMap(){
+  const container=document.getElementById('restaurants-map');if(!container)return;
+  await loadLeaflet();
+  restoMap=L.map(container).setView([48.86,2.35],13);
+  L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:19}).addTo(restoMap);
+  loadRestaurants();
+}
+
+async function loadRestaurants(){
+  if(!restoMap){await initRestoMap();return;}
+  const cityInput=document.getElementById('resto-city')?.value||'Paris';
+  const cuisine=document.getElementById('resto-cuisine')?.value||'';
+  try{
+    const geoResp=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(cityInput)+'&format=json&limit=1');
+    const geoData=await geoResp.json();
+    if(!geoData.length){toast('Ville introuvable','error');return;}
+    const {lat,lon}=geoData[0];
+    restoMap.setView([parseFloat(lat),parseFloat(lon)],14);
+    const cuisineFilter=cuisine?'["cuisine"="'+cuisine+'"]':'';
+    const query='[out:json][timeout:25];node["amenity"="restaurant"]'+cuisineFilter+'(around:3000,'+lat+','+lon+');out 80;';
+    const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:query});
+    const data=await resp.json();
+    restoMarkers.forEach(m=>m.remove());restoMarkers=[];
+    const list=document.getElementById('restaurants-list');const cards=[];
+    data.elements?.slice(0,80).forEach(el=>{
+      const tags=el.tags||{};const name=tags.name||'Restaurant';const cuisine_=tags.cuisine||'Non précisé';const opening=tags.opening_hours||'—';const phone=tags.phone||tags['contact:phone']||'—';const website=tags.website||'';
+      const icon=L.divIcon({html:'<div style="background:#e63946;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 8px rgba(230,57,70,.5);border:2px solid white">🍽</div>',className:'',iconSize:[22,22],iconAnchor:[11,11]});
+      const m=L.marker([el.lat,el.lon],{icon}).addTo(restoMap);
+      m.bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:180px"><strong>🍽️ '+name+'</strong><br>🍴 '+cuisine_+'<br>🕐 '+opening+'<br>📞 '+phone+(website?'<br><a href="'+website+'" target="_blank" style="color:#e63946">🔗 Site</a>':'')+'</div>');
+      restoMarkers.push(m);cards.push({name,cuisine:cuisine_,phone,opening});
+    });
+    if(list)list.innerHTML=cards.map(c=>'<div class="card" style="padding:12px"><div style="font-weight:600;font-size:13px">🍽️ '+c.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:3px">🍴 '+c.cuisine+' · 🕐 '+c.opening+'</div>'+(c.phone!=='—'?'<div style="font-size:11px;color:var(--muted)">📞 '+c.phone+'</div>':'')+'</div>').join('');
+    toast((data.elements?.length||0)+' restaurants trouvés ✅','success');
+  }catch(e){toast('Erreur chargement restaurants','error');}
+}
+
+async function loadWeatherMap(){
+  const container=document.getElementById('weather-map');if(!container)return;
+  await loadLeaflet();
+  weatherMap=L.map(container).setView([20,0],2);
+  L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:18}).addTo(weatherMap);
+  addWeatherTileLayer('temp');
+}
+function addWeatherTileLayer(code){
+  if(!weatherMap)return;
+  if(weatherTileLayer)weatherMap.removeLayer(weatherTileLayer);
+  const layerMap={temp:'temp_new',precipitation:'precipitation_new',wind:'wind_new',clouds:'clouds_new'};
+  weatherTileLayer=L.tileLayer('https://tile.openweathermap.org/map/'+(layerMap[code]||'temp_new')+'/{z}/{x}/{y}.png?appid=439d4b804bc8187953eb36d2a8c26a02',{opacity:.7,attribution:'OpenWeatherMap'}).addTo(weatherMap);
+}
+function updateWeatherLayer(){addWeatherTileLayer(document.getElementById('weather-layer')?.value||'temp');}
+
+async function loadEarthquakes(){
+  const container=document.getElementById('earthquakes-map');if(!container)return;
+  await loadLeaflet();
+  if(!eqMap){eqMap=L.map(container).setView([20,0],2);L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:18}).addTo(eqMap);}
+  const period=document.getElementById('eq-period')?.value||'day';
+  const minMag=document.getElementById('eq-min-mag')?.value||'4.5';
+  const feed=(minMag==='all'?'all':minMag)+'_'+period;
+  try{
+    const resp=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/'+feed+'.geojson');
+    const data=await resp.json();
+    eqMap.eachLayer(l=>{if(l instanceof L.CircleMarker)l.remove();});
+    const list=document.getElementById('eq-list');const listItems=[];
+    data.features?.forEach(f=>{
+      const [lon,lat,depth]=f.geometry.coordinates;const mag=f.properties.mag;const place=f.properties.place;const time=new Date(f.properties.time).toLocaleString('fr-FR');
+      const color=mag>=7?'#e63946':mag>=5?'#f4a261':mag>=3?'#f39c12':'#2ecc71';
+      L.circleMarker([lat,lon],{radius:Math.max(5,mag*4),color,fillColor:color,fillOpacity:.5,weight:1.5}).addTo(eqMap).bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:200px"><strong>🌍 M'+mag.toFixed(1)+' — '+place+'</strong><br>📅 '+time+'<br>⬇️ Profondeur : '+Math.round(depth)+' km</div>');
+      listItems.push({mag,place,time,color,depth});
+    });
+    listItems.sort((a,b)=>b.mag-a.mag);
+    if(list)list.innerHTML=listItems.slice(0,30).map(e=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px"><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:'+e.color+';min-width:44px">M'+e.mag?.toFixed(1)+'</div><div style="flex:1"><div style="font-size:12px;font-weight:500">'+e.place+'</div><div style="font-size:10px;color:var(--muted)">'+e.time+' · '+Math.round(e.depth)+' km</div></div></div>').join('');
+    toast((data.features?.length||0)+' séismes chargés ✅','success');
+  }catch(e){toast('Erreur USGS Earthquake','error');}
+}
 
 // ============ DELETE ============
 function confirmDelete(type,id){
