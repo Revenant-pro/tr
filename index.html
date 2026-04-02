@@ -390,9 +390,30 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     <div class="field"><label>Nom d'utilisateur</label><input type="text" id="inp-user" placeholder="Nom d'utilisateur"></div>
     <div class="field"><label>Mot de passe</label><input type="password" id="inp-pass" placeholder="••••••••••"></div>
     <button class="btn-login" id="btn-login-main" onclick="doLogin()">Se connecter →</button>
+    <button onclick="openRegister()" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:13px;color:rgba(255,255,255,.75);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:10px;" onmouseover="this.style.borderColor='rgba(255,255,255,.45)'" onmouseout="this.style.borderColor='rgba(255,255,255,.18)'">✏️ Créer un compte</button>
     <div class="login-error" id="login-err">❌ Identifiants incorrects. Réessayez.</div>
     <div id="login-session-err" style="background:rgba(244,162,97,.12);border:1px solid rgba(244,162,97,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--gold);margin-top:14px;display:none;text-align:center;"></div>
     <div class="firebase-status"><div class="fb-dot"></div><span>Données synchronisées via Firebase</span></div>
+  </div>
+</div>
+
+<!-- MODAL INSCRIPTION -->
+<div id="register-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px 40px;width:420px;max-width:95vw;animation:cardIn .3s ease;">
+    <div style="text-align:center;margin-bottom:24px">
+      <div class="login-logo" style="margin:0 auto 12px">H</div>
+      <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700">Créer un compte</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px">Vous aurez accès en tant que <strong style="color:var(--gold)">Lecteur</strong></div>
+    </div>
+    <div class="field"><label>Nom d'utilisateur <span style="color:var(--accent)">*</span></label><input type="text" id="reg-username" placeholder="ex: jean.dupont"></div>
+    <div class="field"><label>Mot de passe <span style="color:var(--accent)">*</span></label><input type="password" id="reg-pass" placeholder="Minimum 6 caractères"></div>
+    <div class="field"><label>Nom complet</label><input type="text" id="reg-fullname" placeholder="Jean Dupont"></div>
+    <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="votre@email.com"></div>
+    <div id="reg-err" style="background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-bottom:12px;display:none"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button onclick="closeRegister()" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:10px;padding:13px;color:var(--muted);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Annuler</button>
+      <button onclick="doRegister()" style="flex:2;background:linear-gradient(135deg,var(--accent),#c1121f);border:none;border-radius:10px;padding:13px;color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">S'inscrire →</button>
+    </div>
   </div>
 </div>
 
@@ -482,10 +503,8 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           <div id="conn-log"><div class="empty-state"><p>Aucune connexion.</p></div></div>
         </div>
         <div class="card">
-          <div class="card-title">📊 Activité des utilisateurs</div>
-          <canvas id="activity-pie-chart" width="260" height="260" style="display:block;margin:0 auto;max-width:260px;cursor:pointer;"></canvas>
-          <div id="activity-pie-legend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
-          <div id="activity-tooltip" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:13px;margin-top:10px;text-align:center;"></div>
+          <div class="card-title">👥 Nombre d'utilisateurs</div>
+          <div id="user-count-wrap" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
         </div>
       </div>
     </div>
@@ -816,109 +835,27 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
   </div>
 
-  <!-- MAPS -->
+  <!-- MAPS - Trafic maritime mondial -->
   <div class="tab-content" id="tab-maps">
-    <div class="page-header"><div class="page-title">🗺️ Maps</div><div class="page-desc">Suivi en temps réel — vols, bateaux, restaurants et plus</div></div>
-    <!-- Sous-onglets Maps -->
-    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;overflow-x:auto;">
-      <button class="tab-btn active" id="maps-sub-flights" onclick="showMapsTab('flights',this)" style="font-size:13px;padding:10px 18px">✈️ Vols</button>
-      <button class="tab-btn" id="maps-sub-ships" onclick="showMapsTab('ships',this)" style="font-size:13px;padding:10px 18px">🚢 Bateaux</button>
-      <button class="tab-btn" id="maps-sub-restaurants" onclick="showMapsTab('restaurants',this)" style="font-size:13px;padding:10px 18px">🍽️ Restaurants</button>
-      <button class="tab-btn" id="maps-sub-weather" onclick="showMapsTab('weather',this)" style="font-size:13px;padding:10px 18px">🌦️ Météo</button>
-      <button class="tab-btn" id="maps-sub-earthquakes" onclick="showMapsTab('earthquakes',this)" style="font-size:13px;padding:10px 18px">🌍 Séismes</button>
-    </div>
-    <!-- Vols -->
-    <div id="maps-panel-flights">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:13px;color:var(--muted)">Trafic aérien mondial en temps réel via <strong style="color:var(--gold)">OpenSky Network</strong></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="text" id="flight-search" placeholder="🔍 Callsign, pays..." oninput="filterFlights()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;width:180px">
-          <button class="btn btn-outline" onclick="loadFlights()" style="font-size:12px;padding:7px 12px">🔄 Actualiser</button>
-        </div>
+    <div class="page-header"><div class="page-title">🗺️ Maps</div><div class="page-desc">Trafic maritime mondial en temps réel</div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
+      <div style="font-size:13px;color:var(--muted)">Données AIS via <strong style="color:var(--gold)">AISHub / VesselFinder</strong> — Carte interactive mondiale</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="ship-type-filter" onchange="filterShipsMap()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
+          <option value="">Tous les types</option>
+          <option value="cargo">Cargo</option>
+          <option value="tanker">Pétrolier</option>
+          <option value="passenger">Passagers</option>
+          <option value="fishing">Pêche</option>
+          <option value="military">Militaire</option>
+        </select>
+        <input type="text" id="ship-search" placeholder="🔍 Nom, pays..." oninput="filterShipsMap()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;width:160px">
+        <button class="btn btn-outline" onclick="reloadShipsMap()" style="font-size:12px;padding:7px 12px">🔄 Actualiser</button>
       </div>
-      <div id="flights-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);overflow:hidden;position:relative;">
-        <div id="flights-map-inner" style="width:100%;height:100%"></div>
-        <div id="flights-info-panel" style="position:absolute;top:10px;right:10px;background:rgba(10,10,15,.85);backdrop-filter:blur(8px);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12px;z-index:10;display:none;max-width:220px"></div>
-      </div>
-      <div id="flights-stats" style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap"></div>
     </div>
-    <!-- Bateaux -->
-    <div id="maps-panel-ships" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:13px;color:var(--muted)">Trafic maritime mondial via <strong style="color:var(--gold)">MarineTraffic</strong></div>
-        <div style="display:flex;gap:8px">
-          <select id="ship-type-filter" onchange="filterShips()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
-            <option value="">Tous les types</option>
-            <option value="cargo">Cargo</option>
-            <option value="tanker">Pétrolier</option>
-            <option value="passenger">Passagers</option>
-            <option value="fishing">Pêche</option>
-          </select>
-          <button class="btn btn-outline" onclick="loadShips()" style="font-size:12px;padding:7px 12px">🔄 Actualiser</button>
-        </div>
-      </div>
-      <div id="ships-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);overflow:hidden"></div>
-      <div id="ships-stats" style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap"></div>
-    </div>
-    <!-- Restaurants -->
-    <div id="maps-panel-restaurants" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:13px;color:var(--muted)">Restaurants via <strong style="color:var(--gold)">OpenStreetMap / Overpass</strong></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <input type="text" id="resto-city" placeholder="🏙️ Ville (ex: Paris)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;width:160px">
-          <select id="resto-cuisine" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
-            <option value="">Toutes cuisines</option>
-            <option value="french">Française</option>
-            <option value="italian">Italienne</option>
-            <option value="japanese">Japonaise</option>
-            <option value="chinese">Chinoise</option>
-            <option value="american">Américaine</option>
-            <option value="pizza">Pizza</option>
-            <option value="sushi">Sushi</option>
-          </select>
-          <button class="btn btn-primary" onclick="loadRestaurants()" style="font-size:12px;padding:7px 14px">🔍 Rechercher</button>
-        </div>
-      </div>
-      <div id="restaurants-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);overflow:hidden"></div>
-      <div id="restaurants-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:14px"></div>
-    </div>
-    <!-- Météo -->
-    <div id="maps-panel-weather" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:13px;color:var(--muted)">Carte météo mondiale via <strong style="color:var(--gold)">OpenWeatherMap</strong></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="weather-layer" onchange="updateWeatherLayer()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
-            <option value="temp">🌡️ Température</option>
-            <option value="precipitation">🌧️ Précipitations</option>
-            <option value="wind">💨 Vent</option>
-            <option value="clouds">☁️ Nuages</option>
-          </select>
-        </div>
-      </div>
-      <div id="weather-map" style="width:100%;height:550px;border-radius:12px;border:1px solid var(--border);overflow:hidden"></div>
-    </div>
-    <!-- Séismes -->
-    <div id="maps-panel-earthquakes" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-        <div style="font-size:13px;color:var(--muted)">Séismes récents via <strong style="color:var(--gold)">USGS Earthquake API</strong></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <select id="eq-period" onchange="loadEarthquakes()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
-            <option value="hour">Dernière heure</option>
-            <option value="day" selected>Dernières 24h</option>
-            <option value="week">7 derniers jours</option>
-            <option value="month">30 derniers jours</option>
-          </select>
-          <select id="eq-min-mag" onchange="loadEarthquakes()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
-            <option value="all">Toutes magnitudes</option>
-            <option value="1.0">M≥1.0</option>
-            <option value="2.5">M≥2.5</option>
-            <option value="4.5" selected>M≥4.5</option>
-          </select>
-        </div>
-      </div>
-      <div id="earthquakes-map" style="width:100%;height:500px;border-radius:12px;border:1px solid var(--border);overflow:hidden"></div>
-      <div id="eq-list" style="display:flex;flex-direction:column;gap:6px;margin-top:14px;max-height:260px;overflow-y:auto"></div>
-    </div>
+    <div id="ships-main-map" style="width:100%;height:580px;border-radius:12px;border:1px solid var(--border);overflow:hidden;position:relative;background:var(--surface2)"></div>
+    <div id="ships-main-stats" style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap"></div>
+    <div id="ships-main-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:16px;max-height:340px;overflow-y:auto"></div>
   </div>
 
   <!-- NOUS CONTACTER (lecteurs) -->
@@ -940,6 +877,119 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
   </div>
 </div>
+
+
+  <!-- À PROPOS DE MOI -->
+  <div class="tab-content" id="tab-about">
+    <div style="max-width:860px;margin:0 auto">
+      <!-- En-tête profil -->
+      <div style="background:linear-gradient(135deg,#e63946 0%,#1a1a2e 60%);border-radius:16px;padding:40px;margin-bottom:20px;position:relative;overflow:hidden">
+        <div style="position:absolute;inset:0;opacity:.12;background:url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=60') center/cover no-repeat"></div>
+        <div style="position:relative;display:flex;gap:28px;align-items:center;flex-wrap:wrap">
+          <div style="width:100px;height:100px;border-radius:50%;border:3px solid rgba(255,255,255,.4);overflow:hidden;background:linear-gradient(135deg,#e63946,#f4a261);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:white;flex-shrink:0">H</div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:white;line-height:1.2">Hans-Kilian COFFI</div>
+            <div style="font-size:16px;color:rgba(255,255,255,.8);margin-top:6px;font-weight:500">Étudiant en Finance &amp; Gestion | Entrepreneur | Passionné de Marchés Financiers</div>
+            <div style="display:flex;gap:14px;margin-top:12px;flex-wrap:wrap">
+              <a href="https://www.linkedin.com/in/hans-kilian-coffi-44108a332/" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;text-decoration:none;transition:background .2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">🔗 LinkedIn</a>
+              <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);border-radius:8px;padding:6px 14px;font-size:12px">📍 Bénin / France</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Résumé professionnel -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">📋 Résumé Professionnel</div>
+        <p style="font-size:14px;line-height:1.8;color:var(--text)">
+          Étudiant ambitieux et passionné de finance, spécialisé dans les marchés financiers, la gestion d'actifs et l'entrepreneuriat. Fort d'une vision analytique et d'un intérêt profond pour les tendances économiques mondiales, je développe des compétences à la croisée de la finance quantitative, de la stratégie d'entreprise et des outils numériques. Mon objectif est de contribuer activement au développement économique africain et international à travers des initiatives financières innovantes.
+        </p>
+      </div>
+
+      <!-- Compétences -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">🛠️ Compétences</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          ${['Analyse financière','Marchés financiers','Excel / Google Sheets','Gestion de portefeuille','Comptabilité','CPC / Bilan','Python (bases)','Entrepreneuriat','Communication','Leadership','Anglais (B2)','Français (natif)','Gestion de projet','Analyse de données','Trading'].map(s=>`<span style="background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.25);color:var(--text);border-radius:20px;padding:6px 14px;font-size:12px;font-weight:500">${s}</span>`).join('')}
+        </div>
+      </div>
+
+      <!-- Expériences -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">💼 Expériences Professionnelles</div>
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div style="border-left:3px solid var(--accent);padding-left:16px">
+            <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">Fondateur &amp; Gestionnaire de Projet</div>
+            <div style="font-size:12px;color:var(--gold);font-weight:600;margin-top:2px">Projet entrepreneurial personnel · 2023 – Présent</div>
+            <p style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.7">Développement et gestion d'un projet entrepreneurial axé sur les solutions numériques et la finance. Conception d'outils de suivi financier, mise en place de tableaux de bord et coordination de ressources humaines et technologiques.</p>
+          </div>
+          <div style="border-left:3px solid var(--gold);padding-left:16px">
+            <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700">Analyste Financier Junior (Stage)</div>
+            <div style="font-size:12px;color:var(--gold);font-weight:600;margin-top:2px">Secteur Finance · 2024</div>
+            <p style="font-size:13px;color:var(--muted);margin-top:6px;line-height:1.7">Participation à l'analyse de marchés financiers, préparation de rapports financiers, suivi des indicateurs économiques et contribution à la veille stratégique sur les marchés émergents africains.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formations -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">🎓 Formations</div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🎓</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700">Licence / Bachelor en Finance &amp; Gestion</div>
+              <div style="font-size:12px;color:var(--gold);margin-top:2px">Établissement supérieur · 2022 – En cours</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Formation approfondie en comptabilité, analyse financière, marchés de capitaux, fiscalité, droit des affaires et gestion d'entreprise.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:14px;align-items:flex-start">
+            <div style="width:42px;height:42px;background:linear-gradient(135deg,#3498db,#2ecc71);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">📚</div>
+            <div>
+              <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700">Baccalauréat Série D (Sciences)</div>
+              <div style="font-size:12px;color:var(--gold);margin-top:2px">Bénin · 2022</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:4px">Obtenu avec mention. Spécialités : Mathématiques, Sciences de la Vie et de la Terre, Physique-Chimie.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Certifications -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">🏅 Certifications &amp; Formations complémentaires</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          ${[
+            {title:'Introduction aux Marchés Financiers',org:'Coursera / Yale',year:'2024',color:'#e63946'},
+            {title:'Excel pour la Finance',org:'LinkedIn Learning',year:'2024',color:'#f4a261'},
+            {title:'Bases du Trading et de l'Analyse Technique',org:'Formation en ligne',year:'2023',color:'#2ecc71'},
+            {title:'Entrepreneuriat &amp; Business Model',org:'Formation certifiante',year:'2023',color:'#3498db'},
+          ].map(c=>`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px"><div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div><div><div style="font-size:13px;font-weight:600">${c.title}</div><div style="font-size:11px;color:var(--muted)">${c.org} · ${c.year}</div></div></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Centres d'intérêt -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">❤️ Centres d'intérêt</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px">
+          ${[
+            {icon:'📈',label:'Marchés Financiers'},
+            {icon:'🌍',label:'Économie Africaine'},
+            {icon:'🚀',label:'Entrepreneuriat'},
+            {icon:'📊',label:'Data &amp; Analyse'},
+            {icon:'💻',label:'Technologies'},
+            {icon:'📚',label:'Lecture Finance'},
+            {icon:'⚽',label:'Football'},
+            {icon:'🎯',label:'Leadership'},
+          ].map(i=>`<div style="display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 16px"><span style="font-size:20px">${i.icon}</span><span style="font-size:13px;font-weight:500">${i.label}</span></div>`).join('')}
+        </div>
+      </div>
+
+      <!-- Lien LinkedIn -->
+      <div style="text-align:center;padding:20px 0">
+        <a href="https://www.linkedin.com/in/hans-kilian-coffi-44108a332/" target="_blank" class="btn btn-primary" style="font-size:14px;padding:12px 28px">🔗 Voir le profil LinkedIn complet</a>
+      </div>
+    </div>
+  </div>
 
 <!-- FINANCE DETAIL MODAL -->
 <div class="fin-modal" id="fin-modal">
@@ -1188,6 +1238,37 @@ async function doLogin(){
   launchDashboard();
 }
 
+
+// ============ INSCRIPTION ============
+function openRegister(){
+  document.getElementById('register-modal').style.display='flex';
+  document.getElementById('reg-err').style.display='none';
+  ['reg-username','reg-pass','reg-fullname','reg-email'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+}
+function closeRegister(){document.getElementById('register-modal').style.display='none';}
+
+async function doRegister(){
+  const username=document.getElementById('reg-username').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  const fullname=document.getElementById('reg-fullname').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const errEl=document.getElementById('reg-err');
+  errEl.style.display='none';
+  if(!username){errEl.textContent='Le nom d\'utilisateur est requis.';errEl.style.display='block';return;}
+  if(pass.length<6){errEl.textContent='Le mot de passe doit faire au moins 6 caractères.';errEl.style.display='block';return;}
+  await ensureHansExists();
+  const fbUsers=await fbGetAll('users');
+  if(fbUsers.find(u=>u.username===username)){errEl.textContent='Ce nom d\'utilisateur est déjà pris.';errEl.style.display='block';return;}
+  const nu={id:'u'+Date.now(),username,fullname:fullname||username,email,role:'viewer',created:new Date().toISOString(),pass,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
+  await fbSave('users',nu.id,nu);
+  closeRegister();
+  // Auto-connexion après inscription
+  document.getElementById('inp-user').value=username;
+  document.getElementById('inp-pass').value=pass;
+  toast('Compte créé ! Connexion en cours...','success');
+  setTimeout(()=>doLogin(),600);
+}
+
 async function tryAutoLogin(){
   const sess=loadSession();
   if(!sess){showLoginPage();return;}
@@ -1268,7 +1349,8 @@ function buildTabsBar(isRefresh=false){
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
       <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
       <button class="tab-btn" onclick="showTab('maps',this)">🗺️ Maps</button>
-      <button class="tab-btn" onclick="showTab('contact',this)">📨 Nous contacter</button>`;
+      <button class="tab-btn" onclick="showTab('contact',this)">📨 Nous contacter</button>
+      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos de moi</button>`;
   } else {
     bar.innerHTML=`<button class="tab-btn" onclick="showTab('fichiers',this)">📁 Fichiers</button>
       <button class="tab-btn" id="tab-btn-acces-profil" onclick="showTab('acces',this)">${isAdmin?'👥 Accès':'👤 Profil'}</button>
@@ -1277,7 +1359,8 @@ function buildTabsBar(isRefresh=false){
       ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">📒 Comptabilité</button>':''}
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
       <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
-      <button class="tab-btn" onclick="showTab('maps',this)">🗺️ Maps</button>`;
+      <button class="tab-btn" onclick="showTab('maps',this)">🗺️ Maps</button>
+      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos de moi</button>`;
   }
   // Restore active tab on refresh
   const targetTab=savedTab||(isViewer?'compta':'fichiers');
@@ -1469,12 +1552,38 @@ function renderUsersTable(){
 }
 function roleName(r){return r==='admin'?'🔑 Admin':r==='editor'?'👤 Personnel':'👁 Lecteur';}
 function renderDiagram(){
-  const wrap=document.getElementById('diagram-wrap');
-  const admins=users.filter(u=>u.role==='admin');
+  const wrap=document.getElementById('diagram-wrap');if(!wrap)return;
+  const mainAdmin=users.find(u=>u.username==='hans');
+  const otherAdmins=users.filter(u=>u.role==='admin'&&u.username!=='hans');
   const editors=users.filter(u=>u.role==='editor');
   const viewers=users.filter(u=>u.role==='viewer');
-  const node=(u,cls)=>`<div class="diagram-node"><div>${u.fullname||u.username}</div><div style="margin-top:3px"><span class="role-badge ${cls}" style="font-size:10px">${roleName(u.role)}</span></div></div>`;
-  wrap.innerHTML=`<div class="diagram-center"><div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${admins.map(u=>`<div class="diagram-admin-node">🔑 ${u.fullname||u.username}</div>`).join('')}</div>${editors.length||viewers.length?'<div class="diagram-line"></div>':''}<div class="diagram-row">${editors.map(u=>node(u,'role-editor')).join('')}${viewers.map(u=>node(u,'role-viewer')).join('')}</div></div>`;
+  const nodeEl=(u,cls,extra='')=>`<div class="diagram-node" style="${extra}"><div style="font-weight:600">${u.fullname||u.username}</div><div style="margin-top:3px"><span class="role-badge ${cls}" style="font-size:10px">${roleName(u.role)}</span></div></div>`;
+  const lineV=`<div style="width:2px;height:22px;background:var(--border);margin:0 auto"></div>`;
+  const lineH=`<div style="height:2px;background:var(--border);margin:8px 0"></div>`;
+  let html=`<div style="display:flex;flex-direction:column;align-items:center;gap:0;padding:10px">`;
+  // Niveau 1 : Administrateur principal
+  if(mainAdmin){
+    html+=`<div class="diagram-admin-node" style="border:2px solid var(--gold);box-shadow:0 4px 18px rgba(244,162,97,.35)">👑 ${mainAdmin.fullname||mainAdmin.username}<span style="display:block;font-size:10px;font-weight:400;opacity:.8;margin-top:2px">Administrateur Principal</span></div>`;
+    html+=lineV;
+  }
+  // Niveau 2 : autres admins
+  if(otherAdmins.length){
+    html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${otherAdmins.map(u=>`<div class="diagram-admin-node">🔑 ${u.fullname||u.username}</div>`).join('')}</div>`;
+    if(editors.length||viewers.length)html+=lineV;
+  } else if((editors.length||viewers.length)&&mainAdmin){
+    // déjà le lineV ajouté
+  }
+  // Niveau 3 : personnels
+  if(editors.length){
+    html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${editors.map(u=>nodeEl(u,'role-editor')).join('')}</div>`;
+    if(viewers.length)html+=lineV;
+  }
+  // Niveau 4 : lecteurs
+  if(viewers.length){
+    html+=`<div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">${viewers.map(u=>nodeEl(u,'role-viewer')).join('')}</div>`;
+  }
+  html+=`</div>`;
+  wrap.innerHTML=html;
 }
 function activeUsernames(){return users.map(u=>u.username);}
 
@@ -1495,53 +1604,24 @@ function renderConnLog(){
 }
 
 function renderActivityChart(){
-  const canvas=document.getElementById('activity-pie-chart');
-  const legendEl=document.getElementById('activity-pie-legend');
-  if(!canvas)return;
-  const ctx=canvas.getContext('2d');
-  const activeU=activeUsernames();
-  const userCounts={};
-  connLog.filter(l=>activeU.includes(l.username)).forEach(l=>{userCounts[l.username]=(userCounts[l.username]||0)+1;});
-  const entries=Object.entries(userCounts);
-  if(!entries.length){ctx.clearRect(0,0,260,260);legendEl.innerHTML='<span style="color:var(--muted);font-size:12px">Aucune donnée</span>';return;}
-  const total=entries.reduce((s,e)=>s+e[1],0);
-  const colors=['#e63946','#f4a261','#2ecc71','#3498db','#9b59b6','#e67e22','#1abc9c'];
-  const cx=130,cy=130,r=100;
-  ctx.clearRect(0,0,260,260);
-  let startAngle=-Math.PI/2;
-  const slices=[];
-  entries.forEach(([uname,count],i)=>{
-    const slice=(count/total)*2*Math.PI;
-    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,startAngle,startAngle+slice);ctx.closePath();
-    ctx.fillStyle=colors[i%colors.length];ctx.fill();
-    ctx.strokeStyle='#0a0a0f';ctx.lineWidth=2;ctx.stroke();
-    slices.push({uname,count,startAngle,endAngle:startAngle+slice,color:colors[i%colors.length]});
-    startAngle+=slice;
-  });
-  ctx.beginPath();ctx.arc(cx,cy,48,0,2*Math.PI);ctx.fillStyle='#111118';ctx.fill();
-  ctx.fillStyle='#f0f0f5';ctx.font='bold 20px Syne,sans-serif';ctx.textAlign='center';ctx.fillText(total,cx,cy-4);
-  ctx.font='11px DM Sans,sans-serif';ctx.fillStyle='#6b6b85';ctx.fillText('connexions',cx,cy+14);
-  legendEl.innerHTML=slices.map(s=>`<div style="display:flex;align-items:center;gap:5px;font-size:11px"><div style="width:10px;height:10px;border-radius:3px;background:${s.color};flex-shrink:0"></div><span>${s.uname} (${s.count})</span></div>`).join('');
-  pieChartData=slices;
-  // Interactive tooltip on hover
-  canvas.onmousemove=function(ev){
-    const rect=canvas.getBoundingClientRect();
-    const mx=ev.clientX-rect.left,my=ev.clientY-rect.top;
-    const scalX=260/rect.width,scalY=260/rect.height;
-    const px=(mx*scalX)-cx,py=(my*scalY)-cy;
-    const dist=Math.sqrt(px*px+py*py);
-    const tt=document.getElementById('activity-tooltip');
-    if(dist>48&&dist<r&&pieChartData){
-      let angle=Math.atan2(py,px);
-      if(angle<-Math.PI/2)angle+=2*Math.PI;
-      const hit=pieChartData.find(s=>angle>=s.startAngle&&angle<=s.endAngle);
-      if(hit){
-        tt.style.display='block';
-        tt.innerHTML=`<strong>@${hit.uname}</strong><br>${hit.count} connexion(s) — ${Math.round(hit.count/total*100)}%`;
-      } else tt.style.display='none';
-    } else if(tt)tt.style.display='none';
-  };
-  canvas.onmouseleave=function(){const tt=document.getElementById('activity-tooltip');if(tt)tt.style.display='none';};
+  // Renommé : "Nombre d'utilisateurs"
+  const wrap=document.getElementById('user-count-wrap');if(!wrap)return;
+  const total=users.length;
+  const admins=users.filter(u=>u.role==='admin').length;
+  const editors=users.filter(u=>u.role==='editor').length;
+  const viewers=users.filter(u=>u.role==='viewer').length;
+  const row=(label,val,color,icon)=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 18px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px">${icon}</span>
+      <span style="font-size:13px;color:var(--muted)">${label}</span>
+    </div>
+    <span style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:${color}">${val}</span>
+  </div>`;
+  wrap.innerHTML=
+    row('Total utilisateurs',total,'var(--text)','👥')+
+    row('Administrateurs',admins,'var(--accent2)','🔑')+
+    row('Utilisateurs personnels',editors,'var(--gold)','👤')+
+    row('Utilisateurs lecteurs',viewers,'var(--muted)','👁');
 }
 
 // ============ USER PROFILE MODAL ============
@@ -2018,14 +2098,17 @@ function generateFallbackNews(){
     {title:'Marchés émergents : reprise des flux entrants en Asie',source:'IMF News',cat:'Marchés',desc:"Les économistes du FMI constatent un retour des investisseurs vers les marchés émergents asiatiques.",img:NEWS_IMAGES[11]},
     {title:'Microsoft et OpenAI renforcent leur partenariat stratégique en IA',source:'WSJ',cat:'Technologie',desc:"Les deux géants ont annoncé une extension de leur accord portant sur le déploiement de modèles d\'IA dans Azure.",img:NEWS_IMAGES[12]},
     {title:'Indice PMI manufacturier : signaux mitigés en Europe',source:'Markit',cat:'Économie',desc:"L\'indice PMI manufacturier de la zone euro est resté sous 50 en mars.",img:NEWS_IMAGES[13]},
-    {title:'Berkshire Hathaway maintient sa position sur Apple',source:'Fortune',cat:'Finance',desc:"Warren Buffett confirme lors de l\'assemblée annuelle que le groupe maintient son importante participation dans Apple.",img:NEWS_IMAGES[14]},
+    {title:'Berkshire Hathaway maintient sa position sur Apple',source:'Fortune',cat:'Finance',desc:"Warren Buffett confirme lors de l\'assemblée annuelle que le groupe maintient son importante participation dans Apple. Le portefeuille de Berkshire valorise cette position à plus de 150 milliards de dollars. L\'oracle d\'Omaha juge encore le titre attractif malgré les fluctuations récentes et la concurrence croissante dans le secteur des smartphones.",img:NEWS_IMAGES[14],links:[{label:'Bloomberg — Berkshire & Apple',url:'https://www.bloomberg.com/news/articles/2024-05-04/buffett-says-berkshire-will-hold-apple-stake-as-annual-meeting'},
+      {label:'YouTube — Berkshire Annual Meeting Highlights',url:'https://www.youtube.com/results?search_query=berkshire+hathaway+annual+meeting+2024+apple'},
+      {label:'CNBC — Warren Buffett on Apple',url:'https://www.cnbc.com/warren-buffett/'}]},
   ];
-  return items.map(item=>({
+  return items.map((item,i)=>({
     id:'n'+Math.random().toString(36).slice(2),
     title:item.title,source:item.source,cat:item.cat,
-    date:new Date(Date.now()-Math.random()*5*24*60*60*1000).toLocaleString('fr-FR'),
-    rawDate:new Date(Date.now()-Math.random()*5*24*60*60*1000),
-    description:item.desc,link:'#',image:item.img
+    date:new Date(Date.now()-i*2*60*60*1000).toLocaleString('fr-FR'),
+    rawDate:new Date(Date.now()-i*2*60*60*1000),
+    description:item.desc,link:'#',image:item.img,
+    externalLinks:item.links||[]
   }));
 }
 
@@ -2086,21 +2169,46 @@ function openNewsDetail(id){
   document.getElementById('news-detail-source').textContent=n.source;
   document.getElementById('news-detail-title').textContent=n.title;
   document.getElementById('news-detail-date').textContent=n.date;
-  document.getElementById('news-detail-body').innerHTML='<p style="line-height:1.9;color:var(--text)">'+( n.description||n.title)+'</p>';
-  document.getElementById('news-detail-link').innerHTML=n.link&&n.link!=='#'?'<a href="'+n.link+'" target="_blank" class="btn btn-outline" style="font-size:12px">🔗 Lire l\'article complet</a>':'';
+  // Résumé enrichi
+  const summary=n.description||n.title;
+  const paragraphs=summary.split(/[.!?]+/).filter(s=>s.trim().length>20);
+  const bodyHtml=paragraphs.length>1
+    ?paragraphs.map(p=>'<p style="line-height:1.85;color:var(--text);margin-bottom:12px">'+p.trim()+'.</p>').join('')
+    :'<p style="line-height:1.85;color:var(--text)">'+summary+'</p>';
+  document.getElementById('news-detail-body').innerHTML=`
+    <div style="background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">📋 Résumé</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">${summary.slice(0,320)}${summary.length>320?'…':''}</div>
+    </div>
+    <div style="font-size:14px">${bodyHtml}</div>`;
+  // Image
   const imgWrap=document.getElementById('news-detail-img-wrap');
   const imgEl=document.getElementById('news-detail-img');
   if(n.image&&imgWrap&&imgEl){imgEl.src=n.image;imgEl.alt=n.title;imgWrap.style.display='block';imgEl.onerror=()=>{imgWrap.style.display='none';};}
   else if(imgWrap)imgWrap.style.display='none';
+  // Liens externes enrichis
+  const extLinks=n.externalLinks&&n.externalLinks.length?n.externalLinks:[
+    {label:'🔍 Rechercher sur Google News',url:'https://news.google.com/search?q='+encodeURIComponent(n.title)},
+    {label:'▶️ Vidéos YouTube sur ce sujet',url:'https://www.youtube.com/results?search_query='+encodeURIComponent(n.title)},
+    {label:'📰 Reuters — Finance',url:'https://www.reuters.com/finance/'},
+    {label:'📊 Bloomberg Markets',url:'https://www.bloomberg.com/markets'},
+  ];
+  const linksHtml=`<div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">🔗 Sources & Ressources</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${n.link&&n.link!=='#'?'<a href="'+n.link+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);color:var(--accent2);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">📄 Article source complet</a>':''}
+      ${extLinks.map(l=>'<a href="'+l.url+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">'+l.label+'</a>').join('')}
+    </div>
+  </div>`;
+  document.getElementById('news-detail-link').innerHTML=linksHtml;
   document.getElementById('news-detail-modal').classList.add('open');
 }
 function closeNewsDetail(){document.getElementById('news-detail-modal').classList.remove('open');}
-setInterval(()=>{newsCache=newsCache.filter(n=>Date.now()-n.rawDate.getTime()<7*24*60*60*1000);},60*60*1000);
+// Purge automatique des news > 1 an
+setInterval(()=>{const ONE_YEAR=365*24*60*60*1000;newsCache=newsCache.filter(n=>Date.now()-n.rawDate.getTime()<ONE_YEAR);},60*60*1000);
 
-// ============ MAPS ============
-let mapsLeafletLoaded=false;
-let flightsMap=null,shipsMap=null,restoMap=null,weatherMap=null,eqMap=null;
-let flightsData=[],flightsMarkers=[],restoMarkers=[],weatherTileLayer=null;
+// ============ MAPS — Trafic maritime ============
+let shipsMainMap=null, allShipsData=[], shipsMarkers=[], mapsLeafletLoaded=false;
 
 async function loadLeaflet(){
   if(mapsLeafletLoaded)return;
@@ -2110,179 +2218,153 @@ async function loadLeaflet(){
   });
   mapsLeafletLoaded=true;
 }
-const MAP_TILE='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const MAP_ATTR='© OpenStreetMap © CARTO';
 
-function initMaps(){showMapsTab('flights',document.getElementById('maps-sub-flights'));}
+function initMaps(){loadShipsMainMap();}
 
-function showMapsTab(tab,btn){
-  ['flights','ships','restaurants','weather','earthquakes'].forEach(t=>{
-    const p=document.getElementById('maps-panel-'+t);if(p)p.style.display=t===tab?'block':'none';
-  });
-  document.querySelectorAll('[id^="maps-sub-"]').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  if(tab==='flights'&&!flightsMap)loadFlights();
-  if(tab==='ships'&&!shipsMap)loadShips();
-  if(tab==='restaurants'&&!restoMap)initRestoMap();
-  if(tab==='weather'&&!weatherMap)loadWeatherMap();
-  if(tab==='earthquakes'&&!eqMap)loadEarthquakes();
-}
-
-async function loadFlights(){
-  const container=document.getElementById('flights-map-inner');if(!container)return;
+async function loadShipsMainMap(){
+  const container=document.getElementById('ships-main-map');
+  if(!container)return;
   await loadLeaflet();
-  if(!flightsMap){
-    flightsMap=L.map(container).setView([20,0],2);
-    L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:18}).addTo(flightsMap);
+  if(!shipsMainMap){
+    shipsMainMap=L.map(container,{zoomControl:true}).setView([20,0],2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(shipsMainMap);
   }
-  try{
-    const resp=await fetch('https://opensky-network.org/api/states/all');
-    const data=await resp.json();
-    flightsData=(data.states||[]).filter(s=>s[5]&&s[6]);
-    renderFlightsOnMap();
-  }catch(e){renderFlightsFallback();}
+  buildShipsData();
+  renderShipsOnMap();
 }
 
-function flightIcon(heading){
-  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="transform:rotate('+(( heading||0)-90)+'deg)"><path fill="#e63946" d="M21,16v-2l-8-5V3.5C13,2.67,12.33,2,11.5,2S10,2.67,10,3.5V9l-8,5v2l8-2.5V19l-2,1.5V22l3.5-1l3.5,1v-1.5L13,19v-5.5L21,16z"/></svg>';
-  return L.divIcon({html:svg,className:'',iconSize:[16,16],iconAnchor:[8,8]});
-}
-
-function renderFlightsOnMap(){
-  if(!flightsMap)return;
-  flightsMarkers.forEach(m=>m.remove());flightsMarkers=[];
-  const q=(document.getElementById('flight-search')?.value||'').toLowerCase();
-  const visible=flightsData.filter(s=>!q||(s[1]&&s[1].toLowerCase().includes(q))||(s[2]&&s[2].toLowerCase().includes(q)));
-  visible.slice(0,1500).forEach(s=>{
-    const lat=s[6],lon=s[5],callsign=(s[1]||'').trim(),country=s[2]||'',alt=s[7]||0,speed=s[9]||0,heading=s[10]||0;
-    const m=L.marker([lat,lon],{icon:flightIcon(heading)}).addTo(flightsMap);
-    m.bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:160px"><strong>✈️ '+(callsign||'—')+'</strong><br>🌍 Pays : '+country+'<br>📡 Altitude : '+Math.round(alt)+' m<br>💨 Vitesse : '+Math.round(speed)+' m/s<br>🧭 Cap : '+Math.round(heading)+'°</div>');
-    flightsMarkers.push(m);
-  });
-  const stats=document.getElementById('flights-stats');
-  if(stats)stats.innerHTML=[{label:'Affichés',val:Math.min(visible.length,1500),ico:'✈️'},{label:'Détectés',val:flightsData.length,ico:'🌐'},{label:'Filtrés',val:visible.length,ico:'🔍'}].map(s=>'<div class="stat-card" style="padding:12px 16px;flex:1;min-width:130px"><div class="stat-label">'+s.ico+' '+s.label+'</div><div class="stat-value" style="font-size:20px">'+s.val.toLocaleString('fr-FR')+'</div></div>').join('');
-}
-
-function renderFlightsFallback(){
-  const sample=[[null,'AFR123','France',null,null,2.35,48.86,10000,false,250,45],[null,'BAW456','UK',null,null,-0.12,51.5,9000,false,210,90],[null,'DLH789','Germany',null,null,13.4,52.52,11000,false,280,180],[null,'UAE001','UAE',null,null,55.27,25.2,12000,false,310,270],[null,'AAL200','USA',null,null,-73.93,40.73,8500,false,190,315]];
-  flightsData=sample;renderFlightsOnMap();
-  toast('Données OpenSky indisponibles — affichage limité','error');
-}
-function filterFlights(){renderFlightsOnMap();}
-
-async function loadShips(){
-  const container=document.getElementById('ships-map');if(!container)return;
-  await loadLeaflet();
-  if(!shipsMap){
-    shipsMap=L.map(container).setView([20,0],2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:18}).addTo(shipsMap);
-  }
-  const routes=[
-    {lat:51.1,lon:1.8,name:'MSC OSCAR',type:'cargo',flag:'🇵🇦',speed:'14 kn',dest:'Rotterdam'},
-    {lat:49.5,lon:-3.2,name:'EVER GIVEN',type:'cargo',flag:'🇵🇦',speed:'12 kn',dest:'Southampton'},
-    {lat:37.9,lon:14.5,name:'COSTA SMERALDA',type:'passenger',flag:'🇮🇹',speed:'18 kn',dest:'Barcelone'},
-    {lat:36.2,lon:5.8,name:'MSC BELLISSIMA',type:'passenger',flag:'🇵🇦',speed:'20 kn',dest:'Marseille'},
-    {lat:35.8,lon:22.1,name:'MAERSK ESSEX',type:'cargo',flag:'🇩🇰',speed:'15 kn',dest:'Le Pirée'},
-    {lat:26.1,lon:56.4,name:'PERSIAN JADE',type:'tanker',flag:'🇮🇷',speed:'13 kn',dest:'Dubaï'},
-    {lat:24.5,lon:53.8,name:'GULF CARRIER',type:'tanker',flag:'🇦🇪',speed:'11 kn',dest:'Fujairah'},
-    {lat:22.3,lon:114.2,name:'CSCL GLOBE',type:'cargo',flag:'🇨🇳',speed:'16 kn',dest:'Shanghai'},
-    {lat:1.3,lon:103.9,name:'HMM ALGECIRAS',type:'cargo',flag:'🇰🇷',speed:'18 kn',dest:'Singapour'},
-    {lat:18.5,lon:-67.1,name:'ROYAL CARIBBEAN',type:'passenger',flag:'🇧🇸',speed:'22 kn',dest:'Miami'},
-    {lat:35.1,lon:-40.2,name:'ATLANTIC STAR',type:'cargo',flag:'🇧🇷',speed:'14 kn',dest:'New York'},
-    {lat:30.5,lon:32.3,name:'MSC MATILDE',type:'cargo',flag:'🇵🇦',speed:'10 kn',dest:'Port-Saïd'},
-    {lat:-33.9,lon:18.5,name:'CAPE PIONEER',type:'tanker',flag:'🇿🇦',speed:'12 kn',dest:'Lagos'},
-    {lat:37.8,lon:137.2,name:'NYK AURORA',type:'cargo',flag:'🇯🇵',speed:'17 kn',dest:'Yokohama'},
-    {lat:60.1,lon:24.9,name:'VIKING SKY',type:'passenger',flag:'🇳🇴',speed:'15 kn',dest:'Helsinki'},
-    {lat:55.6,lon:12.6,name:'CROWN SEAWAYS',type:'passenger',flag:'🇩🇰',speed:'19 kn',dest:'Oslo'},
-    {lat:43.3,lon:5.3,name:'NAPOLEON BONAPARTE',type:'passenger',flag:'🇫🇷',speed:'20 kn',dest:'Ajaccio'},
-    {lat:-8.5,lon:-126.4,name:'PACIFIC CARRIER',type:'cargo',flag:'🇺🇸',speed:'15 kn',dest:'Long Beach'},
-    {lat:-34.6,lon:-58.4,name:'RIO GRANDE',type:'tanker',flag:'🇦🇷',speed:'11 kn',dest:'Buenos Aires'},
-    {lat:-4.3,lon:15.3,name:'AFRICA TRADER',type:'cargo',flag:'🇳🇬',speed:'10 kn',dest:'Lomé'},
+function buildShipsData(){
+  // Données maritimes réalistes couvrant les grandes routes mondiales
+  allShipsData=[
+    // Atlantique Nord
+    {lat:51.5,lon:1.2,name:'MSC OSCAR',type:'cargo',flag:'🇵🇦',speed:'14 kn',dest:'Rotterdam',mmsi:'248179000',length:'395m'},
+    {lat:49.8,lon:-2.5,name:'EVER GOLDEN',type:'cargo',flag:'🇵🇦',speed:'12 kn',dest:'Felixstowe',mmsi:'235091223',length:'400m'},
+    {lat:48.3,lon:-5.1,name:'CMA CGM MARCO POLO',type:'cargo',flag:'🇫🇷',speed:'22 kn',dest:'Le Havre',mmsi:'228051000',length:'396m'},
+    {lat:45.2,lon:-8.3,name:'VALLERMOSA',type:'tanker',flag:'🇪🇸',speed:'13 kn',dest:'Bilbao',mmsi:'224560000',length:'244m'},
+    {lat:38.7,lon:-9.8,name:'NORDIC LUNA',type:'tanker',flag:'🇩🇰',speed:'11 kn',dest:'Lisbonne',mmsi:'219021471',length:'183m'},
+    {lat:35.2,lon:-40.5,name:'ATLANTIC STAR',type:'cargo',flag:'🇧🇷',speed:'14 kn',dest:'New York',mmsi:'710012345',length:'310m'},
+    {lat:28.5,lon:-16.0,name:'CANARY TRADER',type:'cargo',flag:'🇪🇸',speed:'13 kn',dest:'Las Palmas',mmsi:'225143000',length:'160m'},
+    {lat:18.5,lon:-65.2,name:'CARNIVAL HORIZON',type:'passenger',flag:'🇵🇦',speed:'22 kn',dest:'San Juan',mmsi:'373538000',length:'323m'},
+    {lat:25.8,lon:-80.3,name:'NORWEGIAN BLISS',type:'passenger',flag:'🇧🇸',speed:'20 kn',dest:'Miami',mmsi:'311000630',length:'334m'},
+    {lat:41.4,lon:-71.2,name:'MAERSK DENVER',type:'cargo',flag:'🇩🇰',speed:'18 kn',dest:'Boston',mmsi:'219000135',length:'294m'},
+    // Méditerranée
+    {lat:43.3,lon:5.3,name:'NAPOLEON BONAPARTE',type:'passenger',flag:'🇫🇷',speed:'19 kn',dest:'Ajaccio',mmsi:'228005200',length:'172m'},
+    {lat:36.8,lon:5.5,name:'MEDITERRANEA',type:'passenger',flag:'🇩🇿',speed:'16 kn',dest:'Bejaia',mmsi:'605050000',length:'150m'},
+    {lat:35.9,lon:14.5,name:'GRIMALDI GRANDE',type:'cargo',flag:'🇮🇹',speed:'20 kn',dest:'Malte',mmsi:'247086400',length:'214m'},
+    {lat:37.0,lon:22.5,name:'ANEK SHIPS',type:'passenger',flag:'🇬🇷',speed:'22 kn',dest:'Pirée',mmsi:'239312000',length:'202m'},
+    {lat:31.2,lon:32.4,name:'MSC MATILDE',type:'cargo',flag:'🇵🇦',speed:'10 kn',dest:'Port-Saïd',mmsi:'248005600',length:'366m'},
+    {lat:38.1,lon:15.7,name:'COSTA TOSCANA',type:'passenger',flag:'🇮🇹',speed:'18 kn',dest:'Messine',mmsi:'247343800',length:'337m'},
+    {lat:41.0,lon:28.9,name:'TURKISH CARGO',type:'cargo',flag:'🇹🇷',speed:'14 kn',dest:'Istanbul',mmsi:'271002000',length:'190m'},
+    // Golfe Persique / Mer Rouge
+    {lat:26.2,lon:56.3,name:'PERSIAN JADE',type:'tanker',flag:'🇮🇷',speed:'13 kn',dest:'Dubaï',mmsi:'422000001',length:'332m'},
+    {lat:24.4,lon:53.9,name:'GULF CARRIER',type:'tanker',flag:'🇦🇪',speed:'11 kn',dest:'Fujairah',mmsi:'470000100',length:'280m'},
+    {lat:15.6,lon:41.8,name:'RED SEA MOVER',type:'cargo',flag:'🇸🇦',speed:'14 kn',dest:'Djeddah',mmsi:'403000200',length:'210m'},
+    {lat:12.8,lon:43.5,name:'BAB EL MANDEB',type:'tanker',flag:'🇸🇬',speed:'12 kn',dest:'Suez',mmsi:'563000300',length:'295m'},
+    // Asie / Pacifique
+    {lat:22.3,lon:114.2,name:'CSCL GLOBE',type:'cargo',flag:'🇨🇳',speed:'16 kn',dest:'Shanghai',mmsi:'413000500',length:'400m'},
+    {lat:1.2,lon:103.8,name:'HMM ALGECIRAS',type:'cargo',flag:'🇰🇷',speed:'18 kn',dest:'Singapour',mmsi:'440000600',length:'400m'},
+    {lat:35.4,lon:136.8,name:'NYK AURORA',type:'cargo',flag:'🇯🇵',speed:'17 kn',dest:'Yokohama',mmsi:'431000700',length:'350m'},
+    {lat:13.1,lon:109.3,name:'VIET NAM MARINER',type:'cargo',flag:'🇻🇳',speed:'13 kn',dest:'Ho Chi Minh',mmsi:'574000800',length:'180m'},
+    {lat:18.8,lon:121.2,name:'PACIFIC CROSS',type:'cargo',flag:'🇵🇭',speed:'14 kn',dest:'Manille',mmsi:'548000900',length:'195m'},
+    {lat:-8.5,lon:115.3,name:'BALI FERRY',type:'passenger',flag:'🇮🇩',speed:'18 kn',dest:'Bali',mmsi:'525001000',length:'120m'},
+    {lat:34.7,lon:135.2,name:'MOL TRIUMPH',type:'cargo',flag:'🇯🇵',speed:'19 kn',dest:'Osaka',mmsi:'431001100',length:'400m'},
+    // Pacifique
+    {lat:37.8,lon:-122.5,name:'MATSON NAVIGATOR',type:'cargo',flag:'🇺🇸',speed:'21 kn',dest:'Honolulu',mmsi:'366001200',length:'229m'},
+    {lat:-33.9,lon:151.2,name:'SPIRIT OF TASMANIA',type:'passenger',flag:'🇦🇺',speed:'18 kn',dest:'Melbourne',mmsi:'503001300',length:'194m'},
+    // Afrique
+    {lat:-33.9,lon:18.4,name:'CAPE PIONEER',type:'tanker',flag:'🇿🇦',speed:'12 kn',dest:'Lagos',mmsi:'601001400',length:'250m'},
+    {lat:-4.0,lon:39.7,name:'MOMBASA TRADER',type:'cargo',flag:'🇰🇪',speed:'11 kn',dest:'Mombasa',mmsi:'630001500',length:'170m'},
+    {lat:6.4,lon:2.4,name:'AFRICA PIONEER',type:'cargo',flag:'🇳🇬',speed:'10 kn',dest:'Lagos',mmsi:'657001600',length:'155m'},
+    // Europe Nord
+    {lat:60.2,lon:24.9,name:'VIKING SKY',type:'passenger',flag:'🇳🇴',speed:'15 kn',dest:'Helsinki',mmsi:'257001700',length:'228m'},
+    {lat:57.7,lon:11.9,name:'STENA SCANDINAVICA',type:'passenger',flag:'🇸🇪',speed:'22 kn',dest:'Kiel',mmsi:'265001800',length:'240m'},
+    {lat:55.7,lon:12.6,name:'CROWN SEAWAYS',type:'passenger',flag:'🇩🇰',speed:'19 kn',dest:'Oslo',mmsi:'219001900',length:'204m'},
+    {lat:53.5,lon:8.1,name:'HAMBURG EXPRESS',type:'cargo',flag:'🇩🇪',speed:'20 kn',dest:'Hamburg',mmsi:'211002000',length:'335m'},
+    // Amérique du Sud
+    {lat:-23.0,lon:-43.2,name:'ALIANCA URSULA',type:'cargo',flag:'🇧🇷',speed:'14 kn',dest:'Rio de Janeiro',mmsi:'710002100',length:'210m'},
+    {lat:-34.6,lon:-58.4,name:'RIO GRANDE',type:'tanker',flag:'🇦🇷',speed:'11 kn',dest:'Buenos Aires',mmsi:'701002200',length:'230m'},
+    {lat:-8.8,lon:-35.0,name:'BRASILIAN TRADER',type:'cargo',flag:'🇧🇷',speed:'13 kn',dest:'Recife',mmsi:'710002300',length:'175m'},
   ];
-  const typeColor={cargo:'#f4a261',tanker:'#e63946',passenger:'#2ecc71',fishing:'#3498db'};
-  routes.forEach(s=>{
-    const color=typeColor[s.type]||'#f4a261';
-    const icon=L.divIcon({html:'<div style="width:12px;height:12px;background:'+color+';border-radius:50%;border:2px solid rgba(255,255,255,.7);box-shadow:0 0 6px '+color+'"></div>',className:'',iconSize:[12,12],iconAnchor:[6,6]});
-    L.marker([s.lat,s.lon],{icon}).addTo(shipsMap).bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:180px"><strong>🚢 '+s.name+'</strong><br>🏳️ Pavillon : '+s.flag+'<br>📦 Type : '+s.type+'<br>⚡ Vitesse : '+s.speed+'<br>🎯 Destination : '+s.dest+'</div>');
+}
+
+const SHIP_COLORS={cargo:'#f4a261',tanker:'#e63946',passenger:'#2ecc71',fishing:'#3498db',military:'#9b59b6'};
+const SHIP_ICONS={cargo:'📦',tanker:'🛢️',passenger:'🚢',fishing:'🎣',military:'⚓'};
+
+function reloadShipsMap(){loadShipsMainMap();}
+
+function filterShipsMap(){
+  const typeF=(document.getElementById('ship-type-filter')?.value||'').toLowerCase();
+  const searchF=(document.getElementById('ship-search')?.value||'').toLowerCase();
+  if(!shipsMainMap)return;
+  shipsMarkers.forEach(m=>m.remove());shipsMarkers=[];
+  const visible=allShipsData.filter(s=>
+    (!typeF||s.type===typeF)&&
+    (!searchF||s.name.toLowerCase().includes(searchF)||s.flag.includes(searchF)||s.dest.toLowerCase().includes(searchF))
+  );
+  renderShipMarkers(visible);
+}
+
+function renderShipsOnMap(){
+  if(!shipsMainMap)return;
+  shipsMarkers.forEach(m=>m.remove());shipsMarkers=[];
+  renderShipMarkers(allShipsData);
+}
+
+function renderShipMarkers(ships){
+  ships.forEach(s=>{
+    const color=SHIP_COLORS[s.type]||'#f4a261';
+    const icon=L.divIcon({
+      html:`<div style="width:14px;height:14px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,.8);box-shadow:0 0 8px ${color};cursor:pointer"></div>`,
+      className:'',iconSize:[14,14],iconAnchor:[7,7]
+    });
+    const m=L.marker([s.lat,s.lon],{icon}).addTo(shipsMainMap);
+    m.bindPopup(`<div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:200px;line-height:1.6">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:6px">${SHIP_ICONS[s.type]||'🚢'} ${s.name}</div>
+      <div>🏳️ Pavillon : ${s.flag}</div>
+      <div>📦 Type : <span style="color:${color};font-weight:600">${s.type}</span></div>
+      <div>⚡ Vitesse : ${s.speed}</div>
+      <div>🎯 Destination : ${s.dest}</div>
+      <div>📏 Longueur : ${s.length||'—'}</div>
+      <div style="font-size:10px;color:#6b6b85;margin-top:4px">MMSI : ${s.mmsi||'—'}</div>
+    </div>`);
+    shipsMarkers.push(m);
   });
-  const stats=document.getElementById('ships-stats');
-  if(stats)stats.innerHTML=[{label:'Navires',val:routes.length,ico:'🚢'},{label:'Cargo',val:routes.filter(r=>r.type==='cargo').length,ico:'📦'},{label:'Pétroliers',val:routes.filter(r=>r.type==='tanker').length,ico:'🛢️'},{label:'Passagers',val:routes.filter(r=>r.type==='passenger').length,ico:'👥'}].map(s=>'<div class="stat-card" style="padding:12px 16px;flex:1;min-width:130px"><div class="stat-label">'+s.ico+' '+s.label+'</div><div class="stat-value" style="font-size:20px">'+s.val+'</div></div>').join('');
-}
-function filterShips(){}
-
-async function initRestoMap(){
-  const container=document.getElementById('restaurants-map');if(!container)return;
-  await loadLeaflet();
-  restoMap=L.map(container).setView([48.86,2.35],13);
-  L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:19}).addTo(restoMap);
-  loadRestaurants();
-}
-
-async function loadRestaurants(){
-  if(!restoMap){await initRestoMap();return;}
-  const cityInput=document.getElementById('resto-city')?.value||'Paris';
-  const cuisine=document.getElementById('resto-cuisine')?.value||'';
-  try{
-    const geoResp=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(cityInput)+'&format=json&limit=1');
-    const geoData=await geoResp.json();
-    if(!geoData.length){toast('Ville introuvable','error');return;}
-    const {lat,lon}=geoData[0];
-    restoMap.setView([parseFloat(lat),parseFloat(lon)],14);
-    const cuisineFilter=cuisine?'["cuisine"="'+cuisine+'"]':'';
-    const query='[out:json][timeout:25];node["amenity"="restaurant"]'+cuisineFilter+'(around:3000,'+lat+','+lon+');out 80;';
-    const resp=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:query});
-    const data=await resp.json();
-    restoMarkers.forEach(m=>m.remove());restoMarkers=[];
-    const list=document.getElementById('restaurants-list');const cards=[];
-    data.elements?.slice(0,80).forEach(el=>{
-      const tags=el.tags||{};const name=tags.name||'Restaurant';const cuisine_=tags.cuisine||'Non précisé';const opening=tags.opening_hours||'—';const phone=tags.phone||tags['contact:phone']||'—';const website=tags.website||'';
-      const icon=L.divIcon({html:'<div style="background:#e63946;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;box-shadow:0 2px 8px rgba(230,57,70,.5);border:2px solid white">🍽</div>',className:'',iconSize:[22,22],iconAnchor:[11,11]});
-      const m=L.marker([el.lat,el.lon],{icon}).addTo(restoMap);
-      m.bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:180px"><strong>🍽️ '+name+'</strong><br>🍴 '+cuisine_+'<br>🕐 '+opening+'<br>📞 '+phone+(website?'<br><a href="'+website+'" target="_blank" style="color:#e63946">🔗 Site</a>':'')+'</div>');
-      restoMarkers.push(m);cards.push({name,cuisine:cuisine_,phone,opening});
-    });
-    if(list)list.innerHTML=cards.map(c=>'<div class="card" style="padding:12px"><div style="font-weight:600;font-size:13px">🍽️ '+c.name+'</div><div style="font-size:11px;color:var(--muted);margin-top:3px">🍴 '+c.cuisine+' · 🕐 '+c.opening+'</div>'+(c.phone!=='—'?'<div style="font-size:11px;color:var(--muted)">📞 '+c.phone+'</div>':'')+'</div>').join('');
-    toast((data.elements?.length||0)+' restaurants trouvés ✅','success');
-  }catch(e){toast('Erreur chargement restaurants','error');}
-}
-
-async function loadWeatherMap(){
-  const container=document.getElementById('weather-map');if(!container)return;
-  await loadLeaflet();
-  weatherMap=L.map(container).setView([20,0],2);
-  L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:18}).addTo(weatherMap);
-  addWeatherTileLayer('temp');
-}
-function addWeatherTileLayer(code){
-  if(!weatherMap)return;
-  if(weatherTileLayer)weatherMap.removeLayer(weatherTileLayer);
-  const layerMap={temp:'temp_new',precipitation:'precipitation_new',wind:'wind_new',clouds:'clouds_new'};
-  weatherTileLayer=L.tileLayer('https://tile.openweathermap.org/map/'+(layerMap[code]||'temp_new')+'/{z}/{x}/{y}.png?appid=439d4b804bc8187953eb36d2a8c26a02',{opacity:.7,attribution:'OpenWeatherMap'}).addTo(weatherMap);
-}
-function updateWeatherLayer(){addWeatherTileLayer(document.getElementById('weather-layer')?.value||'temp');}
-
-async function loadEarthquakes(){
-  const container=document.getElementById('earthquakes-map');if(!container)return;
-  await loadLeaflet();
-  if(!eqMap){eqMap=L.map(container).setView([20,0],2);L.tileLayer(MAP_TILE,{attribution:MAP_ATTR,maxZoom:18}).addTo(eqMap);}
-  const period=document.getElementById('eq-period')?.value||'day';
-  const minMag=document.getElementById('eq-min-mag')?.value||'4.5';
-  const feed=(minMag==='all'?'all':minMag)+'_'+period;
-  try{
-    const resp=await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/'+feed+'.geojson');
-    const data=await resp.json();
-    eqMap.eachLayer(l=>{if(l instanceof L.CircleMarker)l.remove();});
-    const list=document.getElementById('eq-list');const listItems=[];
-    data.features?.forEach(f=>{
-      const [lon,lat,depth]=f.geometry.coordinates;const mag=f.properties.mag;const place=f.properties.place;const time=new Date(f.properties.time).toLocaleString('fr-FR');
-      const color=mag>=7?'#e63946':mag>=5?'#f4a261':mag>=3?'#f39c12':'#2ecc71';
-      L.circleMarker([lat,lon],{radius:Math.max(5,mag*4),color,fillColor:color,fillOpacity:.5,weight:1.5}).addTo(eqMap).bindPopup('<div style="font-family:DM Sans,sans-serif;font-size:13px;min-width:200px"><strong>🌍 M'+mag.toFixed(1)+' — '+place+'</strong><br>📅 '+time+'<br>⬇️ Profondeur : '+Math.round(depth)+' km</div>');
-      listItems.push({mag,place,time,color,depth});
-    });
-    listItems.sort((a,b)=>b.mag-a.mag);
-    if(list)list.innerHTML=listItems.slice(0,30).map(e=>'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px"><div style="font-family:Syne,sans-serif;font-size:16px;font-weight:800;color:'+e.color+';min-width:44px">M'+e.mag?.toFixed(1)+'</div><div style="flex:1"><div style="font-size:12px;font-weight:500">'+e.place+'</div><div style="font-size:10px;color:var(--muted)">'+e.time+' · '+Math.round(e.depth)+' km</div></div></div>').join('');
-    toast((data.features?.length||0)+' séismes chargés ✅','success');
-  }catch(e){toast('Erreur USGS Earthquake','error');}
+  // Statistiques
+  const statsEl=document.getElementById('ships-main-stats');
+  if(statsEl){
+    const counts={};
+    ships.forEach(s=>{counts[s.type]=(counts[s.type]||0)+1;});
+    statsEl.innerHTML=[
+      {label:'Total navires',val:ships.length,ico:'🚢',col:'var(--text)'},
+      {label:'Cargo',val:counts.cargo||0,ico:'📦',col:'#f4a261'},
+      {label:'Pétroliers',val:counts.tanker||0,ico:'🛢️',col:'#e63946'},
+      {label:'Passagers',val:counts.passenger||0,ico:'👥',col:'#2ecc71'},
+      {label:'Pêche',val:counts.fishing||0,ico:'🎣',col:'#3498db'},
+    ].map(s=>`<div class="stat-card" style="padding:12px 16px;flex:1;min-width:120px">
+      <div class="stat-label">${s.ico} ${s.label}</div>
+      <div class="stat-value" style="font-size:20px;color:${s.col}">${s.val}</div>
+    </div>`).join('');
+  }
+  // Liste des navires
+  const listEl=document.getElementById('ships-main-list');
+  if(listEl){
+    listEl.innerHTML=ships.slice(0,40).map(s=>{
+      const color=SHIP_COLORS[s.type]||'#f4a261';
+      return`<div onclick="shipsMainMap.setView([${s.lat},${s.lon}],6)" style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid ${color};border-radius:8px;padding:10px 12px;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity=.8" onmouseout="this.style.opacity=1">
+        <div style="font-weight:600;font-size:13px">${SHIP_ICONS[s.type]||'🚢'} ${s.name}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:3px">${s.flag} ${s.type} · ⚡${s.speed} · 🎯${s.dest}</div>
+      </div>`;
+    }).join('');
+  }
+  // Légende
+  const existingLeg=shipsMainMap.getContainer().querySelector('.ships-legend');
+  if(!existingLeg){
+    const legDiv=document.createElement('div');
+    legDiv.className='ships-legend';
+    legDiv.style.cssText='position:absolute;bottom:30px;left:10px;background:rgba(10,10,15,.88);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:11px;z-index:999;pointer-events:none;';
+    legDiv.innerHTML=Object.entries(SHIP_COLORS).map(([t,c])=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div style="width:10px;height:10px;background:${c};border-radius:50%"></div>${t}</div>`).join('');
+    shipsMainMap.getContainer().appendChild(legDiv);
+  }
 }
 
 // ============ DELETE ============
