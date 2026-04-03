@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Espace Personnel</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  (function(){
+    // EmailJS init — service gratuit pour l'envoi d'emails côté client
+    if(window.emailjs) emailjs.init({publicKey:'user_placeholder_key'});
+  })();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <!-- FIREBASE SDK -->
@@ -1247,6 +1254,31 @@ function openRegister(){
 }
 function closeRegister(){document.getElementById('register-modal').style.display='none';}
 
+// ── Envoi d'email de notification à la création d'un compte ──
+// Utilise FormSubmit.co (service gratuit, sans clé API, CORS autorisé)
+async function sendRegistrationNotification(username, fullname, email){
+  try{
+    await fetch('https://formsubmit.co/ajax/h.a.n.s.k.i.l.i.a.n.c.o.f.f.i.1@gmail.com',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        _subject:`Nouvel utilisateur inscrit : ${username}`,
+        _template:'table',
+        _captcha:'false',
+        Utilisateur:username,
+        'Nom complet':fullname||'—',
+        Email:email||'—',
+        Rôle:'Lecteur',
+        "Date d'inscription":new Date().toLocaleString('fr-FR'),
+        Message:`Un nouvel utilisateur vient de créer un compte lecteur sur votre application.`
+      })
+    });
+  }catch(e){
+    // L'échec de l'email ne bloque pas l'inscription
+    console.warn('Notification email non envoyée :',e);
+  }
+}
+
 async function doRegister(){
   const username=document.getElementById('reg-username').value.trim();
   const pass=document.getElementById('reg-pass').value;
@@ -1261,6 +1293,8 @@ async function doRegister(){
   if(fbUsers.find(u=>u.username===username)){errEl.textContent='Ce nom d\'utilisateur est déjà pris.';errEl.style.display='block';return;}
   const nu={id:'u'+Date.now(),username,fullname:fullname||username,email,role:'viewer',created:new Date().toISOString(),pass,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
   await fbSave('users',nu.id,nu);
+  // ── Notification email à l'administrateur ──
+  sendRegistrationNotification(username, fullname||username, email);
   closeRegister();
   // Auto-connexion après inscription
   document.getElementById('inp-user').value=username;
@@ -1544,9 +1578,11 @@ function renderUsersTable(){
     const p=u.profile||{};
     const av=p.avatar?`<img src="${p.avatar}" alt="" style="width:24px;height:24px;border-radius:5px;object-fit:cover">`:`<span>${(u.fullname||u.username).charAt(0).toUpperCase()}</span>`;
     // Bouton Supprimer uniquement pour les admins, et pas sur le compte hans
+    const isPrincipal=currentUser&&currentUser.username==='hans';
+    const canDeleteThisUser=u.username!=='hans'&&isAdmin&&(u.role!=='admin'||isPrincipal);
     const actionCell=u.username==='hans'
       ?'<span style="color:var(--muted);font-size:11px">Principal</span>'
-      :(isAdmin?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button>`:'—');
+      :(canDeleteThisUser?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button>`:(isAdmin&&u.role==='admin'?'<span style="color:var(--muted);font-size:11px">Admin</span>':'—'));
     return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-av" style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;overflow:hidden">${av}</div>@${u.username}</div></td><td style="color:var(--muted);font-size:12px">${u.email||'—'}</td><td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px" onclick="openUserProfile('${u.id}')">👤</button></td><td>${actionCell}</td></tr>`;
   }).join('');
 }
@@ -2381,6 +2417,9 @@ async function executeDelete(){
   if(type==='file'){files=files.filter(f=>String(f.id)!==String(id));await fbDelete('files',id);renderFiles();}
   else if(type==='user'){
     if(!currentUser||currentUser.role!=='admin'){toast('Accès réservé aux administrateurs','error');closeModal();return;}
+    // Seul l'administrateur principal peut supprimer un autre administrateur
+    const targetUser=users.find(u=>u.id===id);
+    if(targetUser&&targetUser.role==='admin'&&currentUser.username!=='hans'){toast('Seul l\'administrateur principal peut supprimer un autre administrateur.','error');closeModal();return;}
     users=users.filter(u=>u.id!==id);await fbDelete('users',id);renderUsersTable();renderDiagram();initAgendaUserSelect();renderConnLog();renderActivityChart();
   }
   else if(type==='event'){if(agendas[currentAgendaUser])agendas[currentAgendaUser]=agendas[currentAgendaUser].filter(e=>String(e.id)!==String(id));await fbDelete('events',id);renderCalendar();}
