@@ -842,28 +842,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
   </div>
 
-  <!-- MAPS - Trafic maritime mondial -->
-  <div class="tab-content" id="tab-maps">
-    <div class="page-header"><div class="page-title">🗺️ Maps</div><div class="page-desc">Trafic maritime mondial en temps réel</div></div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:10px">
-      <div style="font-size:13px;color:var(--muted)">Données AIS via <strong style="color:var(--gold)">AISHub / VesselFinder</strong> — Carte interactive mondiale</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-        <select id="ship-type-filter" onchange="filterShipsMap()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none">
-          <option value="">Tous les types</option>
-          <option value="cargo">Cargo</option>
-          <option value="tanker">Pétrolier</option>
-          <option value="passenger">Passagers</option>
-          <option value="fishing">Pêche</option>
-          <option value="military">Militaire</option>
-        </select>
-        <input type="text" id="ship-search" placeholder="🔍 Nom, pays..." oninput="filterShipsMap()" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;width:160px">
-        <button class="btn btn-outline" onclick="reloadShipsMap()" style="font-size:12px;padding:7px 12px">🔄 Actualiser</button>
-      </div>
-    </div>
-    <div id="ships-main-map" style="width:100%;height:580px;border-radius:12px;border:1px solid var(--border);overflow:hidden;position:relative;background:var(--surface2)"></div>
-    <div id="ships-main-stats" style="display:flex;gap:12px;margin-top:14px;flex-wrap:wrap"></div>
-    <div id="ships-main-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:16px;max-height:340px;overflow-y:auto"></div>
-  </div>
+
 
   <!-- NOUS CONTACTER (lecteurs) -->
   <div class="tab-content" id="tab-contact">
@@ -994,6 +973,127 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <!-- Lien LinkedIn -->
       <div style="text-align:center;padding:20px 0">
         <a href="https://www.linkedin.com/in/hans-kilian-coffi-44108a332/" target="_blank" class="btn btn-primary" style="font-size:14px;padding:12px 28px">🔗 Voir le profil LinkedIn complet</a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- OUTILS CARRIERE -->
+  <div class="tab-content" id="tab-careertools">
+    <div class="page-header"><div class="page-title">&#128196; Outils Carrière</div><div class="page-desc">Créez CV et lettres de motivation professionnels, adaptés au poste et téléchargeables</div></div>
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;">
+      <button class="tab-btn active" id="career-sub-cv" onclick="showCareerTab('cv',this)" style="font-size:13px;padding:10px 22px">&#128203; Créateur de CV</button>
+      <button class="tab-btn" id="career-sub-lm" onclick="showCareerTab('lm',this)" style="font-size:13px;padding:10px 22px">&#9993;&#65039; Lettre de motivation</button>
+    </div>
+
+    <!-- ─── SOUS-PAGE CV ─── -->
+    <div id="career-panel-cv">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#128100; Informations personnelles</div>
+            <div class="profile-grid">
+              <div class="profile-field"><label>Prénom <span style="color:var(--accent)">*</span></label><input type="text" id="cv-prenom" placeholder="Jean"></div>
+              <div class="profile-field"><label>Nom <span style="color:var(--accent)">*</span></label><input type="text" id="cv-nom" placeholder="Dupont"></div>
+              <div class="profile-field"><label>Titre du poste visé <span style="color:var(--accent)">*</span></label><input type="text" id="cv-titre" placeholder="Analyste Financier"></div>
+              <div class="profile-field"><label>Email</label><input type="email" id="cv-email" placeholder="jean@email.com"></div>
+              <div class="profile-field"><label>Téléphone</label><input type="tel" id="cv-tel" placeholder="+33 6 00 00 00 00"></div>
+              <div class="profile-field"><label>Ville / Pays</label><input type="text" id="cv-ville" placeholder="Paris, France"></div>
+              <div class="profile-field"><label>LinkedIn</label><input type="text" id="cv-linkedin" placeholder="linkedin.com/in/monprofil"></div>
+              <div class="profile-field"><label>Site / Portfolio</label><input type="text" id="cv-site" placeholder="monsite.com"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#128221; Description du poste visé <span style="color:var(--accent)">*</span></div>
+            <textarea id="cv-poste-desc" placeholder="Collez ici la description complète du poste. L'IA va adapter votre CV à ce poste précis..." style="width:100%;min-height:110px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#128188; Expériences professionnelles</div>
+            <div id="cv-exp-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px"></div>
+            <button class="btn btn-outline" onclick="addCvExp()" style="font-size:12px;width:100%">+ Ajouter une expérience</button>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#127891; Formations</div>
+            <div id="cv-edu-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:10px"></div>
+            <button class="btn btn-outline" onclick="addCvEdu()" style="font-size:12px;width:100%">+ Ajouter une formation</button>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#128295; Compétences</div>
+            <textarea id="cv-skills" placeholder="Ex: Python, Excel, Analyse financière, SQL, Power BI, Anglais C1..." style="width:100%;min-height:70px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#127885; Certifications &amp; Centres d'intérêt</div>
+            <div class="profile-grid">
+              <div class="profile-field"><label>Certifications</label><textarea id="cv-certs" placeholder="Ex: CFA Level 1, Excel Expert..." style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea></div>
+              <div class="profile-field"><label>Centres d'intérêt</label><textarea id="cv-interests" placeholder="Ex: Marchés financiers, Entrepreneuriat..." style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea></div>
+            </div>
+          </div>
+          <div id="cv-gen-status" style="display:none;margin-bottom:12px;padding:12px 16px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:9px;font-size:13px;color:var(--accent2)"></div>
+          <button class="btn btn-primary" onclick="generateCV()" id="btn-gen-cv" style="width:100%;font-size:14px;padding:13px">&#10024; Générer le CV adapté au poste</button>
+        </div>
+        <!-- Aperçu CV -->
+        <div>
+          <div class="card" style="position:sticky;top:80px">
+            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+              <span>&#128065; Aperçu du CV</span>
+              <button class="btn btn-outline" onclick="downloadCV()" id="btn-dl-cv" style="font-size:12px;padding:6px 14px;display:none">&#11015;&#65039; Télécharger (.docx)</button>
+            </div>
+            <div id="cv-preview" style="background:white;color:#111;border-radius:8px;padding:0;min-height:500px;overflow:hidden">
+              <div id="cv-preview-inner" style="padding:32px;font-family:Arial,sans-serif;font-size:12px;line-height:1.5">
+                <div style="text-align:center;color:#888;padding:60px 0 40px">Remplissez le formulaire et cliquez sur "Générer" pour obtenir votre aperçu.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SOUS-PAGE LETTRE DE MOTIVATION ─── -->
+    <div id="career-panel-lm" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#128100; Vos informations</div>
+            <div class="profile-grid">
+              <div class="profile-field"><label>Prénom Nom <span style="color:var(--accent)">*</span></label><input type="text" id="lm-nom" placeholder="Jean Dupont"></div>
+              <div class="profile-field"><label>Email</label><input type="email" id="lm-email" placeholder="jean@email.com"></div>
+              <div class="profile-field"><label>Téléphone</label><input type="tel" id="lm-tel" placeholder="+33 6 00 00 00 00"></div>
+              <div class="profile-field"><label>Ville</label><input type="text" id="lm-ville" placeholder="Paris"></div>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#127970; L'entreprise &amp; le poste <span style="color:var(--accent)">*</span></div>
+            <div class="profile-grid">
+              <div class="profile-field"><label>Nom de l'entreprise <span style="color:var(--accent)">*</span></label><input type="text" id="lm-entreprise" placeholder="Goldman Sachs"></div>
+              <div class="profile-field"><label>Poste visé <span style="color:var(--accent)">*</span></label><input type="text" id="lm-poste" placeholder="Analyste Financier Junior"></div>
+              <div class="profile-field"><label>Secteur d'activité</label><input type="text" id="lm-secteur" placeholder="Finance, Banque"></div>
+              <div class="profile-field"><label>Nom du recruteur</label><input type="text" id="lm-recruteur" placeholder="M. Martin (optionnel)"></div>
+            </div>
+            <div class="profile-field" style="margin-top:10px"><label>Description du poste <span style="color:var(--accent)">*</span></label><textarea id="lm-poste-desc" placeholder="Collez ici la description du poste pour une lettre parfaitement adaptée..." style="width:100%;min-height:90px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea></div>
+          </div>
+          <div class="card" style="margin-bottom:14px">
+            <div class="card-title">&#9997;&#65039; Votre profil &amp; motivations</div>
+            <div class="profile-field"><label>Résumé de votre profil <span style="color:var(--accent)">*</span></label><textarea id="lm-profil" placeholder="Ex: Étudiant en finance avec 2 ans d'expérience, passionné par les marchés financiers..." style="width:100%;min-height:80px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea></div>
+            <div class="profile-field"><label>Vos compétences clés</label><textarea id="lm-skills" placeholder="Ex: Excel avancé, Python, Analyse financière..." style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea></div>
+            <div class="profile-field"><label>Vos motivations pour ce poste</label><textarea id="lm-motivations" placeholder="Pourquoi ce poste / cette entreprise vous attire-t-il ?" style="width:100%;min-height:70px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical"></textarea></div>
+          </div>
+          <div id="lm-gen-status" style="display:none;margin-bottom:12px;padding:12px 16px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:9px;font-size:13px;color:var(--accent2)"></div>
+          <button class="btn btn-primary" onclick="generateLM()" id="btn-gen-lm" style="width:100%;font-size:14px;padding:13px">&#10024; Générer la lettre de motivation</button>
+        </div>
+        <!-- Aperçu LM -->
+        <div>
+          <div class="card" style="position:sticky;top:80px">
+            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+              <span>&#128065; Aperçu de la lettre</span>
+              <button class="btn btn-outline" onclick="downloadLM()" id="btn-dl-lm" style="font-size:12px;padding:6px 14px;display:none">&#11015;&#65039; Télécharger (.docx)</button>
+            </div>
+            <div id="lm-preview" style="background:white;color:#111;border-radius:8px;padding:0;min-height:500px;overflow:hidden">
+              <div id="lm-preview-inner" style="padding:32px;font-family:Arial,sans-serif;font-size:12px;line-height:1.7">
+                <div style="text-align:center;color:#888;padding:60px 0 40px">Remplissez le formulaire et cliquez sur "Générer" pour obtenir votre aperçu.</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1382,7 +1482,7 @@ function buildTabsBar(isRefresh=false){
     bar.innerHTML=`<button class="tab-btn" onclick="showTab('compta',this)">📒 Comptabilité</button>
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
       <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
-      <button class="tab-btn" onclick="showTab('maps',this)">🗺️ Maps</button>
+      <button class="tab-btn" onclick="showTab('careertools',this)">📄 Outils Carrière</button>
       <button class="tab-btn" onclick="showTab('contact',this)">📨 Nous contacter</button>
       <button class="tab-btn" onclick="showTab('about',this)">👤 À propos de moi</button>`;
   } else {
@@ -1393,7 +1493,7 @@ function buildTabsBar(isRefresh=false){
       ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">📒 Comptabilité</button>':''}
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
       <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
-      <button class="tab-btn" onclick="showTab('maps',this)">🗺️ Maps</button>
+      <button class="tab-btn" onclick="showTab('careertools',this)">📄 Outils Carrière</button>
       <button class="tab-btn" onclick="showTab('about',this)">👤 À propos de moi</button>`;
   }
   // Restore active tab on refresh
@@ -1477,7 +1577,6 @@ function showTab(id,btn){
   if(id==='compta')renderCompta();
   if(id==='finance')loadFinanceData();
   if(id==='news')loadNewsData();
-  if(id==='maps')initMaps();
 }
 
 function showAccessOrProfile(){
@@ -2243,165 +2342,267 @@ function closeNewsDetail(){document.getElementById('news-detail-modal').classLis
 // Purge automatique des news > 1 an
 setInterval(()=>{const ONE_YEAR=365*24*60*60*1000;newsCache=newsCache.filter(n=>Date.now()-n.rawDate.getTime()<ONE_YEAR);},60*60*1000);
 
-// ============ MAPS — Trafic maritime ============
-let shipsMainMap=null, allShipsData=[], shipsMarkers=[], mapsLeafletLoaded=false;
 
-async function loadLeaflet(){
-  if(mapsLeafletLoaded)return;
-  await new Promise(res=>{
-    const css=document.createElement('link');css.rel='stylesheet';css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';document.head.appendChild(css);
-    const s=document.createElement('script');s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';s.onload=res;document.head.appendChild(s);
+// ============ OUTILS CARRIERE ============
+let cvData=null, lmData=null;
+
+function showCareerTab(tab,btn){
+  document.getElementById('career-panel-cv').style.display=tab==='cv'?'block':'none';
+  document.getElementById('career-panel-lm').style.display=tab==='lm'?'block':'none';
+  document.querySelectorAll('[id^="career-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+}
+
+// ─── Expériences dynamiques ───
+let cvExpCount=0, cvEduCount=0;
+function addCvExp(){
+  cvExpCount++;
+  const id='cvexp'+cvExpCount;
+  const div=document.createElement('div');
+  div.id=id;div.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;position:relative';
+  div.innerHTML=`<button onclick="document.getElementById('${id}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>
+    <div class="profile-grid">
+      <div class="profile-field"><label>Poste</label><input type="text" id="${id}-poste" placeholder="Analyste Financier" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      <div class="profile-field"><label>Entreprise</label><input type="text" id="${id}-entreprise" placeholder="BNP Paribas" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      <div class="profile-field"><label>Période</label><input type="text" id="${id}-periode" placeholder="Jan 2023 – Juin 2024" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      <div class="profile-field"><label>Lieu</label><input type="text" id="${id}-lieu" placeholder="Paris, France" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+    </div>
+    <div class="profile-field" style="margin-top:6px"><label>Missions</label><textarea id="${id}-missions" placeholder="Décrivez vos missions et réalisations..." style="width:100%;min-height:60px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none;resize:vertical"></textarea></div>`;
+  document.getElementById('cv-exp-list').appendChild(div);
+}
+function addCvEdu(){
+  cvEduCount++;
+  const id='cvedu'+cvEduCount;
+  const div=document.createElement('div');
+  div.id=id;div.style.cssText='background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;position:relative';
+  div.innerHTML=`<button onclick="document.getElementById('${id}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>
+    <div class="profile-grid">
+      <div class="profile-field"><label>Diplôme</label><input type="text" id="${id}-diplome" placeholder="Licence Finance" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      <div class="profile-field"><label>Établissement</label><input type="text" id="${id}-ecole" placeholder="Université Paris" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      <div class="profile-field"><label>Période</label><input type="text" id="${id}-periode" placeholder="2020 – 2023" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      <div class="profile-field"><label>Mention / Option</label><input type="text" id="${id}-mention" placeholder="Mention Bien" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+    </div>`;
+  document.getElementById('cv-edu-list').appendChild(div);
+}
+
+function collectCvExps(){
+  const exps=[];
+  document.querySelectorAll('[id^="cvexp"]').forEach(el=>{
+    const id=el.id;
+    const poste=document.getElementById(id+'-poste')?.value||'';
+    const entreprise=document.getElementById(id+'-entreprise')?.value||'';
+    const periode=document.getElementById(id+'-periode')?.value||'';
+    const lieu=document.getElementById(id+'-lieu')?.value||'';
+    const missions=document.getElementById(id+'-missions')?.value||'';
+    if(poste||entreprise)exps.push({poste,entreprise,periode,lieu,missions});
   });
-  mapsLeafletLoaded=true;
+  return exps;
+}
+function collectCvEdus(){
+  const edus=[];
+  document.querySelectorAll('[id^="cvedu"]').forEach(el=>{
+    const id=el.id;
+    const diplome=document.getElementById(id+'-diplome')?.value||'';
+    const ecole=document.getElementById(id+'-ecole')?.value||'';
+    const periode=document.getElementById(id+'-periode')?.value||'';
+    const mention=document.getElementById(id+'-mention')?.value||'';
+    if(diplome||ecole)edus.push({diplome,ecole,periode,mention});
+  });
+  return edus;
 }
 
-function initMaps(){loadShipsMainMap();}
-
-async function loadShipsMainMap(){
-  const container=document.getElementById('ships-main-map');
-  if(!container)return;
-  await loadLeaflet();
-  if(!shipsMainMap){
-    shipsMainMap=L.map(container,{zoomControl:true}).setView([20,0],2);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap © CARTO',maxZoom:18}).addTo(shipsMainMap);
+// ─── GENERATION CV ───
+async function generateCV(){
+  const prenom=document.getElementById('cv-prenom').value.trim();
+  const nom=document.getElementById('cv-nom').value.trim();
+  const titre=document.getElementById('cv-titre').value.trim();
+  const posteDesc=document.getElementById('cv-poste-desc').value.trim();
+  if(!prenom||!nom||!titre||!posteDesc){
+    const s=document.getElementById('cv-gen-status');
+    s.textContent='Veuillez remplir au minimum : Prénom, Nom, Titre du poste et la description du poste.';
+    s.style.display='block';return;
   }
-  buildShipsData();
-  renderShipsOnMap();
-}
+  const statusEl=document.getElementById('cv-gen-status');
+  const btn=document.getElementById('btn-gen-cv');
+  statusEl.textContent='Génération en cours... L\'IA adapte votre CV au poste ciblé.';
+  statusEl.style.background='rgba(244,162,97,.1)';statusEl.style.borderColor='rgba(244,162,97,.3)';statusEl.style.color='var(--gold)';statusEl.style.display='block';
+  btn.disabled=true;btn.textContent='En cours...';
+  const exps=collectCvExps();const edus=collectCvEdus();
+  const email=document.getElementById('cv-email').value.trim();
+  const tel=document.getElementById('cv-tel').value.trim();
+  const ville=document.getElementById('cv-ville').value.trim();
+  const linkedin=document.getElementById('cv-linkedin').value.trim();
+  const site=document.getElementById('cv-site').value.trim();
+  const skills=document.getElementById('cv-skills').value.trim();
+  const certs=document.getElementById('cv-certs').value.trim();
+  const interests=document.getElementById('cv-interests').value.trim();
 
-function buildShipsData(){
-  // Données maritimes réalistes couvrant les grandes routes mondiales
-  allShipsData=[
-    // Atlantique Nord
-    {lat:51.5,lon:1.2,name:'MSC OSCAR',type:'cargo',flag:'🇵🇦',speed:'14 kn',dest:'Rotterdam',mmsi:'248179000',length:'395m'},
-    {lat:49.8,lon:-2.5,name:'EVER GOLDEN',type:'cargo',flag:'🇵🇦',speed:'12 kn',dest:'Felixstowe',mmsi:'235091223',length:'400m'},
-    {lat:48.3,lon:-5.1,name:'CMA CGM MARCO POLO',type:'cargo',flag:'🇫🇷',speed:'22 kn',dest:'Le Havre',mmsi:'228051000',length:'396m'},
-    {lat:45.2,lon:-8.3,name:'VALLERMOSA',type:'tanker',flag:'🇪🇸',speed:'13 kn',dest:'Bilbao',mmsi:'224560000',length:'244m'},
-    {lat:38.7,lon:-9.8,name:'NORDIC LUNA',type:'tanker',flag:'🇩🇰',speed:'11 kn',dest:'Lisbonne',mmsi:'219021471',length:'183m'},
-    {lat:35.2,lon:-40.5,name:'ATLANTIC STAR',type:'cargo',flag:'🇧🇷',speed:'14 kn',dest:'New York',mmsi:'710012345',length:'310m'},
-    {lat:28.5,lon:-16.0,name:'CANARY TRADER',type:'cargo',flag:'🇪🇸',speed:'13 kn',dest:'Las Palmas',mmsi:'225143000',length:'160m'},
-    {lat:18.5,lon:-65.2,name:'CARNIVAL HORIZON',type:'passenger',flag:'🇵🇦',speed:'22 kn',dest:'San Juan',mmsi:'373538000',length:'323m'},
-    {lat:25.8,lon:-80.3,name:'NORWEGIAN BLISS',type:'passenger',flag:'🇧🇸',speed:'20 kn',dest:'Miami',mmsi:'311000630',length:'334m'},
-    {lat:41.4,lon:-71.2,name:'MAERSK DENVER',type:'cargo',flag:'🇩🇰',speed:'18 kn',dest:'Boston',mmsi:'219000135',length:'294m'},
-    // Méditerranée
-    {lat:43.3,lon:5.3,name:'NAPOLEON BONAPARTE',type:'passenger',flag:'🇫🇷',speed:'19 kn',dest:'Ajaccio',mmsi:'228005200',length:'172m'},
-    {lat:36.8,lon:5.5,name:'MEDITERRANEA',type:'passenger',flag:'🇩🇿',speed:'16 kn',dest:'Bejaia',mmsi:'605050000',length:'150m'},
-    {lat:35.9,lon:14.5,name:'GRIMALDI GRANDE',type:'cargo',flag:'🇮🇹',speed:'20 kn',dest:'Malte',mmsi:'247086400',length:'214m'},
-    {lat:37.0,lon:22.5,name:'ANEK SHIPS',type:'passenger',flag:'🇬🇷',speed:'22 kn',dest:'Pirée',mmsi:'239312000',length:'202m'},
-    {lat:31.2,lon:32.4,name:'MSC MATILDE',type:'cargo',flag:'🇵🇦',speed:'10 kn',dest:'Port-Saïd',mmsi:'248005600',length:'366m'},
-    {lat:38.1,lon:15.7,name:'COSTA TOSCANA',type:'passenger',flag:'🇮🇹',speed:'18 kn',dest:'Messine',mmsi:'247343800',length:'337m'},
-    {lat:41.0,lon:28.9,name:'TURKISH CARGO',type:'cargo',flag:'🇹🇷',speed:'14 kn',dest:'Istanbul',mmsi:'271002000',length:'190m'},
-    // Golfe Persique / Mer Rouge
-    {lat:26.2,lon:56.3,name:'PERSIAN JADE',type:'tanker',flag:'🇮🇷',speed:'13 kn',dest:'Dubaï',mmsi:'422000001',length:'332m'},
-    {lat:24.4,lon:53.9,name:'GULF CARRIER',type:'tanker',flag:'🇦🇪',speed:'11 kn',dest:'Fujairah',mmsi:'470000100',length:'280m'},
-    {lat:15.6,lon:41.8,name:'RED SEA MOVER',type:'cargo',flag:'🇸🇦',speed:'14 kn',dest:'Djeddah',mmsi:'403000200',length:'210m'},
-    {lat:12.8,lon:43.5,name:'BAB EL MANDEB',type:'tanker',flag:'🇸🇬',speed:'12 kn',dest:'Suez',mmsi:'563000300',length:'295m'},
-    // Asie / Pacifique
-    {lat:22.3,lon:114.2,name:'CSCL GLOBE',type:'cargo',flag:'🇨🇳',speed:'16 kn',dest:'Shanghai',mmsi:'413000500',length:'400m'},
-    {lat:1.2,lon:103.8,name:'HMM ALGECIRAS',type:'cargo',flag:'🇰🇷',speed:'18 kn',dest:'Singapour',mmsi:'440000600',length:'400m'},
-    {lat:35.4,lon:136.8,name:'NYK AURORA',type:'cargo',flag:'🇯🇵',speed:'17 kn',dest:'Yokohama',mmsi:'431000700',length:'350m'},
-    {lat:13.1,lon:109.3,name:'VIET NAM MARINER',type:'cargo',flag:'🇻🇳',speed:'13 kn',dest:'Ho Chi Minh',mmsi:'574000800',length:'180m'},
-    {lat:18.8,lon:121.2,name:'PACIFIC CROSS',type:'cargo',flag:'🇵🇭',speed:'14 kn',dest:'Manille',mmsi:'548000900',length:'195m'},
-    {lat:-8.5,lon:115.3,name:'BALI FERRY',type:'passenger',flag:'🇮🇩',speed:'18 kn',dest:'Bali',mmsi:'525001000',length:'120m'},
-    {lat:34.7,lon:135.2,name:'MOL TRIUMPH',type:'cargo',flag:'🇯🇵',speed:'19 kn',dest:'Osaka',mmsi:'431001100',length:'400m'},
-    // Pacifique
-    {lat:37.8,lon:-122.5,name:'MATSON NAVIGATOR',type:'cargo',flag:'🇺🇸',speed:'21 kn',dest:'Honolulu',mmsi:'366001200',length:'229m'},
-    {lat:-33.9,lon:151.2,name:'SPIRIT OF TASMANIA',type:'passenger',flag:'🇦🇺',speed:'18 kn',dest:'Melbourne',mmsi:'503001300',length:'194m'},
-    // Afrique
-    {lat:-33.9,lon:18.4,name:'CAPE PIONEER',type:'tanker',flag:'🇿🇦',speed:'12 kn',dest:'Lagos',mmsi:'601001400',length:'250m'},
-    {lat:-4.0,lon:39.7,name:'MOMBASA TRADER',type:'cargo',flag:'🇰🇪',speed:'11 kn',dest:'Mombasa',mmsi:'630001500',length:'170m'},
-    {lat:6.4,lon:2.4,name:'AFRICA PIONEER',type:'cargo',flag:'🇳🇬',speed:'10 kn',dest:'Lagos',mmsi:'657001600',length:'155m'},
-    // Europe Nord
-    {lat:60.2,lon:24.9,name:'VIKING SKY',type:'passenger',flag:'🇳🇴',speed:'15 kn',dest:'Helsinki',mmsi:'257001700',length:'228m'},
-    {lat:57.7,lon:11.9,name:'STENA SCANDINAVICA',type:'passenger',flag:'🇸🇪',speed:'22 kn',dest:'Kiel',mmsi:'265001800',length:'240m'},
-    {lat:55.7,lon:12.6,name:'CROWN SEAWAYS',type:'passenger',flag:'🇩🇰',speed:'19 kn',dest:'Oslo',mmsi:'219001900',length:'204m'},
-    {lat:53.5,lon:8.1,name:'HAMBURG EXPRESS',type:'cargo',flag:'🇩🇪',speed:'20 kn',dest:'Hamburg',mmsi:'211002000',length:'335m'},
-    // Amérique du Sud
-    {lat:-23.0,lon:-43.2,name:'ALIANCA URSULA',type:'cargo',flag:'🇧🇷',speed:'14 kn',dest:'Rio de Janeiro',mmsi:'710002100',length:'210m'},
-    {lat:-34.6,lon:-58.4,name:'RIO GRANDE',type:'tanker',flag:'🇦🇷',speed:'11 kn',dest:'Buenos Aires',mmsi:'701002200',length:'230m'},
-    {lat:-8.8,lon:-35.0,name:'BRASILIAN TRADER',type:'cargo',flag:'🇧🇷',speed:'13 kn',dest:'Recife',mmsi:'710002300',length:'175m'},
-  ];
-}
+  const prompt=`Tu es un expert en rédaction de CV professionnel. Génère un CV complet, professionnel et percutant pour le candidat suivant, en l'adaptant précisément au poste décrit.
 
-const SHIP_COLORS={cargo:'#f4a261',tanker:'#e63946',passenger:'#2ecc71',fishing:'#3498db',military:'#9b59b6'};
-const SHIP_ICONS={cargo:'📦',tanker:'🛢️',passenger:'🚢',fishing:'🎣',military:'⚓'};
+PROFIL DU CANDIDAT :
+- Nom complet : ${prenom} ${nom}
+- Titre visé : ${titre}
+- Contact : ${email||'N/A'} | ${tel||'N/A'} | ${ville||'N/A'}
+${linkedin?`- LinkedIn : ${linkedin}`:''}${site?`\n- Site : ${site}`:''}
 
-function reloadShipsMap(){loadShipsMainMap();}
+EXPÉRIENCES :
+${exps.length?exps.map(e=>`• ${e.poste} chez ${e.entreprise} (${e.periode}) - ${e.lieu}\n  ${e.missions}`).join('\n'):'Aucune expérience renseignée'}
 
-function filterShipsMap(){
-  const typeF=(document.getElementById('ship-type-filter')?.value||'').toLowerCase();
-  const searchF=(document.getElementById('ship-search')?.value||'').toLowerCase();
-  if(!shipsMainMap)return;
-  shipsMarkers.forEach(m=>m.remove());shipsMarkers=[];
-  const visible=allShipsData.filter(s=>
-    (!typeF||s.type===typeF)&&
-    (!searchF||s.name.toLowerCase().includes(searchF)||s.flag.includes(searchF)||s.dest.toLowerCase().includes(searchF))
-  );
-  renderShipMarkers(visible);
-}
+FORMATIONS :
+${edus.length?edus.map(e=>`• ${e.diplome} - ${e.ecole} (${e.periode}) ${e.mention?'| '+e.mention:''}`).join('\n'):'Aucune formation renseignée'}
 
-function renderShipsOnMap(){
-  if(!shipsMainMap)return;
-  shipsMarkers.forEach(m=>m.remove());shipsMarkers=[];
-  renderShipMarkers(allShipsData);
-}
+COMPÉTENCES : ${skills||'Non renseignées'}
+CERTIFICATIONS : ${certs||'Non renseignées'}
+CENTRES D'INTÉRÊT : ${interests||'Non renseignés'}
 
-function renderShipMarkers(ships){
-  ships.forEach(s=>{
-    const color=SHIP_COLORS[s.type]||'#f4a261';
-    const icon=L.divIcon({
-      html:`<div style="width:14px;height:14px;background:${color};border-radius:50%;border:2px solid rgba(255,255,255,.8);box-shadow:0 0 8px ${color};cursor:pointer"></div>`,
-      className:'',iconSize:[14,14],iconAnchor:[7,7]
+DESCRIPTION DU POSTE CIBLÉ :
+${posteDesc}
+
+INSTRUCTIONS IMPORTANTES :
+- Adapte chaque section au poste ciblé en mettant en avant les compétences pertinentes
+- Utilise un style naturel et varié (évite les formulations répétitives ou trop IA)
+- Pour le résumé professionnel, écris en première personne de façon authentique et engagée
+- Les bullet points d'expérience doivent utiliser des verbes d'action variés et concrets
+- Inclus un résumé professionnel percutant de 3-4 phrases adapté au poste
+- Format de réponse : retourne UNIQUEMENT du HTML structuré pour un CV (pas de markdown), avec des balises <h1>, <h2>, <p>, <ul>, <li>, <strong> etc.
+- Utilise le style suivant pour le HTML : fond blanc, police Arial, couleur principale #e63946 pour les titres de sections, texte noir #111
+- Structure : Entête (nom, titre, contact), Résumé, Expériences, Formations, Compétences, Certifications, Centres d'intérêt`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system:'Tu es un expert RH spécialisé en rédaction de CV professionnels qui passent les filtres ATS et les détecteurs d\'IA. Tu génères du contenu authentique, naturel et percutant.',
+        messages:[{role:'user',content:prompt}]
+      })
     });
-    const m=L.marker([s.lat,s.lon],{icon}).addTo(shipsMainMap);
-    m.bindPopup(`<div style="font-family:'DM Sans',sans-serif;font-size:13px;min-width:200px;line-height:1.6">
-      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:15px;margin-bottom:6px">${SHIP_ICONS[s.type]||'🚢'} ${s.name}</div>
-      <div>🏳️ Pavillon : ${s.flag}</div>
-      <div>📦 Type : <span style="color:${color};font-weight:600">${s.type}</span></div>
-      <div>⚡ Vitesse : ${s.speed}</div>
-      <div>🎯 Destination : ${s.dest}</div>
-      <div>📏 Longueur : ${s.length||'—'}</div>
-      <div style="font-size:10px;color:#6b6b85;margin-top:4px">MMSI : ${s.mmsi||'—'}</div>
-    </div>`);
-    shipsMarkers.push(m);
-  });
-  // Statistiques
-  const statsEl=document.getElementById('ships-main-stats');
-  if(statsEl){
-    const counts={};
-    ships.forEach(s=>{counts[s.type]=(counts[s.type]||0)+1;});
-    statsEl.innerHTML=[
-      {label:'Total navires',val:ships.length,ico:'🚢',col:'var(--text)'},
-      {label:'Cargo',val:counts.cargo||0,ico:'📦',col:'#f4a261'},
-      {label:'Pétroliers',val:counts.tanker||0,ico:'🛢️',col:'#e63946'},
-      {label:'Passagers',val:counts.passenger||0,ico:'👥',col:'#2ecc71'},
-      {label:'Pêche',val:counts.fishing||0,ico:'🎣',col:'#3498db'},
-    ].map(s=>`<div class="stat-card" style="padding:12px 16px;flex:1;min-width:120px">
-      <div class="stat-label">${s.ico} ${s.label}</div>
-      <div class="stat-value" style="font-size:20px;color:${s.col}">${s.val}</div>
-    </div>`).join('');
+    const data=await resp.json();
+    const html=data.content?.[0]?.text||'';
+    // Nettoyer les balises markdown si présentes
+    const cleanHtml=html.replace(/```html/gi,'').replace(/```/g,'').trim();
+    const preview=document.getElementById('cv-preview-inner');
+    preview.innerHTML=cleanHtml;
+    cvData={html:cleanHtml,prenom,nom,titre,exps,edus,skills,certs,interests,email,tel,ville,linkedin,site};
+    document.getElementById('btn-dl-cv').style.display='inline-flex';
+    statusEl.textContent='CV généré avec succès ! Vous pouvez le télécharger.';
+    statusEl.style.background='rgba(46,204,113,.1)';statusEl.style.borderColor='rgba(46,204,113,.3)';statusEl.style.color='var(--success)';
+  }catch(e){
+    statusEl.textContent='Erreur de génération. Vérifiez votre connexion et réessayez.';
+    statusEl.style.background='rgba(230,57,70,.1)';statusEl.style.borderColor='rgba(230,57,70,.3)';statusEl.style.color='var(--accent2)';
   }
-  // Liste des navires
-  const listEl=document.getElementById('ships-main-list');
-  if(listEl){
-    listEl.innerHTML=ships.slice(0,40).map(s=>{
-      const color=SHIP_COLORS[s.type]||'#f4a261';
-      return`<div onclick="shipsMainMap.setView([${s.lat},${s.lon}],6)" style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid ${color};border-radius:8px;padding:10px 12px;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity=.8" onmouseout="this.style.opacity=1">
-        <div style="font-weight:600;font-size:13px">${SHIP_ICONS[s.type]||'🚢'} ${s.name}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:3px">${s.flag} ${s.type} · ⚡${s.speed} · 🎯${s.dest}</div>
-      </div>`;
-    }).join('');
-  }
-  // Légende
-  const existingLeg=shipsMainMap.getContainer().querySelector('.ships-legend');
-  if(!existingLeg){
-    const legDiv=document.createElement('div');
-    legDiv.className='ships-legend';
-    legDiv.style.cssText='position:absolute;bottom:30px;left:10px;background:rgba(10,10,15,.88);border:1px solid var(--border);border-radius:10px;padding:10px 14px;font-size:11px;z-index:999;pointer-events:none;';
-    legDiv.innerHTML=Object.entries(SHIP_COLORS).map(([t,c])=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div style="width:10px;height:10px;background:${c};border-radius:50%"></div>${t}</div>`).join('');
-    shipsMainMap.getContainer().appendChild(legDiv);
-  }
+  btn.disabled=false;btn.textContent='✨ Générer le CV adapté au poste';
 }
+
+// ─── GENERATION LM ───
+async function generateLM(){
+  const nomLM=document.getElementById('lm-nom').value.trim();
+  const entreprise=document.getElementById('lm-entreprise').value.trim();
+  const poste=document.getElementById('lm-poste').value.trim();
+  const profil=document.getElementById('lm-profil').value.trim();
+  const posteDesc=document.getElementById('lm-poste-desc').value.trim();
+  if(!nomLM||!entreprise||!poste||!profil||!posteDesc){
+    const s=document.getElementById('lm-gen-status');
+    s.textContent='Veuillez remplir au minimum : Votre nom, l\'entreprise, le poste, votre profil et la description du poste.';
+    s.style.display='block';return;
+  }
+  const statusEl=document.getElementById('lm-gen-status');
+  const btn=document.getElementById('btn-gen-lm');
+  statusEl.textContent='Génération en cours... L\'IA rédige votre lettre personnalisée.';
+  statusEl.style.background='rgba(244,162,97,.1)';statusEl.style.borderColor='rgba(244,162,97,.3)';statusEl.style.color='var(--gold)';statusEl.style.display='block';
+  btn.disabled=true;btn.textContent='En cours...';
+  const email=document.getElementById('lm-email').value.trim();
+  const tel=document.getElementById('lm-tel').value.trim();
+  const ville=document.getElementById('lm-ville').value.trim();
+  const secteur=document.getElementById('lm-secteur').value.trim();
+  const recruteur=document.getElementById('lm-recruteur').value.trim();
+  const skillsLM=document.getElementById('lm-skills').value.trim();
+  const motivations=document.getElementById('lm-motivations').value.trim();
+  const today=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+
+  const prompt=`Tu es un expert en rédaction de lettres de motivation professionnelles percutantes.
+
+Rédige une lettre de motivation complète pour :
+- Candidat : ${nomLM}${ville?', '+ville:''}
+- Entreprise cible : ${entreprise}${secteur?' ('+secteur+')':''}
+- Poste visé : ${poste}
+- Destinataire : ${recruteur||'Madame, Monsieur'}
+- Profil du candidat : ${profil}
+- Compétences : ${skillsLM||'Non précisées'}
+- Motivations spécifiques : ${motivations||'Non précisées'}
+
+Description du poste :
+${posteDesc}
+
+INSTRUCTIONS :
+- Lettre formelle française, 3 à 4 paragraphes bien structurés (accroche, profil/compétences, valeur apportée, conclusion/appel à l'action)
+- Adapte la lettre précisément aux mots-clés et exigences du poste
+- Ton professionnel mais humain et authentique, évite les formulations robotiques ou trop IA
+- Personnalise réellement en fonction de l'entreprise et du poste
+- Retourne UNIQUEMENT du HTML formaté (pas de markdown), avec en-tête candidat/date, coordonnées entreprise, corps de la lettre, formule de politesse
+- Style HTML : fond blanc, police Arial, texte noir #111, en-tête structuré avec coordonnées`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:3000,
+        system:'Tu es un expert RH en rédaction de lettres de motivation percutantes et authentiques qui passent les filtres ATS et les détecteurs d\'IA.',
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await resp.json();
+    const html=data.content?.[0]?.text||'';
+    const cleanHtml=html.replace(/```html/gi,'').replace(/```/g,'').trim();
+    const preview=document.getElementById('lm-preview-inner');
+    preview.innerHTML=cleanHtml;
+    lmData={html:cleanHtml,nom:nomLM,entreprise,poste};
+    document.getElementById('btn-dl-lm').style.display='inline-flex';
+    statusEl.textContent='Lettre générée avec succès ! Vous pouvez la télécharger.';
+    statusEl.style.background='rgba(46,204,113,.1)';statusEl.style.borderColor='rgba(46,204,113,.3)';statusEl.style.color='var(--success)';
+  }catch(e){
+    statusEl.textContent='Erreur de génération. Vérifiez votre connexion et réessayez.';
+    statusEl.style.background='rgba(230,57,70,.1)';statusEl.style.borderColor='rgba(230,57,70,.3)';statusEl.style.color='var(--accent2)';
+  }
+  btn.disabled=false;btn.textContent='✨ Générer la lettre de motivation';
+}
+
+// ─── DOWNLOAD DOCX (via HTML to Word blob) ───
+function htmlToDocx(htmlContent, filename){
+  // Wrap dans un document Word HTML (format .doc compatible Word)
+  const wordDoc=`<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><meta name="ProgId" content="Word.Document"><meta name="Generator" content="Microsoft Word"><style>
+    @page{margin:2cm 2.5cm;}
+    body{font-family:Arial,sans-serif;font-size:11pt;color:#111;line-height:1.5;}
+    h1{font-size:18pt;color:#e63946;margin-bottom:4pt;}
+    h2{font-size:13pt;color:#e63946;border-bottom:1pt solid #e63946;padding-bottom:3pt;margin-top:14pt;}
+    h3{font-size:11pt;font-weight:bold;margin-bottom:2pt;}
+    p{margin:4pt 0;}ul{margin:4pt 0 8pt 16pt;}li{margin:2pt 0;}
+    strong{font-weight:bold;}
+    .header-section{margin-bottom:16pt;}
+  </style></head><body>${htmlContent}</body></html>`;
+  const blob=new Blob(['\ufeff'+wordDoc],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();
+  URL.revokeObjectURL(url);
+}
+
+function downloadCV(){
+  if(!cvData){toast('Générez d\'abord le CV','error');return;}
+  const fn=`CV_${cvData.prenom}_${cvData.nom}_${cvData.titre.replace(/\s+/g,'_')}.doc`;
+  htmlToDocx(cvData.html,fn);
+  toast('CV téléchargé ✅','success');
+}
+function downloadLM(){
+  if(!lmData){toast('Générez d\'abord la lettre','error');return;}
+  const fn=`Lettre_${lmData.nom}_${lmData.entreprise.replace(/\s+/g,'_')}_${lmData.poste.replace(/\s+/g,'_')}.doc`;
+  htmlToDocx(lmData.html,fn);
+  toast('Lettre téléchargée ✅','success');
+}
+
 
 // ============ DELETE ============
 function confirmDelete(type,id){
