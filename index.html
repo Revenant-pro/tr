@@ -377,6 +377,25 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 .journal-table th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.6px;}
 .journal-table td{padding:8px 10px;border-bottom:1px solid rgba(42,42,58,.3);}
 .journal-table tr:hover td{background:var(--surface2);}
+
+/* TOPBAR BRAND DROPDOWN */
+.topbar-brand-wrap{position:relative;display:flex;align-items:center;gap:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:18px;cursor:pointer;user-select:none;}
+.brand-dropdown{position:absolute;top:calc(100% + 10px);left:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;min-width:240px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:9999;display:none;flex-direction:column;overflow:hidden;animation:fadeIn .2s ease;}
+.topbar-brand-wrap:hover .brand-dropdown{display:flex;}
+.brand-dropdown-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:background .15s;border:none;background:transparent;width:100%;text-align:left;}
+.brand-dropdown-item:hover{background:var(--surface2);color:var(--accent);}
+.brand-dropdown-sep{height:1px;background:var(--border);margin:4px 0;}
+
+/* BOUTON AUTRE DROPDOWN */
+.autre-wrap{position:relative;}
+.autre-btn{display:flex;align-items:center;gap:7px;padding:14px 16px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:color .2s;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.autre-btn:hover{color:var(--accent);}
+.autre-btn.has-active{color:var(--accent);border-bottom-color:var(--accent);}
+.autre-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;min-width:220px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:9999;display:none;flex-direction:column;overflow:hidden;animation:fadeIn .2s ease;}
+.autre-wrap:hover .autre-dropdown{display:flex;}
+.autre-dropdown-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:background .15s;border:none;background:transparent;width:100%;text-align:left;}
+.autre-dropdown-item:hover{background:var(--surface2);color:var(--accent);}
+.autre-dropdown-item.active-page{color:var(--accent);font-weight:600;}
 </style>
 </head>
 <body>
@@ -433,7 +452,22 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 <!-- DASHBOARD -->
 <div id="dashboard">
   <div class="topbar">
-    <div class="topbar-brand"><div class="topbar-logo">H</div>Bienvenue</div>
+    <div class="topbar-brand-wrap" id="topbar-brand-wrap">
+      <div class="topbar-logo">H</div>Bienvenue
+      <div class="brand-dropdown" id="brand-dropdown">
+        <div style="padding:10px 16px 6px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Navigation rapide</div>
+        <button class="brand-dropdown-item" onclick="quickNav('fichiers')">📁 Fichiers</button>
+        <button class="brand-dropdown-item" onclick="quickNav('agenda')">📅 Agenda</button>
+        <button class="brand-dropdown-item" onclick="quickNav('compte')">💰 Suivi de compte</button>
+        <button class="brand-dropdown-item" onclick="quickNav('finance')">📈 Finance</button>
+        <button class="brand-dropdown-item" onclick="quickNav('news')">📰 News Financière</button>
+        <div class="brand-dropdown-sep"></div>
+        <button class="brand-dropdown-item" onclick="quickNav('careertools')">📄 Outils Carrière</button>
+        <button class="brand-dropdown-item" onclick="quickNav('about')">👤 À propos de moi</button>
+        <div class="brand-dropdown-sep"></div>
+        <button class="brand-dropdown-item" onclick="doLogout()" style="color:var(--accent2)">🔓 Déconnexion</button>
+      </div>
+    </div>
     <div class="topbar-right">
       <!-- Message bell only (notification bell removed) -->
       <div class="notif-bell-wrap">
@@ -866,7 +900,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 
   <!-- À PROPOS DE MOI -->
-  <div class="tab-content" id="tab-about">
+  <div class="tab-content" id="tab-about" style="padding-top:8px">
     <div style="max-width:860px;margin:0 auto">
       <!-- En-tête profil -->
       <div style="background:linear-gradient(135deg,#e63946 0%,#1a1a2e 60%);border-radius:16px;padding:40px;margin-bottom:20px;position:relative;overflow:hidden">
@@ -979,8 +1013,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 
   <!-- OUTILS CARRIERE -->
-  <div class="tab-content" id="tab-careertools">
-    <div class="page-header"><div class="page-title">&#128196; Outils Carrière</div><div class="page-desc">Créez CV et lettres de motivation professionnels, adaptés au poste et téléchargeables</div></div>
+  <div class="tab-content" id="tab-careertools" style="padding-top:8px">
     <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;">
       <button class="tab-btn active" id="career-sub-cv" onclick="showCareerTab('cv',this)" style="font-size:13px;padding:10px 22px">&#128203; Créateur de CV</button>
       <button class="tab-btn" id="career-sub-lm" onclick="showCareerTab('lm',this)" style="font-size:13px;padding:10px 22px">&#9993;&#65039; Lettre de motivation</button>
@@ -1092,6 +1125,146 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
                 <div style="text-align:center;color:#888;padding:60px 0 40px">Remplissez le formulaire et cliquez sur "Générer" pour obtenir votre aperçu.</div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- CALCULATEUR FINANCIER -->
+  <div class="tab-content" id="tab-calculator" style="padding-top:8px">
+    <div style="max-width:900px;margin:0 auto">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">&#129518; Calculateur Financier</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+        <!-- Intérêts composés -->
+        <div class="card">
+          <div class="card-title">&#128200; Intérêts composés</div>
+          <div class="profile-field"><label>Capital initial (€)</label><input type="number" id="ic-capital" placeholder="10000" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>Taux annuel (%)</label><input type="number" id="ic-taux" placeholder="5" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>Durée (années)</label><input type="number" id="ic-duree" placeholder="10" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>Versement mensuel (€)</label><input type="number" id="ic-versement" placeholder="200" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <button class="btn btn-primary" onclick="calcIC()" style="width:100%;margin-top:4px">Calculer</button>
+          <div id="ic-result" style="margin-top:12px;display:none"></div>
+        </div>
+        <!-- Remboursement de prêt -->
+        <div class="card">
+          <div class="card-title">&#127968; Remboursement de prêt</div>
+          <div class="profile-field"><label>Montant du prêt (€)</label><input type="number" id="pret-montant" placeholder="200000" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>Taux annuel (%)</label><input type="number" id="pret-taux" placeholder="3.5" step="0.1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>Durée (années)</label><input type="number" id="pret-duree" placeholder="20" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <button class="btn btn-primary" onclick="calcPret()" style="width:100%;margin-top:4px">Calculer</button>
+          <div id="pret-result" style="margin-top:12px;display:none"></div>
+        </div>
+        <!-- Rentabilité investissement -->
+        <div class="card">
+          <div class="card-title">&#128181; ROI & Rentabilité</div>
+          <div class="profile-field"><label>Investissement initial (€)</label><input type="number" id="roi-invest" placeholder="5000" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>Valeur finale (€)</label><input type="number" id="roi-final" placeholder="7500" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>Durée (années)</label><input type="number" id="roi-duree" placeholder="3" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <button class="btn btn-primary" onclick="calcROI()" style="width:100%;margin-top:4px">Calculer</button>
+          <div id="roi-result" style="margin-top:12px;display:none"></div>
+        </div>
+        <!-- Convertisseur de devises -->
+        <div class="card">
+          <div class="card-title">&#128178; Convertisseur de devises</div>
+          <div class="profile-field"><label>Montant</label><input type="number" id="fx-montant" placeholder="1000" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-field"><label>De</label><select id="fx-from" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"><option value="1">EUR (€)</option><option value="1.08">USD ($)</option><option value="0.86">GBP (£)</option><option value="162">JPY (¥)</option><option value="1.55">CHF</option><option value="655.96">XOF (F CFA)</option></select></div>
+          <div class="profile-field"><label>Vers</label><select id="fx-to" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none"><option value="1.08">USD ($)</option><option value="1">EUR (€)</option><option value="0.86">GBP (£)</option><option value="162">JPY (¥)</option><option value="1.55">CHF</option><option value="655.96">XOF (F CFA)</option></select></div>
+          <button class="btn btn-primary" onclick="calcFX()" style="width:100%;margin-top:4px">Convertir</button>
+          <div id="fx-result" style="margin-top:12px;display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OBJECTIFS & HABITUDES -->
+  <div class="tab-content" id="tab-goals" style="padding-top:8px">
+    <div style="max-width:860px;margin:0 auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">&#127919; Objectifs &amp; Habitudes</div>
+        <button class="btn btn-primary" onclick="openAddGoal()" style="font-size:13px">+ Nouvel objectif</button>
+      </div>
+      <div id="goals-list" style="display:flex;flex-direction:column;gap:12px">
+        <div class="empty-state"><div class="empty-icon">&#127919;</div><p>Aucun objectif. Ajoutez votre premier objectif !</p></div>
+      </div>
+    </div>
+    <!-- Modal ajout objectif -->
+    <div id="goal-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:440px;max-width:95vw">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:16px">&#127919; Nouvel objectif</div>
+        <div class="profile-field"><label>Titre de l'objectif</label><input type="text" id="goal-titre" placeholder="Ex: Lire 12 livres cette année" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;outline:none"></div>
+        <div class="profile-grid">
+          <div class="profile-field"><label>Catégorie</label><select id="goal-cat" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;outline:none"><option value="finance">&#128200; Finance</option><option value="sante">&#129336; Santé</option><option value="career">&#128188; Carrière</option><option value="perso">&#127775; Personnel</option><option value="education">&#127891; Éducation</option></select></div>
+          <div class="profile-field"><label>Date limite</label><input type="date" id="goal-date" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;outline:none"></div>
+        </div>
+        <div class="profile-field"><label>Progression cible</label><input type="number" id="goal-target" placeholder="100" min="1" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;outline:none"></div>
+        <div class="profile-field"><label>Description</label><textarea id="goal-desc" placeholder="Décrivez votre objectif..." style="width:100%;min-height:60px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;outline:none;resize:vertical"></textarea></div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-outline" onclick="closeGoalModal()" style="flex:1">Annuler</button>
+          <button class="btn btn-primary" onclick="saveGoal()" style="flex:2">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VEILLE FINANCIERE -->
+  <div class="tab-content" id="tab-veille" style="padding-top:8px">
+    <div style="max-width:900px;margin:0 auto">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">&#128270; Veille Financière</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
+        <div class="card" style="cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div class="card-title">&#127758; Banques centrales</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">Suivez les décisions de la BCE, Fed, Banque d'Angleterre et autres banques centrales mondiales.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+            <a href="https://www.ecb.europa.eu/press/pr/activities/mopo/html/index.en.html" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; BCE — Politique monétaire</a>
+            <a href="https://www.federalreserve.gov/newsevents/pressreleases.htm" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Fed — Communiqués</a>
+            <a href="https://www.bis.org/speeches.htm" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; BIS — Discours & Rapports</a>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div class="card-title">&#128202; Marchés & Indices</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">Accès direct aux données de marché en temps réel et aux analyses des grands indices boursiers.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+            <a href="https://finance.yahoo.com" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Yahoo Finance</a>
+            <a href="https://www.bloomberg.com/markets" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Bloomberg Markets</a>
+            <a href="https://www.investing.com" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Investing.com</a>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div class="card-title">&#128240; Presse financière</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">Les sources d'information financière les plus fiables au monde.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+            <a href="https://www.ft.com" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Financial Times</a>
+            <a href="https://www.wsj.com" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Wall Street Journal</a>
+            <a href="https://www.lesechos.fr" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Les Echos</a>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div class="card-title">&#127893; Régulation & Compliance</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">Restez à jour sur les nouvelles réglementations financières, Bâle IV, IFRS, MiFID II.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+            <a href="https://www.amf-france.org" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; AMF France</a>
+            <a href="https://www.esma.europa.eu" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; ESMA Europe</a>
+            <a href="https://www.sec.gov/news/pressreleases.shtml" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; SEC USA</a>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div class="card-title">&#129302; FinTech & Innovation</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">Suivez l'actualité des FinTech, de la blockchain, de la DeFi et des paiements numériques.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+            <a href="https://www.coindesk.com" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; CoinDesk</a>
+            <a href="https://techcrunch.com/fintech" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; TechCrunch FinTech</a>
+            <a href="https://www.fintechnews.org" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; FinTech News</a>
+          </div>
+        </div>
+        <div class="card" style="cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
+          <div class="card-title">&#127758; Afrique & Marchés émergents</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7">Actualités économiques et financières sur l'Afrique et les marchés émergents.</div>
+          <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+            <a href="https://www.african-markets.com" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; African Markets</a>
+            <a href="https://businessday.ng" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Business Day (Nigéria)</a>
+            <a href="https://www.jeune-afrique.com/economie" target="_blank" style="font-size:12px;color:var(--accent);text-decoration:none">&#128279; Jeune Afrique — Économie</a>
           </div>
         </div>
       </div>
@@ -1482,9 +1655,17 @@ function buildTabsBar(isRefresh=false){
     bar.innerHTML=`<button class="tab-btn" onclick="showTab('compta',this)">📒 Comptabilité</button>
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
       <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
-      <button class="tab-btn" onclick="showTab('careertools',this)">📄 Outils Carrière</button>
       <button class="tab-btn" onclick="showTab('contact',this)">📨 Nous contacter</button>
-      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos de moi</button>`;
+      <div class="autre-wrap" id="autre-wrap">
+        <button class="autre-btn" id="autre-btn">Autre ▾</button>
+        <div class="autre-dropdown" id="autre-dropdown">
+          <button class="autre-dropdown-item" onclick="showTabExtra('careertools',this)">📄 Outils Carrière</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('calculator',this)">🧮 Calculateur Financier</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('goals',this)">🎯 Objectifs & Habitudes</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('veille',this)">🔍 Veille Financière</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('about',this)">👤 À propos de moi</button>
+        </div>
+      </div>`;
   } else {
     bar.innerHTML=`<button class="tab-btn" onclick="showTab('fichiers',this)">📁 Fichiers</button>
       <button class="tab-btn" id="tab-btn-acces-profil" onclick="showTab('acces',this)">${isAdmin?'👥 Accès':'👤 Profil'}</button>
@@ -1493,8 +1674,16 @@ function buildTabsBar(isRefresh=false){
       ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">📒 Comptabilité</button>':''}
       <button class="tab-btn" onclick="showTab('finance',this)">📈 Finance</button>
       <button class="tab-btn" onclick="showTab('news',this)">📰 News</button>
-      <button class="tab-btn" onclick="showTab('careertools',this)">📄 Outils Carrière</button>
-      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos de moi</button>`;
+      <div class="autre-wrap" id="autre-wrap">
+        <button class="autre-btn" id="autre-btn">Autre ▾</button>
+        <div class="autre-dropdown" id="autre-dropdown">
+          <button class="autre-dropdown-item" onclick="showTabExtra('careertools',this)">📄 Outils Carrière</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('calculator',this)">🧮 Calculateur Financier</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('goals',this)">🎯 Objectifs & Habitudes</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('veille',this)">🔍 Veille Financière</button>
+          <button class="autre-dropdown-item" onclick="showTabExtra('about',this)">👤 À propos de moi</button>
+        </div>
+      </div>`;
   }
   // Restore active tab on refresh
   const targetTab=savedTab||(isViewer?'compta':'fichiers');
@@ -2602,6 +2791,173 @@ function downloadLM(){
   htmlToDocx(lmData.html,fn);
   toast('Lettre téléchargée ✅','success');
 }
+
+
+// ============ NAVIGATION RAPIDE ============
+function quickNav(tabId){
+  // Chercher l'onglet dans la barre
+  const btn=Array.from(document.querySelectorAll('#tabs-bar .tab-btn')).find(b=>b.getAttribute('onclick')?.includes("'"+tabId+"'"));
+  if(btn){showTab(tabId,btn);}
+  else{
+    // Onglet dans le menu Autre
+    const extraBtn=Array.from(document.querySelectorAll('.autre-dropdown-item')).find(b=>b.getAttribute('onclick')?.includes("'"+tabId+"'"));
+    if(extraBtn)showTabExtra(tabId,extraBtn);
+  }
+}
+
+function showTabExtra(id,btn){
+  // Désactiver tous les onglets principaux
+  document.querySelectorAll('#tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.autre-dropdown-item').forEach(b=>b.classList.remove('active-page'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active-page');
+  const autreBtn=document.getElementById('autre-btn');
+  if(autreBtn)autreBtn.classList.add('has-active');
+  const tc=document.getElementById('tab-'+id);
+  if(tc)tc.classList.add('active');
+  saveActiveTab(id);
+}
+
+// ============ CALCULATEURS FINANCIERS ============
+function calcResult(elId, html){
+  const el=document.getElementById(elId);
+  el.innerHTML=html;el.style.display='block';
+}
+function fmtEur(n){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(n);}
+
+function calcIC(){
+  const cap=parseFloat(document.getElementById('ic-capital').value)||0;
+  const taux=parseFloat(document.getElementById('ic-taux').value)||0;
+  const duree=parseInt(document.getElementById('ic-duree').value)||0;
+  const vers=parseFloat(document.getElementById('ic-versement').value)||0;
+  if(!cap&&!vers){toast('Entrez un capital ou un versement','error');return;}
+  const r=taux/100/12;
+  const n=duree*12;
+  let final=cap*Math.pow(1+r,n);
+  if(vers>0&&r>0)final+=vers*(Math.pow(1+r,n)-1)/r;
+  else if(vers>0)final+=vers*n;
+  const totalVerse=cap+vers*n;
+  const interets=final-totalVerse;
+  calcResult('ic-result',`<div style="background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:9px;padding:14px">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--success)">${fmtEur(final)}</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Capital final après ${duree} ans</div>
+    <div style="margin-top:10px;font-size:12px;display:flex;flex-direction:column;gap:4px">
+      <div>Total versé : <strong>${fmtEur(totalVerse)}</strong></div>
+      <div>Intérêts gagnés : <strong style="color:var(--success)">${fmtEur(interets)}</strong></div>
+      <div>Rendement : <strong>${((final/totalVerse-1)*100).toFixed(1)}%</strong></div>
+    </div>
+  </div>`);
+}
+
+function calcPret(){
+  const montant=parseFloat(document.getElementById('pret-montant').value)||0;
+  const taux=parseFloat(document.getElementById('pret-taux').value)||0;
+  const duree=parseInt(document.getElementById('pret-duree').value)||0;
+  if(!montant||!taux||!duree){toast('Remplissez tous les champs','error');return;}
+  const r=taux/100/12;const n=duree*12;
+  const mensualite=montant*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+  const totalPaye=mensualite*n;
+  const coutCredit=totalPaye-montant;
+  calcResult('pret-result',`<div style="background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:9px;padding:14px">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent2)">${fmtEur(mensualite)}<span style="font-size:12px">/mois</span></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">Mensualité sur ${duree} ans</div>
+    <div style="margin-top:10px;font-size:12px;display:flex;flex-direction:column;gap:4px">
+      <div>Total remboursé : <strong>${fmtEur(totalPaye)}</strong></div>
+      <div>Coût du crédit : <strong style="color:var(--accent2)">${fmtEur(coutCredit)}</strong></div>
+      <div>Taux effectif global : <strong>${taux}%/an</strong></div>
+    </div>
+  </div>`);
+}
+
+function calcROI(){
+  const invest=parseFloat(document.getElementById('roi-invest').value)||0;
+  const final=parseFloat(document.getElementById('roi-final').value)||0;
+  const duree=parseFloat(document.getElementById('roi-duree').value)||1;
+  if(!invest||!final){toast('Remplissez les champs','error');return;}
+  const roi=((final-invest)/invest)*100;
+  const cagr=(Math.pow(final/invest,1/duree)-1)*100;
+  const gain=final-invest;
+  calcResult('roi-result',`<div style="background:rgba(${gain>=0?'46,204,113':'230,57,70'},.1);border:1px solid rgba(${gain>=0?'46,204,113':'230,57,70'},.3);border-radius:9px;padding:14px">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:${gain>=0?'var(--success)':'var(--accent2)'}">ROI : ${roi.toFixed(1)}%</div>
+    <div style="margin-top:10px;font-size:12px;display:flex;flex-direction:column;gap:4px">
+      <div>Gain net : <strong style="color:${gain>=0?'var(--success)':'var(--accent2)'}">${fmtEur(gain)}</strong></div>
+      <div>CAGR (taux annualisé) : <strong>${cagr.toFixed(2)}%/an</strong></div>
+      <div>Valeur finale : <strong>${fmtEur(final)}</strong></div>
+    </div>
+  </div>`);
+}
+
+function calcFX(){
+  const montant=parseFloat(document.getElementById('fx-montant').value)||0;
+  const fromRate=parseFloat(document.getElementById('fx-from').value)||1;
+  const toRate=parseFloat(document.getElementById('fx-to').value)||1;
+  const fromLabel=document.getElementById('fx-from').options[document.getElementById('fx-from').selectedIndex].text;
+  const toLabel=document.getElementById('fx-to').options[document.getElementById('fx-to').selectedIndex].text;
+  const result=montant/fromRate*toRate;
+  calcResult('fx-result',`<div style="background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.3);border-radius:9px;padding:14px">
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#3498db">${result.toLocaleString('fr-FR',{maximumFractionDigits:2})}</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:4px">${montant.toLocaleString('fr-FR')} ${fromLabel} = ${result.toLocaleString('fr-FR',{maximumFractionDigits:2})} ${toLabel}</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">Taux indicatif — pour référence uniquement</div>
+  </div>`);
+}
+
+// ============ OBJECTIFS & HABITUDES ============
+let goalsList=[];
+function openAddGoal(){document.getElementById('goal-modal').style.display='flex';document.getElementById('goal-date').valueAsDate=new Date(Date.now()+90*24*60*60*1000);}
+function closeGoalModal(){document.getElementById('goal-modal').style.display='none';}
+function saveGoal(){
+  const titre=document.getElementById('goal-titre').value.trim();
+  if(!titre){toast('Titre requis','error');return;}
+  const goal={id:'g'+Date.now(),titre,cat:document.getElementById('goal-cat').value,date:document.getElementById('goal-date').value,target:parseInt(document.getElementById('goal-target').value)||100,desc:document.getElementById('goal-desc').value.trim(),progress:0,created:new Date().toISOString()};
+  goalsList.unshift(goal);
+  try{localStorage.setItem('espace_goals',JSON.stringify(goalsList));}catch(e){}
+  renderGoals();closeGoalModal();
+  document.getElementById('goal-titre').value='';document.getElementById('goal-desc').value='';
+  toast('Objectif ajouté ✅','success');
+}
+function loadGoals(){try{const g=localStorage.getItem('espace_goals');if(g)goalsList=JSON.parse(g);}catch(e){}renderGoals();}
+function renderGoals(){
+  const el=document.getElementById('goals-list');if(!el)return;
+  if(!goalsList.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🎯</div><p>Aucun objectif. Ajoutez votre premier objectif !</p></div>';return;}
+  const catIcons={finance:'📈',sante:'💪',career:'💼',perso:'⭐',education:'🎓'};
+  el.innerHTML=goalsList.map(g=>{
+    const pct=Math.min(g.progress||0,g.target||100);
+    const pctPct=Math.round(pct/(g.target||100)*100);
+    const overdue=g.date&&new Date(g.date)<new Date()&&pctPct<100;
+    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:18px">${catIcons[g.cat]||'⭐'}</span>
+            <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px">${g.titre}</span>
+            ${overdue?'<span style="font-size:10px;background:rgba(230,57,70,.15);color:var(--accent2);border-radius:4px;padding:2px 7px">En retard</span>':''}
+          </div>
+          ${g.desc?`<div style="font-size:12px;color:var(--muted);margin-bottom:8px">${g.desc}</div>`:''}
+          <div style="background:var(--surface2);border-radius:99px;height:6px;overflow:hidden;margin-bottom:6px">
+            <div style="height:100%;width:${pctPct}%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;transition:width .5s"></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <input type="range" min="0" max="${g.target}" value="${pct}" onchange="updateGoalProgress('${g.id}',this.value)" style="width:100px;accent-color:var(--accent)">
+              <span style="font-size:12px;color:var(--muted)">${pctPct}%</span>
+            </div>
+            <span style="font-size:11px;color:var(--muted)">${g.date?new Date(g.date).toLocaleDateString('fr-FR'):''}</span>
+          </div>
+        </div>
+        <button onclick="deleteGoal('${g.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function updateGoalProgress(id,val){
+  const g=goalsList.find(x=>x.id===id);if(!g)return;g.progress=parseInt(val);
+  try{localStorage.setItem('espace_goals',JSON.stringify(goalsList));}catch(e){}
+  renderGoals();
+}
+function deleteGoal(id){goalsList=goalsList.filter(g=>g.id!==id);try{localStorage.setItem('espace_goals',JSON.stringify(goalsList));}catch(e){}renderGoals();}
+
+// Charger les objectifs au démarrage
+document.addEventListener('firebase-ready',()=>{setTimeout(loadGoals,500);});
 
 
 // ============ DELETE ============
