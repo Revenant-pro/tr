@@ -3,35 +3,44 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>世界運命</title>
+<title>Espace Personnel</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script>
-  (function(){
-    // EmailJS init — service gratuit pour l'envoi d'emails côté client
-    if(window.emailjs) emailjs.init({publicKey:'user_placeholder_key'});
-  })();
-</script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<!-- FIREBASE SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-  const firebaseConfig = {
+<!-- FIREBASE SDK (compat — non-module, pour éviter les problèmes de timing) -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<script>
+  // Initialisation synchrone — garantit que Firebase est prêt avant le reste
+  const _fbApp = firebase.initializeApp({
     apiKey: "AIzaSyAChtwstofSGIdNu1OGivoHcvymDODF0Co",
     authDomain: "site-revenant.firebaseapp.com",
     projectId: "site-revenant",
     storageBucket: "site-revenant.firebasestorage.app",
     messagingSenderId: "492360431114",
     appId: "1:492360431114:web:0546f252b9f89b3162d1f3"
+  });
+  const _fbDb = _fbApp.firestore();
+
+  // Shim : on expose les mêmes fonctions qu'avant pour ne rien casser
+  window.firebaseDB = _fbDb;
+  window.firebaseFns = {
+    collection: (db,col) => db.collection(col),
+    getDocs: (ref) => ref.get(),
+    addDoc: (ref,data) => ref.add(data),
+    deleteDoc: (ref) => ref.delete(),
+    doc: (db,col,id) => db.collection(col).doc(String(id)),
+    setDoc: (ref,data) => ref.set(data),
+    getDoc: (ref) => ref.get(),
   };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  window.firebaseDB = db;
-  window.firebaseFns = { collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc, onSnapshot, query, orderBy };
   window.firebaseReady = true;
-  document.dispatchEvent(new Event('firebase-ready'));
+  // On dispatch après que le DOM soit prêt
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',()=>document.dispatchEvent(new Event('firebase-ready')));
+  } else {
+    document.dispatchEvent(new Event('firebase-ready'));
+  }
 </script>
 
 <style>
@@ -358,31 +367,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 .news-detail-card{background:var(--surface);border:1px solid var(--border);border-radius:4px;width:860px;max-width:95vw;max-height:92vh;overflow-y:auto;}
 
 /* CHATBOT */
-.chatbot-btn{display:none;}
-/* ASSISTANT IA */
-#ai-assistant-btn{position:fixed;bottom:24px;left:24px;width:54px;height:54px;background:linear-gradient(135deg,#6c47ff,#e63946);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 6px 24px rgba(108,71,255,.45);z-index:800;border:none;transition:transform .2s,box-shadow .2s;}
-#ai-assistant-btn:hover{transform:scale(1.1);box-shadow:0 10px 30px rgba(108,71,255,.55);}
-.ai-panel{position:fixed;bottom:92px;left:24px;width:380px;max-height:560px;background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:0 24px 70px rgba(0,0,0,.65);z-index:800;display:none;flex-direction:column;overflow:hidden;}
-.ai-panel.open{display:flex;}
-.ai-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(108,71,255,.12),rgba(230,57,70,.08));}
-.ai-header-left{display:flex;align-items:center;gap:10px;}
-.ai-header-left h4{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin:0;}
-.ai-header-left span{font-size:10px;color:var(--success);font-weight:600;background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.25);border-radius:20px;padding:2px 8px;}
-.ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
-.ai-msg{max-width:88%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.6;}
-.ai-msg.bot{background:var(--surface2);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:3px;}
-.ai-msg.user{background:linear-gradient(135deg,#6c47ff,var(--accent));color:white;align-self:flex-end;border-bottom-right-radius:3px;}
-.ai-msg.typing{opacity:.6;}
-.ai-input-wrap{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--border);background:var(--surface);}
-.ai-input-wrap input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
-.ai-input-wrap input:focus{border-color:#6c47ff;}
-.ai-input-wrap button{background:linear-gradient(135deg,#6c47ff,var(--accent));border:none;border-radius:10px;padding:9px 15px;color:white;cursor:pointer;font-size:14px;transition:opacity .2s;}
-.ai-input-wrap button:hover{opacity:.85;}
-.ai-suggestions{display:flex;gap:6px;padding:8px 14px 0;flex-wrap:wrap;}
-.ai-suggestion{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .15s;}
-.ai-suggestion:hover{border-color:#6c47ff;color:var(--text);}
-/* compat */
-.chatbot-panel{display:none!important;}
 .chat-msg{max-width:85%;padding:9px 13px;border-radius:10px;font-size:13px;line-height:1.5;}
 .chat-msg.bot{background:var(--surface2);border:1px solid var(--border);align-self:flex-start;}
 .chat-msg.user{background:linear-gradient(135deg,var(--accent),#c1121f);color:white;align-self:flex-end;}
@@ -1346,31 +1330,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 </div>
 
 <!-- CHATBOT (non-lecteurs seulement) -->
-<!-- Bouton assistant IA -->
-<button id="ai-assistant-btn" onclick="toggleAI()" title="Assistant IA">✦</button>
-<!-- Panel assistant IA -->
-<div class="ai-panel" id="ai-panel">
-  <div class="ai-header">
-    <div class="ai-header-left">
-      <h4>✦ Assistant IA</h4>
-      <span>En ligne</span>
-    </div>
-    <button onclick="toggleAI()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 4px">✕</button>
-  </div>
-  <div class="ai-suggestions">
-    <button class="ai-suggestion" onclick="askAI('Explique-moi la page Finance')">📈 Finance</button>
-    <button class="ai-suggestion" onclick="askAI('Comment créer un CV adapté ?')">📄 CV</button>
-    <button class="ai-suggestion" onclick="askAI('Analyse mon suivi de compte')">💰 Compte</button>
-    <button class="ai-suggestion" onclick="askAI('Quelles pages ai-je ?')">🗺️ Pages</button>
-  </div>
-  <div class="ai-messages" id="ai-messages">
-    <div class="ai-msg bot">✦ Bonjour ! Je suis votre assistant IA personnel. Je connais toutes les fonctionnalités de cette application et je peux répondre à n'importe quelle question. Comment puis-je vous aider ?</div>
-  </div>
-  <div class="ai-input-wrap">
-    <input type="text" id="ai-input-field" placeholder="Posez votre question..." onkeydown="if(event.key==='Enter')sendAIMsg()">
-    <button onclick="sendAIMsg()">↑</button>
-  </div>
-</div>
+
 
 <div class="toast-wrap" id="toasts"></div>
 
@@ -1411,10 +1371,19 @@ let currentUser=null,users=[],files=[],agendas={},transactions=[],connLog=[],cur
 
 // ============ FIREBASE ============
 function getDB(){return window.firebaseDB;}
-function getFns(){return window.firebaseFns;}
-async function fbSave(col,id,data){try{const{doc,setDoc}=getFns();await setDoc(doc(getDB(),col,String(id)),data);}catch(e){console.error(e);}}
-async function fbDelete(col,id){try{const{doc,deleteDoc}=getFns();await deleteDoc(doc(getDB(),col,String(id)));}catch(e){console.error(e);}}
-async function fbGetAll(col){try{const{collection,getDocs}=getFns();const snap=await getDocs(collection(getDB(),col));return snap.docs.map(d=>({...d.data(),_fbid:d.id}));}catch(e){console.warn('fbGetAll error on',col,e);return[];}}
+// SDK compat : API simplifiée directement sur l'objet Firestore
+async function fbSave(col,id,data){
+  try{await getDB().collection(col).doc(String(id)).set(data);}catch(e){console.error('fbSave',col,id,e);}
+}
+async function fbDelete(col,id){
+  try{await getDB().collection(col).doc(String(id)).delete();}catch(e){console.error('fbDelete',col,id,e);}
+}
+async function fbGetAll(col){
+  try{
+    const snap=await getDB().collection(col).get();
+    return snap.docs.map(d=>({...d.data(),_fbid:d.id}));
+  }catch(e){console.warn('fbGetAll error on',col,e);return[];}
+}
 
 // ============ SESSION ============
 // Utilise sessionStorage (effacé à la fermeture de l'onglet) + beacon pour logout Firebase
@@ -1613,7 +1582,7 @@ function launchDashboard(isRefresh=false){
   document.getElementById('login-page').style.display='none';
   document.getElementById('dashboard').style.display='block';
   document.getElementById('topbar-username').textContent=currentUser.fullname||currentUser.username;
-  const aib=document.getElementById('ai-assistant-btn');if(aib)aib.style.display='flex';
+
   buildTabsBar(isRefresh);
   initDashboard(isRefresh);
 }
@@ -3396,37 +3365,10 @@ async function sendContactForm(){
   ['ct-nom','ct-prenom','ct-pays','ct-ville','ct-email','ct-tel','ct-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 
-// ============ ASSISTANT IA ============
-let aiHistory=[];
-const AI_SYSTEM='Tu es un assistant IA dans "Espace Privé", une application web privée. Aide les utilisateurs et reponds a toutes leurs questions en francais. Pages dispo selon role: Admins=Fichiers,Acces,Agenda,Compte,Compta,Finance,News,Carriere,Calculateur,Objectifs,Veille,APropos. Lecteurs=Compta,Finance,News,Carriere,Calculateur,Objectifs,Veille,Contact,APropos. Sois concis et utile.';
-function toggleAI(){const p=document.getElementById('ai-panel');p.classList.toggle('open');if(p.classList.contains('open'))document.getElementById('ai-input-field')?.focus();}
-function askAI(q){document.getElementById('ai-input-field').value=q;sendAIMsg();}
-function addAIMsg(text,who,typing){
-  const msgs=document.getElementById('ai-messages');
-  const div=document.createElement('div');div.className='ai-msg '+who+(typing?' typing':'');
-  if(who==='bot'&&!typing)div.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<strong></strong>').replace(/
-/g,'<br>');
-  else div.textContent=text;
-  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;return div;
-}
-async function sendAIMsg(){
-  const inp=document.getElementById('ai-input-field');
-  const q=inp.value.trim();if(!q)return;
-  inp.value='';inp.disabled=true;
-  addAIMsg(q,'user',false);
-  const t=addAIMsg('…','bot',true);
-  aiHistory.push({role:'user',content:q});
-  if(aiHistory.length>10)aiHistory=aiHistory.slice(-10);
-  try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:AI_SYSTEM,messages:aiHistory})});
-    const d=await r.json();
-    const ans=d.content?.[0]?.text||'Désolé, erreur.';
-    t.remove();addAIMsg(ans,'bot',false);
-    aiHistory.push({role:'assistant',content:ans});
-  }catch(e){t.remove();addAIMsg('Erreur de connexion.','bot',false);}
-  inp.disabled=false;inp.focus();
-}
 function toggleChatbot(){}
+function toggleAI(){}
+function sendAIMsg(){}
+function askAI(){}
 
 // ============ INIT ============
 document.getElementById('tx-date').valueAsDate=new Date();
