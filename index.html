@@ -1414,7 +1414,7 @@ function getDB(){return window.firebaseDB;}
 function getFns(){return window.firebaseFns;}
 async function fbSave(col,id,data){try{const{doc,setDoc}=getFns();await setDoc(doc(getDB(),col,String(id)),data);}catch(e){console.error(e);}}
 async function fbDelete(col,id){try{const{doc,deleteDoc}=getFns();await deleteDoc(doc(getDB(),col,String(id)));}catch(e){console.error(e);}}
-async function fbGetAll(col){try{const{collection,getDocs}=getFns();const snap=await getDocs(collection(getDB(),col));return snap.docs.map(d=>({...d.data(),_fbid:d.id}));}catch(e){return[];}}
+async function fbGetAll(col){try{const{collection,getDocs}=getFns();const snap=await getDocs(collection(getDB(),col));return snap.docs.map(d=>({...d.data(),_fbid:d.id}));}catch(e){console.warn('fbGetAll error on',col,e);return[];}}
 
 // ============ SESSION ============
 // Utilise sessionStorage (effacé à la fermeture de l'onglet) + beacon pour logout Firebase
@@ -1547,20 +1547,24 @@ async function doRegister(){
 async function tryAutoLogin(){
   const sess=loadSession();
   if(!sess){showLoginPage();return;}
-  await ensureHansExists();
-  const fbUsers=await fbGetAll('users');
-  if(fbUsers.length>0)users=fbUsers.map(u=>({...u,created:u.created?new Date(u.created):new Date()}));
-  const found=users.find(x=>x.username===sess.username&&x.pass===sess.pass);
-  if(!found){clearSession();showLoginPage();return;}
-  found._sessionId=sess.sessionId;
-  currentUser=found;
-  // No new logConnection on refresh — reuse existing session
-  const fbLogs=await fbGetAll('connlog');
-  connLog=fbLogs.map(l=>({...l,loginTime:new Date(l.loginTime),logoutTime:l.logoutTime?new Date(l.logoutTime):null,_logId:l.id||l._fbid})).sort((a,b)=>b.loginTime-a.loginTime);
-  // Restaurer le logId courant pour la déconnexion automatique à la fermeture
-  const myActiveLog=connLog.find(l=>l.username===sess.username&&!l.logoutTime&&l.sessionId===sess.sessionId);
-  if(myActiveLog)_currentLogId=myActiveLog._logId||myActiveLog.id;
-  launchDashboard(true);
+  try{
+    await ensureHansExists();
+    const fbUsers=await fbGetAll('users');
+    if(fbUsers.length>0)users=fbUsers.map(u=>({...u,created:u.created?new Date(u.created):new Date()}));
+    const found=users.find(x=>x.username===sess.username&&x.pass===sess.pass);
+    if(!found){clearSession();showLoginPage();return;}
+    found._sessionId=sess.sessionId;
+    currentUser=found;
+    const fbLogs=await fbGetAll('connlog');
+    connLog=fbLogs.map(l=>({...l,loginTime:new Date(l.loginTime),logoutTime:l.logoutTime?new Date(l.logoutTime):null,_logId:l.id||l._fbid})).sort((a,b)=>b.loginTime-a.loginTime);
+    const myActiveLog=connLog.find(l=>l.username===sess.username&&!l.logoutTime&&l.sessionId===sess.sessionId);
+    if(myActiveLog)_currentLogId=myActiveLog._logId||myActiveLog.id;
+    launchDashboard(true);
+  }catch(e){
+    console.error('tryAutoLogin error:',e);
+    clearSession();
+    showLoginPage();
+  }
 }
 
 function showLoginPage(){
@@ -3428,30 +3432,57 @@ function toggleChatbot(){}
 document.getElementById('tx-date').valueAsDate=new Date();
 
 // ——— Déconnexion forcée unique de toutes les sessions actives ———
-// S'exécute une seule fois grâce au flag 'force_logout_done_v1' dans Firebase.
 async function runOnceForceLogoutAll(){
   const FLAG_KEY='force_logout_done_v1';
   try{
     const existing=await fbGetAll('admin_flags');
-    if(existing.find(x=>x.id===FLAG_KEY))return; // Déjà exécuté
-    // Marquer comme fait AVANT de traiter (évite double exécution)
+    if(existing.find(x=>x.id===FLAG_KEY))return;
     await fbSave('admin_flags',FLAG_KEY,{id:FLAG_KEY,done:true,at:new Date().toISOString()});
-    // Récupérer tous les logs actifs et les clore
     const allLogs=await fbGetAll('connlog');
     const activeLogs=allLogs.filter(l=>!l.logoutTime);
     const now=new Date().toISOString();
     await Promise.all(activeLogs.map(l=>fbSave('connlog',l.id||l._fbid,{...l,logoutTime:now})));
-    // Effacer toutes les sessions locales
     try{sessionStorage.clear();localStorage.removeItem('espace_session');}catch(e){}
   }catch(e){console.warn('forceLogoutAll:',e);}
 }
 
-document.addEventListener('firebase-ready',async()=>{
-  await runOnceForceLogoutAll();
-  await tryAutoLogin();
+// ——— Démarrage sécurisé — jamais bloqué ———
+let _appStarted=false;
+
+async function startApp(){
+  if(_appStarted)return;
+  _appStarted=true;
+  try{
+    await runOnceForceLogoutAll();
+  }catch(e){console.warn('forceLogout skipped:',e);}
+  try{
+    await tryAutoLogin();
+  }catch(e){
+    console.error('tryAutoLogin failed:',e);
+    // En cas d'erreur, afficher quand même la page de connexion
+    try{document.getElementById('loading-screen').style.display='none';}catch(_){}
+    try{document.getElementById('login-page').style.display='flex';}catch(_){}
+  }
+}
+
+// Timeout de sécurité : si Firebase ne répond pas en 8s → forcer la page de connexion
+const _loadingTimeout=setTimeout(()=>{
+  if(_appStarted)return;
+  console.warn('Firebase timeout — affichage de la page de connexion');
+  _appStarted=true;
+  try{document.getElementById('loading-screen').style.display='none';}catch(_){}
+  try{document.getElementById('login-page').style.display='flex';}catch(_){}
+},8000);
+
+document.addEventListener('firebase-ready',()=>{
+  clearTimeout(_loadingTimeout);
+  startApp();
 });
+
+// Si Firebase est déjà prêt au moment où ce script s'exécute
 if(window.firebaseReady){
-  runOnceForceLogoutAll().then(()=>tryAutoLogin());
+  clearTimeout(_loadingTimeout);
+  startApp();
 }
 </script>
 </body>
