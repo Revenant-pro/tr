@@ -8,38 +8,35 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<!-- FIREBASE SDK (compat — non-module, pour éviter les problèmes de timing) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<!-- FIREBASE SDK compat v9 — chargement synchrone garanti -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script>
-  // Initialisation synchrone — garantit que Firebase est prêt avant le reste
-  const _fbApp = firebase.initializeApp({
-    apiKey: "AIzaSyAChtwstofSGIdNu1OGivoHcvymDODF0Co",
-    authDomain: "site-revenant.firebaseapp.com",
-    projectId: "site-revenant",
-    storageBucket: "site-revenant.firebasestorage.app",
-    messagingSenderId: "492360431114",
-    appId: "1:492360431114:web:0546f252b9f89b3162d1f3"
-  });
-  const _fbDb = _fbApp.firestore();
-
-  // Shim : on expose les mêmes fonctions qu'avant pour ne rien casser
-  window.firebaseDB = _fbDb;
-  window.firebaseFns = {
-    collection: (db,col) => db.collection(col),
-    getDocs: (ref) => ref.get(),
-    addDoc: (ref,data) => ref.add(data),
-    deleteDoc: (ref) => ref.delete(),
-    doc: (db,col,id) => db.collection(col).doc(String(id)),
-    setDoc: (ref,data) => ref.set(data),
-    getDoc: (ref) => ref.get(),
-  };
-  window.firebaseReady = true;
-  // On dispatch après que le DOM soit prêt
+  function _initFirebase(){
+    try{
+      const app=firebase.initializeApp({
+        apiKey:"AIzaSyAChtwstofSGIdNu1OGivoHcvymDODF0Co",
+        authDomain:"site-revenant.firebaseapp.com",
+        projectId:"site-revenant",
+        storageBucket:"site-revenant.firebasestorage.app",
+        messagingSenderId:"492360431114",
+        appId:"1:492360431114:web:0546f252b9f89b3162d1f3"
+      });
+      window.firebaseDB=firebase.firestore(app);
+      window.firebaseReady=true;
+      document.dispatchEvent(new Event('firebase-ready'));
+    }catch(e){
+      console.error('Firebase init error:',e);
+      // Même si Firebase échoue, afficher la page de connexion
+      window.firebaseReady=false;
+      document.dispatchEvent(new Event('firebase-ready'));
+    }
+  }
+  // S'exécute dès que le DOM est prêt (les scripts src sont déjà chargés de façon synchrone)
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',()=>document.dispatchEvent(new Event('firebase-ready')));
+    document.addEventListener('DOMContentLoaded',_initFirebase);
   } else {
-    document.dispatchEvent(new Event('firebase-ready'));
+    _initFirebase();
   }
 </script>
 
@@ -1332,6 +1329,50 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 <!-- CHATBOT (non-lecteurs seulement) -->
 
 
+<!-- ASSISTANT IA -->
+<style>
+#ai-btn{position:fixed;bottom:24px;left:24px;width:50px;height:50px;background:linear-gradient(135deg,#6c47ff,#e63946);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(108,71,255,.5);z-index:800;border:none;transition:transform .2s;}
+#ai-btn:hover{transform:scale(1.1);}
+#ai-panel{position:fixed;bottom:86px;left:24px;width:360px;max-height:520px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);z-index:800;display:none;flex-direction:column;overflow:hidden;}
+#ai-panel.open{display:flex;}
+.ai-hd{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(108,71,255,.1),rgba(230,57,70,.07));}
+.ai-hd-l{display:flex;align-items:center;gap:9px;}
+.ai-hd-l h4{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin:0;}
+.ai-hd-l span{font-size:10px;color:var(--success);font-weight:600;background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.25);border-radius:20px;padding:2px 8px;}
+#ai-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;}
+.ai-m{max-width:87%;padding:9px 13px;border-radius:11px;font-size:13px;line-height:1.55;}
+.ai-m.bot{background:var(--surface2);border:1px solid var(--border);align-self:flex-start;}
+.ai-m.usr{background:linear-gradient(135deg,#6c47ff,var(--accent));color:#fff;align-self:flex-end;}
+.ai-m.loading{opacity:.55;}
+.ai-chips{display:flex;gap:6px;padding:8px 12px 4px;flex-wrap:wrap;}
+.ai-chip{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-size:11px;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ai-chip:hover{border-color:#6c47ff;color:var(--text);}
+.ai-inp{display:flex;gap:7px;padding:11px 13px;border-top:1px solid var(--border);}
+.ai-inp input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:8px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.ai-inp input:focus{border-color:#6c47ff;}
+.ai-inp button{background:linear-gradient(135deg,#6c47ff,var(--accent));border:none;border-radius:9px;padding:8px 14px;color:#fff;cursor:pointer;font-size:14px;}
+</style>
+<button id="ai-btn" onclick="toggleAI()">✦</button>
+<div id="ai-panel">
+  <div class="ai-hd">
+    <div class="ai-hd-l"><h4>✦ Assistant IA</h4><span>Claude</span></div>
+    <button onclick="toggleAI()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button>
+  </div>
+  <div class="ai-chips">
+    <button class="ai-chip" onclick="askAI('Comment utiliser cette appli ?')">💡 Guide</button>
+    <button class="ai-chip" onclick="askAI('Explique la page Finance')">📈 Finance</button>
+    <button class="ai-chip" onclick="askAI('Comment créer un bon CV ?')">📄 CV</button>
+    <button class="ai-chip" onclick="askAI('Conseils en investissement')">💰 Invest</button>
+  </div>
+  <div id="ai-msgs">
+    <div class="ai-m bot">Bonjour ! Je suis votre assistant IA. Je peux vous aider à naviguer dans l'application ou répondre à vos questions. Comment puis-je vous aider ?</div>
+  </div>
+  <div class="ai-inp">
+    <input id="ai-in" placeholder="Posez votre question..." onkeydown="if(event.key==='Enter')sendAI()">
+    <button onclick="sendAI()">↑</button>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
@@ -1371,15 +1412,22 @@ let currentUser=null,users=[],files=[],agendas={},transactions=[],connLog=[],cur
 
 // ============ FIREBASE ============
 function getDB(){return window.firebaseDB;}
-// SDK compat : API simplifiée directement sur l'objet Firestore
+function getFns(){return window.firebaseFns||{};}
 async function fbSave(col,id,data){
-  try{await getDB().collection(col).doc(String(id)).set(data);}catch(e){console.error('fbSave',col,id,e);}
+  try{
+    if(!getDB())return;
+    await getDB().collection(col).doc(String(id)).set(data);
+  }catch(e){console.error('fbSave',col,id,e);}
 }
 async function fbDelete(col,id){
-  try{await getDB().collection(col).doc(String(id)).delete();}catch(e){console.error('fbDelete',col,id,e);}
+  try{
+    if(!getDB())return;
+    await getDB().collection(col).doc(String(id)).delete();
+  }catch(e){console.error('fbDelete',col,id,e);}
 }
 async function fbGetAll(col){
   try{
+    if(!getDB())return[];
     const snap=await getDB().collection(col).get();
     return snap.docs.map(d=>({...d.data(),_fbid:d.id}));
   }catch(e){console.warn('fbGetAll error on',col,e);return[];}
@@ -1582,7 +1630,8 @@ function launchDashboard(isRefresh=false){
   document.getElementById('login-page').style.display='none';
   document.getElementById('dashboard').style.display='block';
   document.getElementById('topbar-username').textContent=currentUser.fullname||currentUser.username;
-
+  const aiBtn=document.getElementById('ai-btn');
+  if(aiBtn)aiBtn.style.display='flex';
   buildTabsBar(isRefresh);
   initDashboard(isRefresh);
 }
@@ -3365,10 +3414,36 @@ async function sendContactForm(){
   ['ct-nom','ct-prenom','ct-pays','ct-ville','ct-email','ct-tel','ct-msg'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
 }
 
+// ============ ASSISTANT IA ============
+let _aiHist=[];
+function toggleAI(){const p=document.getElementById('ai-panel');p.classList.toggle('open');if(p.classList.contains('open'))document.getElementById('ai-in')?.focus();}
+function askAI(q){const i=document.getElementById('ai-in');i.value=q;sendAI();}
+function _aiMsg(txt,cls,typing){
+  const el=document.createElement('div');el.className='ai-m '+cls+(typing?' loading':'');
+  if(cls==='bot'&&!typing)el.innerHTML=txt.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  else el.textContent=txt;
+  const box=document.getElementById('ai-msgs');box.appendChild(el);box.scrollTop=9999;return el;
+}
+async function sendAI(){
+  const inp=document.getElementById('ai-in');
+  const q=inp.value.trim();if(!q)return;
+  inp.value='';inp.disabled=true;
+  _aiMsg(q,'usr',false);
+  const loader=_aiMsg('…','bot',true);
+  _aiHist.push({role:'user',content:q});
+  if(_aiHist.length>10)_aiHist=_aiHist.slice(-10);
+  try{
+    const sys='Tu es un assistant IA intégré dans "Espace Privé", une application web avec : Fichiers, Agenda, Suivi de compte (PCG), Comptabilité, Finance (45 actifs temps réel), News Bloomberg, Outils Carrière (CV+LM), Calculateur financier, Objectifs, Veille financière, À propos. Réponds en français, sois concis et utile. Tu peux aussi répondre à des questions générales.';
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:_aiHist})});
+    const d=await r.json();
+    const ans=d.content?.[0]?.text||'Désolé, je n\'ai pas pu répondre.';
+    loader.remove();_aiMsg(ans,'bot',false);
+    _aiHist.push({role:'assistant',content:ans});
+  }catch(e){loader.remove();_aiMsg('Erreur réseau. Réessayez.','bot',false);}
+  inp.disabled=false;inp.focus();
+}
 function toggleChatbot(){}
-function toggleAI(){}
-function sendAIMsg(){}
-function askAI(){}
+function sendChatMsg(){}
 
 // ============ INIT ============
 document.getElementById('tx-date').valueAsDate=new Date();
