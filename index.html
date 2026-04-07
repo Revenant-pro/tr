@@ -469,18 +469,38 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- FICHIERS -->
   <div class="tab-content active" id="tab-fichiers">
-    <div class="page-header"><div class="page-title">📁 Stockage de fichiers</div><div class="page-desc">Déposez vos fichiers — visibles par tous les membres</div></div>
+    <div class="page-header"><div class="page-title">📁 Stockage de fichiers</div><div class="page-desc">Déposez vos fichiers — organisez-les en dossiers</div></div>
+    <!-- Barre d'actions dossiers -->
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex:1;flex-wrap:wrap">
+        <button id="btn-root-folder" class="btn btn-outline" onclick="navigateFolder(null)" style="font-size:12px;padding:7px 14px">🏠 Racine</button>
+        <div id="folder-breadcrumb" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);flex-wrap:wrap"></div>
+      </div>
+      <button class="btn btn-outline" onclick="openCreateFolder()" style="font-size:12px;padding:7px 14px">📁+ Nouveau dossier</button>
+    </div>
     <div class="dropzone" id="dropzone">
       <input type="file" multiple id="file-input">
       <div style="font-size:38px;margin-bottom:10px">☁️</div>
       <div style="font-size:14px;color:var(--muted)"><strong style="color:var(--text)">Cliquez ou déposez vos fichiers ici</strong></div>
+      <div id="dropzone-folder-hint" style="font-size:12px;color:var(--accent);margin-top:6px"></div>
     </div>
     <div style="margin-bottom:16px">
       <input type="text" id="file-search" placeholder="🔍 Rechercher un fichier par nom..." oninput="renderFiles()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     </div>
     <div class="card">
-      <div class="card-title">📂 Tous les fichiers</div>
+      <div class="card-title">📂 <span id="files-card-title">Tous les fichiers</span></div>
       <div id="files-all"><div class="empty-state"><div class="empty-icon">📂</div><p>Aucun fichier.</p></div></div>
+    </div>
+    <!-- Modal création de dossier -->
+    <div id="folder-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:380px;max-width:95vw">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">📁 Nouveau dossier</div>
+        <input type="text" id="folder-name-input" placeholder="Nom du dossier..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:13px;outline:none;margin-bottom:16px" onkeydown="if(event.key==='Enter')createFolder()">
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" onclick="closeFolderModal()" style="flex:1">Annuler</button>
+          <button class="btn btn-primary" onclick="createFolder()" style="flex:2">Créer</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -530,6 +550,26 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <div class="card">
           <div class="card-title">👥 Nombre d'utilisateurs</div>
           <div id="user-count-wrap" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
+        </div>
+      </div>
+      <!-- Promotion des utilisateurs (admin principal uniquement) -->
+      <div class="card" style="margin-top:18px" id="promote-card" style="display:none">
+        <div class="card-title">⬆️ Promouvoir un utilisateur</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Changer le rôle d'un utilisateur. Seul l'administrateur principal peut effectuer cette action.</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+          <div style="flex:2;min-width:160px">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Utilisateur</label>
+            <select id="promote-user-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"></select>
+          </div>
+          <div style="flex:1;min-width:140px">
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Nouveau rôle</label>
+            <select id="promote-role-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+              <option value="viewer">👁 Lecteur</option>
+              <option value="editor">👤 Personnel</option>
+              <option value="admin">🔑 Administrateur</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" onclick="promoteUser()" style="padding:10px 20px;font-size:13px;white-space:nowrap">⬆️ Appliquer</button>
         </div>
       </div>
     </div>
@@ -884,7 +924,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 
   <!-- À PROPOS DE MOI -->
-  <div class="tab-content" id="tab-about" style="padding-top:0;padding-bottom:28px">
+  <div class="tab-content" id="tab-about" style="padding:0 28px 28px">
     <!-- VUE ADMIN : éditeur -->
     <div id="about-admin-view" style="display:none;max-width:1100px;margin:0 auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
@@ -951,7 +991,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 
   <!-- OUTILS CARRIERE -->
-  <div class="tab-content" id="tab-careertools" style="padding-top:8px">
+  <div class="tab-content" id="tab-careertools" style="padding:0 28px 28px">
     <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;">
       <button class="tab-btn active" id="career-sub-cv" onclick="showCareerTab('cv',this)" style="font-size:13px;padding:10px 22px">&#128203; Créateur de CV</button>
       <button class="tab-btn" id="career-sub-lm" onclick="showCareerTab('lm',this)" style="font-size:13px;padding:10px 22px">&#9993;&#65039; Lettre de motivation</button>
@@ -1071,7 +1111,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 
   <!-- CALCULATEUR FINANCIER -->
-  <div class="tab-content" id="tab-calculator" style="padding-top:8px">
+  <div class="tab-content" id="tab-calculator" style="padding:0 28px 28px">
     <div style="max-width:900px;margin:0 auto">
       <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">&#129518; Calculateur Financier</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
@@ -1117,7 +1157,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 
   <!-- OBJECTIFS & HABITUDES -->
-  <div class="tab-content" id="tab-goals" style="padding-top:8px">
+  <div class="tab-content" id="tab-goals" style="padding:0 28px 28px">
     <div style="max-width:860px;margin:0 auto">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
         <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">&#127919; Objectifs &amp; Habitudes</div>
@@ -1147,7 +1187,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 
   <!-- VEILLE FINANCIERE -->
-  <div class="tab-content" id="tab-veille" style="padding-top:8px">
+  <div class="tab-content" id="tab-veille" style="padding:0 28px 28px">
     <div style="max-width:900px;margin:0 auto">
       <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">&#128270; Veille Financière</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
@@ -1767,7 +1807,7 @@ function showAccessOrProfile(){
   const isAdmin=currentUser&&currentUser.role==='admin';
   document.getElementById('zone-admin').style.display=isAdmin?'block':'none';
   document.getElementById('zone-profil').style.display=isAdmin?'none':'block';
-  if(isAdmin){renderUsersTable();renderDiagram();renderConnLog();renderActivityChart();}
+  if(isAdmin){renderUsersTable();renderDiagram();renderConnLog();renderActivityChart();renderPromoteSelect();}
   else{loadMyProfileForm();}
 }
 function goToProfile(){const btn=document.getElementById('tab-btn-acces-profil');if(btn)showTab('acces',btn);}
@@ -1801,6 +1841,59 @@ function renderMsgPreview(){
 }
 
 // ============ FILES ============
+// ============ FICHIERS & DOSSIERS ============
+let currentFolderId=null; // null = racine
+
+function openCreateFolder(){
+  if(currentUser.role==='viewer'){toast('Accès refusé','error');return;}
+  document.getElementById('folder-name-input').value='';
+  document.getElementById('folder-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('folder-name-input').focus(),100);
+}
+function closeFolderModal(){document.getElementById('folder-modal').style.display='none';}
+
+async function createFolder(){
+  const name=document.getElementById('folder-name-input').value.trim();
+  if(!name){toast('Nom requis','error');return;}
+  if(currentUser.role==='viewer'){toast('Accès refusé','error');return;}
+  const folder={id:'folder_'+Date.now(),name,type:'folder',owner:currentUser.username,date:new Date().toISOString(),parentId:currentFolderId||null};
+  files.push(folder);
+  await fbSave('files',folder.id,folder);
+  closeFolderModal();
+  renderFiles();
+  toast(`Dossier "${name}" créé ✅`,'success');
+}
+
+function navigateFolder(folderId){
+  currentFolderId=folderId;
+  renderFiles();
+}
+
+function renderBreadcrumb(){
+  const bc=document.getElementById('folder-breadcrumb');
+  if(!bc)return;
+  if(!currentFolderId){bc.innerHTML='';return;}
+  // Construire le chemin complet
+  const path=[];
+  let id=currentFolderId;
+  while(id){
+    const f=files.find(x=>x.id===id&&x.type==='folder');
+    if(!f)break;
+    path.unshift(f);
+    id=f.parentId||null;
+  }
+  bc.innerHTML=path.map((f,i)=>`
+    <span style="color:var(--muted)">/</span>
+    <button onclick="navigateFolder('${f.id}')" style="background:none;border:none;color:${i===path.length-1?'var(--accent)':'var(--muted)'};cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='none'">📁 ${f.name}</button>
+  `).join('');
+  // Hint dans la dropzone
+  const hint=document.getElementById('dropzone-folder-hint');
+  if(hint){const cur=files.find(x=>x.id===currentFolderId);hint.textContent=cur?`📁 Les fichiers seront ajoutés dans : ${cur.name}`:'';}
+  // Titre de la carte
+  const title=document.getElementById('files-card-title');
+  if(title){const cur=files.find(x=>x.id===currentFolderId);title.textContent=cur?`📁 ${cur.name}`:'Tous les fichiers';}
+}
+
 const dz=document.getElementById('dropzone');
 document.getElementById('file-input').addEventListener('change',function(){if(this.files&&this.files.length)processFiles(this.files);this.value='';});
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
@@ -1813,24 +1906,55 @@ function processFiles(fileList){
   Array.from(fileList).forEach((f,i)=>{
     const reader=new FileReader();
     reader.onload=async e=>{
-      const fd={id:'f'+Date.now()+i,name:f.name,size:f.size,type:f.type,date:new Date().toISOString(),owner:currentUser.username,dataUrl:e.target.result};
+      const fd={id:'f'+Date.now()+i,name:f.name,size:f.size,type:f.type,date:new Date().toISOString(),owner:currentUser.username,dataUrl:e.target.result,folderId:currentFolderId||null};
       files.push(fd);await fbSave('files',fd.id,fd);
       renderFiles();toast('Fichier ajouté ✅','success');
     };
     reader.readAsDataURL(f);
   });
 }
+
 function renderFiles(){
   if(!currentUser)return;
+  renderBreadcrumb();
   const q=(document.getElementById('file-search')?.value||'').trim().toLowerCase();
   const container=document.getElementById('files-all');
   if(currentUser.role==='viewer'){container.innerHTML='<div class="empty-state"><p>Accès non autorisé</p></div>';return;}
-  let vis=files.filter(f=>!q||f.name.toLowerCase().includes(q));
-  if(!vis.length){container.innerHTML=`<div class="empty-state"><div class="empty-icon">📂</div><p>${q?'Aucun résultat.':'Aucun fichier.'}</p></div>`;return;}
-  container.innerHTML=`<div class="files-list">${vis.map(f=>{
+
+  // Dossiers dans le dossier courant
+  const subFolders=files.filter(f=>f.type==='folder'&&(f.parentId||null)===(currentFolderId||null));
+  // Fichiers dans le dossier courant (pas les dossiers)
+  let visFiles=files.filter(f=>f.type!=='folder'&&(f.folderId||null)===(currentFolderId||null));
+  if(q){
+    visFiles=files.filter(f=>f.type!=='folder'&&f.name.toLowerCase().includes(q));
+  }
+
+  if(!subFolders.length&&!visFiles.length){
+    container.innerHTML=`<div class="empty-state"><div class="empty-icon">📂</div><p>${q?'Aucun résultat.':'Ce dossier est vide.'}</p></div>`;
+    return;
+  }
+
+  const folderHtml=subFolders.map(folder=>{
+    const canDel=currentUser.role==='admin'||folder.owner===currentUser.username;
+    const count=files.filter(f=>f.type!=='folder'&&f.folderId===folder.id).length;
+    return`<div class="file-item" style="border-left-color:#f4a261;cursor:pointer" ondblclick="navigateFolder('${folder.id}')">
+      <div class="file-icon" onclick="navigateFolder('${folder.id}')">📁</div>
+      <div class="file-info" onclick="navigateFolder('${folder.id}')">
+        <div class="file-name" style="font-weight:600">${folder.name}</div>
+        <div class="file-meta">${count} fichier(s) · Double-clic pour ouvrir</div>
+      </div>
+      <div class="file-actions">
+        ${canDel?`<button class="del" onclick="event.stopPropagation();confirmDelete('file','${folder.id}')">🗑</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const filesHtml=visFiles.map(f=>{
     const c=getUserColor(f.owner);const canDel=currentUser.role==='admin'||f.owner===currentUser.username;
     return`<div class="file-item" style="border-left-color:${c}"><div class="file-icon">${fileIcon(f.type)}</div><div class="file-info"><div class="file-name">${f.name} <span style="font-size:10px;padding:1px 6px;border-radius:4px;background:${c}22;color:${c};border:1px solid ${c}44">@${f.owner}</span></div><div class="file-meta">${formatSize(f.size)} · ${f.date?new Date(f.date).toLocaleDateString('fr-FR'):'—'}</div></div><div class="file-actions"><button onclick="viewFile('${f.id}')">👁</button><button onclick="downloadFile('${f.id}')">⬇️</button>${canDel?`<button class="del" onclick="confirmDelete('file','${f.id}')">🗑</button>`:''}</div></div>`;
-  }).join('')}</div>`;
+  }).join('');
+
+  container.innerHTML=`<div class="files-list">${folderHtml}${filesHtml}</div>`;
 }
 function getUserColor(username){const idx=users.findIndex(u=>u.username===username);return USER_COLORS[(idx<0?0:idx)%USER_COLORS.length];}
 function viewFile(id){const f=files.find(x=>String(x.id)===String(id));if(!f)return;document.getElementById('viewer-title').textContent=f.name;const body=document.getElementById('viewer-body');if(f.type?.startsWith('image'))body.innerHTML=`<img src="${f.dataUrl}" alt="${f.name}">`;else if(f.type?.includes('pdf'))body.innerHTML=`<iframe src="${f.dataUrl}"></iframe>`;else body.innerHTML=`<div class="viewer-text">Aperçu non disponible.<br><br><button class="btn btn-primary" onclick="downloadFile('${f.id}')">⬇️ Télécharger</button></div>`;document.getElementById('viewer-modal').classList.add('open');}
@@ -1860,7 +1984,6 @@ function renderUsersTable(){
   document.getElementById('users-tbody').innerHTML=users.map(u=>{
     const p=u.profile||{};
     const av=p.avatar?`<img src="${p.avatar}" alt="" style="width:24px;height:24px;border-radius:5px;object-fit:cover">`:`<span>${(u.fullname||u.username).charAt(0).toUpperCase()}</span>`;
-    // Bouton Supprimer uniquement pour les admins, et pas sur le compte hans
     const isPrincipal=currentUser&&currentUser.username==='hans';
     const canDeleteThisUser=u.username!=='hans'&&isAdmin&&(u.role!=='admin'||isPrincipal);
     const actionCell=u.username==='hans'
@@ -1868,6 +1991,32 @@ function renderUsersTable(){
       :(canDeleteThisUser?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button>`:(isAdmin&&u.role==='admin'?'<span style="color:var(--muted);font-size:11px">Admin</span>':'—'));
     return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-av" style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;overflow:hidden">${av}</div>@${u.username}</div></td><td style="color:var(--muted);font-size:12px">${u.email||'—'}</td><td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px" onclick="openUserProfile('${u.id}')">👤</button></td><td>${actionCell}</td></tr>`;
   }).join('');
+}
+
+function renderPromoteSelect(){
+  // Visible uniquement pour l'admin principal (hans)
+  const card=document.getElementById('promote-card');
+  if(!card)return;
+  const isPrincipal=currentUser&&currentUser.username==='hans';
+  card.style.display=isPrincipal?'block':'none';
+  if(!isPrincipal)return;
+  const sel=document.getElementById('promote-user-select');
+  if(!sel)return;
+  sel.innerHTML=users.filter(u=>u.username!=='hans').map(u=>`<option value="${u.id}">${u.fullname||u.username} (@${u.username}) — ${roleName(u.role)}</option>`).join('');
+}
+
+async function promoteUser(){
+  if(!currentUser||currentUser.username!=='hans'){toast('Réservé à l\'administrateur principal','error');return;}
+  const userId=document.getElementById('promote-user-select').value;
+  const newRole=document.getElementById('promote-role-select').value;
+  if(!userId||!newRole){toast('Sélectionnez un utilisateur et un rôle','error');return;}
+  const u=users.find(x=>x.id===userId);
+  if(!u){toast('Utilisateur introuvable','error');return;}
+  if(u.role===newRole){toast(`@${u.username} est déjà ${roleName(newRole)}`,'error');return;}
+  u.role=newRole;
+  await fbSave('users',u.id,{...u,created:u.created instanceof Date?u.created.toISOString():u.created});
+  renderUsersTable();renderDiagram();renderActivityChart();renderPromoteSelect();
+  toast(`@${u.username} promu ${roleName(newRole)} ✅`,'success');
 }
 function roleName(r){return r==='admin'?'🔑 Admin':r==='editor'?'👤 Personnel':'👁 Lecteur';}
 function renderDiagram(){
