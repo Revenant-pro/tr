@@ -109,6 +109,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .tab-content{display:none;padding:28px;max-width:1200px;margin:0 auto;}
 .tab-content.active{display:block;animation:fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* Supprimer l'espace haut sur ces pages spécifiques */
+#tab-about>*:first-child,#tab-veille>*:first-child,
+#tab-careertools>*:first-child,#tab-calculator>*:first-child,
+#tab-goals>*:first-child{margin-top:0!important;padding-top:0!important;}
 .page-header{margin-bottom:24px;}
 .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
 .page-desc{color:var(--muted);font-size:13px;margin-top:4px;}
@@ -553,7 +557,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         </div>
       </div>
       <!-- Promotion des utilisateurs (admin principal uniquement) -->
-      <div class="card" style="margin-top:18px" id="promote-card" style="display:none">
+      <div class="card" style="margin-top:18px;display:none" id="promote-card">
         <div class="card-title">⬆️ Promouvoir un utilisateur</div>
         <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Changer le rôle d'un utilisateur. Seul l'administrateur principal peut effectuer cette action.</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
@@ -3582,13 +3586,26 @@ async function sendAI(){
   _aiHist.push({role:'user',content:q});
   if(_aiHist.length>10)_aiHist=_aiHist.slice(-10);
   try{
-    const sys='Tu es un assistant IA intégré dans "Espace Privé", une application web avec : Fichiers, Agenda, Suivi de compte (PCG), Comptabilité, Finance (45 actifs temps réel), News Bloomberg, Outils Carrière (CV+LM), Calculateur financier, Objectifs, Veille financière, À propos. Réponds en français, sois concis et utile. Tu peux aussi répondre à des questions générales.';
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:_aiHist})});
-    const d=await r.json();
-    const ans=d.content?.[0]?.text||'Désolé, je n\'ai pas pu répondre.';
-    loader.remove();_aiMsg(ans,'bot',false);
-    _aiHist.push({role:'assistant',content:ans});
-  }catch(e){loader.remove();_aiMsg('Erreur réseau. Réessayez.','bot',false);}
+    const sys='Tu es un assistant IA intégré dans "Espace Privé". Aide les utilisateurs en français. Tu connais les pages : Fichiers (upload/dossiers), Agenda, Suivi de compte (PCG), Comptabilité (Bilan/CPC/Journal), Finance (45 actifs temps réel), News Bloomberg, Outils Carrière (CV+LM IA), Calculateur financier, Objectifs & Habitudes, Veille financière, À propos. Réponds de façon concise et utile. Tu peux aussi répondre à des questions générales.';
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        system:sys,
+        messages:_aiHist
+      })
+    });
+    const data=await response.json();
+    const ans=data.content?.[0]?.text||(data.error?'Erreur : '+data.error.message:'Pas de réponse.');
+    loader.remove();
+    _aiMsg(ans,'bot',false);
+    if(data.content?.[0]?.text)_aiHist.push({role:'assistant',content:ans});
+  }catch(e){
+    loader.remove();
+    _aiMsg('Impossible de contacter l\'assistant. Vérifiez votre connexion.','bot',false);
+  }
   inp.disabled=false;inp.focus();
 }
 function toggleChatbot(){}
