@@ -213,6 +213,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .upc-label{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;width:120px;flex-shrink:0;margin-top:1px;}
 .upc-value{color:var(--text);}
 
+/* SOUS-NAVIGATION */
+.sub-nav{display:flex;gap:4px;padding:14px 0 10px;margin-bottom:6px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.sub-nav-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;}
+.sub-nav-btn:hover{color:var(--text);border-color:var(--accent);}
+.sub-nav-btn.active{background:rgba(230,57,70,.12);border-color:var(--accent);color:var(--accent);font-weight:600;}
 /* AGENDA */
 .agenda-layout{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:start;}
 @media(max-width:900px){.agenda-layout{grid-template-columns:1fr;}}
@@ -478,6 +483,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- FICHIERS -->
   <div class="tab-content active" id="tab-fichiers">
     <div class="page-header"><div class="page-title">📁 Stockage de fichiers</div><div class="page-desc">Déposez vos fichiers — organisez-les en dossiers</div></div>
+    <div class="sub-nav">
+      <button id="fichiers-sub-tous" class="sub-nav-btn active" onclick="showFichiersSub('tous',this)">📂 Tous</button>
+      <button id="fichiers-sub-recents" class="sub-nav-btn" onclick="showFichiersSub('recents',this)">🕐 Récents</button>
+      <button id="fichiers-sub-partages" class="sub-nav-btn" onclick="showFichiersSub('partages',this)">🔗 Partagés</button>
+    </div>
     <!-- Barre d'actions dossiers -->
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
       <div style="display:flex;gap:8px;align-items:center;flex:1;flex-wrap:wrap">
@@ -516,6 +526,13 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="tab-content" id="tab-acces">
     <div id="zone-admin" style="display:none">
       <div class="page-header"><div class="page-title">👥 Gestion des accès</div><div class="page-desc">Administration des comptes</div></div>
+      <div class="sub-nav">
+        <button id="acces-sub-users" class="sub-nav-btn active" onclick="showAccesSub('users',this)">👤 Utilisateurs</button>
+        <button id="acces-sub-log" class="sub-nav-btn" onclick="showAccesSub('log',this)">🕵️ Journal</button>
+        <button id="acces-sub-diag" class="sub-nav-btn" onclick="showAccesSub('diag',this)">🔗 Diagramme</button>
+      </div>
+      <!-- Panel Utilisateurs -->
+      <div id="acces-panel-users">
       <div class="card" style="margin-bottom:18px">
         <div class="card-title">➕ Créer un accès</div>
         <div class="access-form">
@@ -537,50 +554,55 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           <button class="btn btn-primary" onclick="addUser()" style="width:fit-content">Créer le compte</button>
         </div>
       </div>
-      <div class="grid-2" style="margin-bottom:18px">
-        <div class="card">
-          <div class="card-title">👤 Utilisateurs enregistrés</div>
-          <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Profil</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
-        </div>
-        <div class="card">
-          <div class="card-title">🔗 Diagramme</div>
-          <div id="diagram-wrap"></div>
-        </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-title">👤 Utilisateurs enregistrés</div>
+        <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Profil</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
       </div>
       <div class="grid-2">
-        <div class="card">
-          <div class="card-title">🕵️ Historique des connexions (5 dernières)</div>
-          <div style="margin-bottom:10px">
-            <input type="text" id="connlog-search" placeholder="🔍 Rechercher..." oninput="renderConnLog()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          </div>
-          <div id="conn-log"><div class="empty-state"><p>Aucune connexion.</p></div></div>
-        </div>
         <div class="card">
           <div class="card-title">👥 Nombre d'utilisateurs</div>
           <div id="user-count-wrap" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
         </div>
-      </div>
-      <!-- Promotion des utilisateurs (admin principal uniquement) -->
-      <div class="card" style="margin-top:18px;display:none" id="promote-card">
-        <div class="card-title">⬆️ Promouvoir un utilisateur</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Changer le rôle d'un utilisateur. Seul l'administrateur principal peut effectuer cette action.</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-          <div style="flex:2;min-width:160px">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Utilisateur</label>
-            <select id="promote-user-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"></select>
+        <!-- Promotion des utilisateurs (admin principal uniquement) -->
+        <div class="card" style="display:none" id="promote-card">
+          <div class="card-title">⬆️ Promouvoir un utilisateur</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Seul l'administrateur principal peut effectuer cette action.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+            <div style="flex:2;min-width:160px">
+              <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Utilisateur</label>
+              <select id="promote-user-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"></select>
+            </div>
+            <div style="flex:1;min-width:140px">
+              <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Nouveau rôle</label>
+              <select id="promote-role-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+                <option value="viewer">👁 Lecteur</option>
+                <option value="editor">👤 Personnel</option>
+                <option value="admin">🔑 Administrateur</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="promoteUser()" style="padding:10px 20px;font-size:13px;white-space:nowrap">⬆️ Appliquer</button>
           </div>
-          <div style="flex:1;min-width:140px">
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px">Nouveau rôle</label>
-            <select id="promote-role-select" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
-              <option value="viewer">👁 Lecteur</option>
-              <option value="editor">👤 Personnel</option>
-              <option value="admin">🔑 Administrateur</option>
-            </select>
-          </div>
-          <button class="btn btn-primary" onclick="promoteUser()" style="padding:10px 20px;font-size:13px;white-space:nowrap">⬆️ Appliquer</button>
         </div>
       </div>
-    </div>
+      </div><!-- /acces-panel-users -->
+      <!-- Panel Journal -->
+      <div id="acces-panel-log" style="display:none">
+      <div class="card">
+        <div class="card-title">🕵️ Historique des connexions</div>
+        <div style="margin-bottom:10px">
+          <input type="text" id="connlog-search" placeholder="🔍 Rechercher..." oninput="renderConnLog()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <div id="conn-log"><div class="empty-state"><p>Aucune connexion.</p></div></div>
+      </div>
+      </div><!-- /acces-panel-log -->
+      <!-- Panel Diagramme -->
+      <div id="acces-panel-diag" style="display:none">
+      <div class="card">
+        <div class="card-title">🔗 Diagramme des accès</div>
+        <div id="diagram-wrap"></div>
+      </div>
+      </div><!-- /acces-panel-diag -->
+    </div><!-- /zone-admin -->
     <div id="zone-profil" style="display:none">
       <div class="page-header"><div class="page-title">👤 Mon Profil</div></div>
       <div class="profile-page">
@@ -617,6 +639,13 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- AGENDA -->
   <div class="tab-content" id="tab-agenda">
     <div class="page-header"><div class="page-title">📅 Agenda</div><div class="page-desc">Événements — notifiés à tous les membres</div></div>
+    <div class="sub-nav">
+      <button id="agenda-sub-cal" class="sub-nav-btn active" onclick="showAgendaSub('cal',this)">📅 Calendrier</button>
+      <button id="agenda-sub-tasks" class="sub-nav-btn" onclick="showAgendaSub('tasks',this)">✅ Tâches</button>
+      <button id="agenda-sub-rappels" class="sub-nav-btn" onclick="showAgendaSub('rappels',this)">⏰ Rappels</button>
+    </div>
+    <!-- Panel Calendrier -->
+    <div id="agenda-panel-cal">
     <div class="card" style="margin-bottom:14px" id="agenda-user-select-card">
       <div class="card-title">👤 Agenda de</div>
       <div class="agenda-user-select" id="agenda-user-select"></div>
@@ -682,6 +711,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         </div>
       </div>
     </div>
+    </div>
   </div><!-- /agenda-panel-cal -->
 
     <!-- Panel Tâches -->
@@ -726,7 +756,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <div class="empty-state"><div class="empty-icon">⏰</div><p>Aucun rappel configuré.</p></div>
       </div>
     </div>
-  </div>
+  </div><!-- /tab-agenda -->
 
   <!-- COMPTE -->
   <div class="tab-content" id="tab-compte">
@@ -1908,8 +1938,11 @@ function showAccessOrProfile(){
   const isAdmin=currentUser&&currentUser.role==='admin';
   document.getElementById('zone-admin').style.display=isAdmin?'block':'none';
   document.getElementById('zone-profil').style.display=isAdmin?'none':'block';
-  if(isAdmin){renderUsersTable();renderDiagram();renderConnLog();renderActivityChart();renderPromoteSelect();}
-  else{loadMyProfileForm();}
+  if(isAdmin){
+    // Init sub-nav: show users panel by default
+    showAccesSub('users',document.getElementById('acces-sub-users'));
+    renderUsersTable();renderActivityChart();renderPromoteSelect();
+  } else {loadMyProfileForm();}
 }
 function goToProfile(){const btn=document.getElementById('tab-btn-acces-profil');if(btn)showTab('acces',btn);}
 
@@ -2022,16 +2055,30 @@ function renderFiles(){
   const container=document.getElementById('files-all');
   if(currentUser.role==='viewer'){container.innerHTML='<div class="empty-state"><p>Accès non autorisé</p></div>';return;}
 
+  const sub=window._fichiersSub||'tous';
+  const now=new Date();
+  const sevenDays=7*24*60*60*1000;
+
   // Dossiers dans le dossier courant
-  const subFolders=files.filter(f=>f.type==='folder'&&(f.parentId||null)===(currentFolderId||null));
+  let subFolders=files.filter(f=>f.type==='folder'&&(f.parentId||null)===(currentFolderId||null));
   // Fichiers dans le dossier courant (pas les dossiers)
   let visFiles=files.filter(f=>f.type!=='folder'&&(f.folderId||null)===(currentFolderId||null));
   if(q){
     visFiles=files.filter(f=>f.type!=='folder'&&f.name.toLowerCase().includes(q));
   }
 
+  // Filtrage sous-pages
+  if(sub==='recents'){
+    visFiles=files.filter(f=>f.type!=='folder'&&(now-new Date(f.date||0))<sevenDays).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    subFolders=[];
+  } else if(sub==='partages'){
+    visFiles=files.filter(f=>f.type!=='folder'&&f.owner!==currentUser.username);
+    subFolders=[];
+  }
+
   if(!subFolders.length&&!visFiles.length){
-    container.innerHTML=`<div class="empty-state"><div class="empty-icon">📂</div><p>${q?'Aucun résultat.':'Ce dossier est vide.'}</p></div>`;
+    const msgs={tous:q?'Aucun résultat.':'Ce dossier est vide.',recents:'Aucun fichier récent (7 derniers jours).',partages:'Aucun fichier partagé par d\'autres membres.'};
+    container.innerHTML=`<div class="empty-state"><div class="empty-icon">📂</div><p>${msgs[sub]||'Aucun fichier.'}</p></div>`;
     return;
   }
 
@@ -3811,6 +3858,28 @@ function showAgendaSub(sub,btn){
   if(sub==='tasks')renderTasks();
   if(sub==='rappels')renderRappels();
 }
+
+// ============ SOUS-PAGES ACCÈS ============
+function showAccesSub(sub,btn){
+  ['users','log','diag'].forEach(s=>{
+    const p=document.getElementById('acces-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
+  });
+  document.querySelectorAll('[id^="acces-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(sub==='log')renderConnLog();
+  if(sub==='diag')renderDiagram();
+}
+
+// ============ SOUS-PAGES FICHIERS ============
+let _fichiersSub='tous';
+function showFichiersSub(sub,btn){
+  _fichiersSub=sub;
+  document.querySelectorAll('[id^="fichiers-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderFiles();
+}
+// Patch renderFiles pour filtrer selon la sous-page
+
 function openAddTask(){document.getElementById('task-modal').style.display='flex';}
 function loadTasksList(){try{const t=localStorage.getItem('tasksList');if(t)tasksList=JSON.parse(t);}catch(_){}}
 function saveTask(){
