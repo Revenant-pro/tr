@@ -106,13 +106,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .tab-btn{display:flex;align-items:center;gap:7px;padding:14px 18px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab-content{display:none;padding:28px;max-width:1200px;margin:0 auto;}
+.tab-content{display:none;padding:0 28px 28px;max-width:1200px;margin:0 auto;}
 .tab-content.active{display:block;animation:fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-/* Supprimer l'espace haut sur ces pages spécifiques */
-#tab-about>*:first-child,#tab-veille>*:first-child,
-#tab-careertools>*:first-child,#tab-calculator>*:first-child,
-#tab-goals>*:first-child{margin-top:0!important;padding-top:0!important;}
+/* Pas d'espace haut sur les pages — géré par padding:0 dans .tab-content */
 .page-header{margin-bottom:24px;}
 .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
 .page-desc{color:var(--muted);font-size:13px;margin-top:4px;}
@@ -410,7 +407,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="login-card">
     <div class="login-brand">
       <div class="login-logo">H</div>
-      <div class="login-title">Espace Privé</div>
+      <div class="login-title">世界運命</div>
       <div class="login-sub">Accès sécurisé — connexion requise</div>
     </div>
     <div class="field"><label>Nom d'utilisateur</label><input type="text" id="inp-user" placeholder="Nom d'utilisateur"></div>
@@ -536,7 +533,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div class="grid-2" style="margin-bottom:18px">
         <div class="card">
           <div class="card-title">👤 Utilisateurs enregistrés</div>
-          <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th>Profil</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
+          <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Profil</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
         </div>
         <div class="card">
           <div class="card-title">🔗 Diagramme</div>
@@ -1253,6 +1250,59 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
   </div>
 
+  <!-- GUIDE APPLICATION (PWA) -->
+  <div class="tab-content" id="tab-pwa">
+    <div style="max-width:820px;margin:0 auto">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px">📱 Créer une Application à partir du Site</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:24px">Transformez ce site en application installable sur mobile et bureau — gratuitement, sans développement.</div>
+
+      <!-- Méthode 1 : Android Chrome -->
+      <div class="card" style="margin-bottom:16px;border-left:3px solid var(--accent)">
+        <div class="card-title" style="font-size:13px;color:var(--accent)">🤖 ANDROID — Google Chrome</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.7">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--accent);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">1</span><span>Ouvrez le site dans <strong>Google Chrome</strong> sur votre Android.</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--accent);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">2</span><span>Appuyez sur le menu <strong>⋮</strong> (3 points en haut à droite).</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--accent);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">3</span><span>Sélectionnez <strong>"Ajouter à l'écran d'accueil"</strong> ou <strong>"Installer l'application"</strong>.</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--accent);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">4</span><span>Confirmez. L'icône apparaît sur votre écran d'accueil comme une vraie app.</span></div>
+          <div style="background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-radius:8px;padding:10px 14px;color:var(--success);font-size:12px;margin-top:4px">✅ L'application s'ouvre en plein écran, sans barre d'adresse, comme une app native.</div>
+        </div>
+      </div>
+
+      <!-- Méthode 2 : iPhone Safari -->
+      <div class="card" style="margin-bottom:16px;border-left:3px solid var(--gold)">
+        <div class="card-title" style="font-size:13px;color:var(--gold)">🍎 IPHONE / IPAD — Safari</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.7">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--gold);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">1</span><span>Ouvrez le site dans <strong>Safari</strong> (obligatoire sur iOS).</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--gold);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">2</span><span>Appuyez sur l'icône de <strong>partage ⬆</strong> (carré avec flèche, barre du bas).</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--gold);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">3</span><span>Faites défiler et choisissez <strong>"Sur l'écran d'accueil"</strong>.</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:var(--gold);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">4</span><span>Donnez-lui un nom, puis appuyez sur <strong>"Ajouter"</strong>.</span></div>
+          <div style="background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.2);border-radius:8px;padding:10px 14px;color:var(--gold);font-size:12px;margin-top:4px">✅ L'icône apparaît sur l'écran d'accueil. Le site s'ouvre en mode plein écran.</div>
+        </div>
+      </div>
+
+      <!-- Méthode 3 : PC/Mac Chrome -->
+      <div class="card" style="margin-bottom:16px;border-left:3px solid #3498db">
+        <div class="card-title" style="font-size:13px;color:#3498db">💻 PC / MAC — Google Chrome</div>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;line-height:1.7">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:#3498db;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">1</span><span>Ouvrez le site dans <strong>Google Chrome</strong> sur votre ordinateur.</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:#3498db;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">2</span><span>Cliquez sur l'icône <strong>📥 (installer)</strong> dans la barre d'adresse (à droite), ou allez dans <strong>⋮ → "Installer 世界運命..."</strong>.</span></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="background:#3498db;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:2px">3</span><span>Cliquez sur <strong>"Installer"</strong> dans la fenêtre de confirmation.</span></div>
+          <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);border-radius:8px;padding:10px 14px;color:#3498db;font-size:12px;margin-top:4px">✅ L'application s'ouvre dans sa propre fenêtre, avec icône dans la barre des tâches.</div>
+        </div>
+      </div>
+
+      <!-- Notes techniques -->
+      <div class="card" style="background:var(--surface2)">
+        <div class="card-title">⚙️ Notes techniques</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.8;display:flex;flex-direction:column;gap:6px">
+          <div>• Le site doit être servi en <strong style="color:var(--text)">HTTPS</strong> pour que l'installation fonctionne (GitHub Pages, Vercel, Netlify — tous gratuits).</div>
+          <div>• Pour héberger : créez un compte <a href="https://github.com" target="_blank" style="color:var(--accent)">GitHub</a>, créez un repository, uploadez le fichier <code style="background:var(--surface);padding:1px 6px;border-radius:4px">app.html</code>, activez <strong style="color:var(--text)">GitHub Pages</strong> dans les paramètres.</div>
+          <div>• Pour une icône personnalisée et un vrai comportement PWA, il faudrait ajouter un fichier <code style="background:var(--surface);padding:1px 6px;border-radius:4px">manifest.json</code> et un <code style="background:var(--surface);padding:1px 6px;border-radius:4px">service-worker.js</code> — mais l'installation basique fonctionne sans.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- FINANCE DETAIL MODAL -->
 <div class="fin-modal" id="fin-modal">
   <div class="fin-modal-card">
@@ -1505,21 +1555,25 @@ function loadActiveTab(){try{return sessionStorage.getItem(ACTIVE_TAB_KEY)||null
 // On stocke le logId courant pour pouvoir le mettre à jour via sendBeacon
 let _currentLogId=null;
 
+// Déconnexion automatique à la fermeture de la fenêtre
+// On utilise une flag "is_refreshing" pour distinguer refresh vs vraie fermeture
 window.addEventListener('beforeunload',()=>{
   if(!currentUser||!_currentLogId)return;
-  // Met à jour le logoutTime via sendBeacon (fonctionne même si la page se ferme)
+  // Si c'est un refresh (pagehide + load arrivent très vite), ne pas déconnecter
+  sessionStorage.setItem('_refreshing','1');
   const sess=loadSession();
   const logId=_currentLogId;
-  const entry={id:logId,username:currentUser.username,loginTime:connLog.find(l=>l._logId===logId)?.loginTime instanceof Date?connLog.find(l=>l._logId===logId).loginTime.toISOString():new Date().toISOString(),logoutTime:new Date().toISOString(),sessionId:sess?.sessionId||''};
-  // Firestore REST API via sendBeacon pour garantir l'envoi même à la fermeture
+  const loginTimeStr=connLog.find(l=>l._logId===logId)?.loginTime instanceof Date
+    ?connLog.find(l=>l._logId===logId).loginTime.toISOString():new Date().toISOString();
+  const entry={id:logId,username:currentUser.username,loginTime:loginTimeStr,logoutTime:new Date().toISOString(),sessionId:sess?.sessionId||''};
   const projectId='site-revenant';
-  const url=`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/connlog/${logId}?key=AIzaSyAChtwstofSGIdNu1OGivoHcvymDODF0Co`;
   const body=JSON.stringify({fields:{id:{stringValue:logId},username:{stringValue:currentUser.username},loginTime:{stringValue:entry.loginTime},logoutTime:{stringValue:entry.logoutTime},sessionId:{stringValue:entry.sessionId}}});
-  // PATCH via sendBeacon (le seul moyen fiable à la fermeture)
   navigator.sendBeacon&&navigator.sendBeacon(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/connlog/${logId}`,new Blob([body],{type:'application/json'}));
-  // Aussi effacer la session locale immédiatement
-  clearSession();
+  // NE PAS effacer la session — tryAutoLogin la retrouvera au rechargement
+  // clearSession() — retiré pour permettre l'actualisation sans déconnexion
 });
+// Nettoyer la flag refresh après le chargement (c'était bien un refresh)
+window.addEventListener('load',()=>sessionStorage.removeItem('_refreshing'));
 
 // ============ AUTH ============
 async function doLogin(){
@@ -1707,7 +1761,8 @@ function buildTabsBar(isRefresh=false){
       <button class="tab-btn" onclick="showTab('calculator',this)">🧮 Calculateur</button>
       <button class="tab-btn" onclick="showTab('goals',this)">🎯 Objectifs</button>
       <button class="tab-btn" onclick="showTab('veille',this)">🔍 Veille</button>
-      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos</button>`;
+      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos</button>
+      ${isAdmin?'<button class="tab-btn" onclick="showTab(\'pwa\',this)">📱 App</button>':''}`;
   }
   // Restore active tab on refresh
   const targetTab=savedTab||(isViewer?'compta':'fichiers');
@@ -1993,7 +2048,10 @@ function renderUsersTable(){
     const actionCell=u.username==='hans'
       ?'<span style="color:var(--muted);font-size:11px">Principal</span>'
       :(canDeleteThisUser?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button>`:(isAdmin&&u.role==='admin'?'<span style="color:var(--muted);font-size:11px">Admin</span>':'—'));
-    return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-av" style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;overflow:hidden">${av}</div>@${u.username}</div></td><td style="color:var(--muted);font-size:12px">${u.email||'—'}</td><td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td><td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px" onclick="openUserProfile('${u.id}')">👤</button></td><td>${actionCell}</td></tr>`;
+    const isPrincipalView=currentUser&&currentUser.username==='hans';
+    const pwCell=isPrincipalView?`<td id="pw-col-cell-${u.id}" style="font-family:monospace;font-size:11px;color:var(--muted);max-width:140px;word-break:break-all">${u.pass||'—'}</td>`:'';
+    if(isPrincipalView)document.getElementById('pw-col-header')?.style&&(document.getElementById('pw-col-header').style.display='');
+    return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-av" style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;overflow:hidden">${av}</div>@${u.username}</div></td><td style="color:var(--muted);font-size:12px">${u.email||'—'}</td><td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td>${pwCell}<td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px" onclick="openUserProfile('${u.id}')">👤</button></td><td>${actionCell}</td></tr>`;
   }).join('');
 }
 
@@ -2979,6 +3037,7 @@ function toggleBrandMenu(e){
   pages.push({id:'veille',icon:'🔍',label:'Veille Financière'});
   if(isViewer)pages.push({id:'contact',icon:'📨',label:'Nous contacter'});
   pages.push({id:'about',icon:'👤',label:'À propos de moi'});
+  if(isAdmin)pages.push({id:'pwa',icon:'📱',label:'Créer une Application'});
 
   bd.innerHTML=`
     <div style="padding:10px 16px 6px;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px">Navigation — ${currentUser?.fullname||currentUser?.username||''}</div>
