@@ -107,7 +107,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .tab-btn{display:flex;align-items:center;gap:7px;padding:14px 18px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab-content{display:none;padding:0 28px 28px;max-width:1200px;margin:0 auto;}
+.tab-content{display:none;padding:10px 28px 28px;max-width:1200px;margin:0 auto;}
 .tab-content.active{display:block;animation:fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 /* Pas d'espace haut sur les pages — géré par padding:0 dans .tab-content */
@@ -602,7 +602,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       </div><!-- /acces-panel-diag -->
     </div><!-- /zone-admin -->
     <div id="zone-profil" style="display:none">
-      <div class="page-header"><div class="page-title">👤 Mon Profil</div></div>
+
       <div class="profile-page">
         <div class="avatar-required" id="avatar-required">⚠️ La photo de profil est obligatoire.</div>
         <div class="profile-cover"></div>
@@ -757,8 +757,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- COMPTE -->
   <div class="tab-content" id="tab-compte">
-    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div><div class="page-title">💰 Suivi de compte</div><div class="page-desc">Entrées, sorties et postes comptables (PCG)</div></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
       <button class="btn btn-outline" onclick="downloadCompteExcel()" style="font-size:13px">📥 Excel</button>
     </div>
     <div class="grid-3" style="margin-bottom:18px">
@@ -840,12 +839,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- COMPTABILITÉ (admin only) -->
   <div class="tab-content" id="tab-compta">
-    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div><div class="page-title">📒 Comptabilité</div><div class="page-desc">Bilan, CPC et Journal — alimentés automatiquement</div></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline" onclick="exportComptaExcel()" style="font-size:13px">📥 Excel</button>
-        <button class="btn btn-outline" onclick="exportComptaWord()" style="font-size:13px">📄 Word</button>
-      </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px">
+      <button class="btn btn-outline" onclick="exportComptaExcel()" style="font-size:13px">📥 Excel</button>
+      <button class="btn btn-outline" onclick="exportComptaWord()" style="font-size:13px">📄 Word</button>
     </div>
     <div class="card" style="margin-bottom:18px">
       <div class="card-title">⚖️ Bilan <span class="pcg-tag">PCG</span></div>
@@ -920,15 +916,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- FINANCE -->
   <div class="tab-content" id="tab-finance">
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:0">
-      <div class="page-title" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">📈 Finance</div>
-      <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px">🔄 Actualiser</button>
-    </div>
     <!-- Sous-onglets Finance -->
-    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;">
-      <button class="tab-btn active" id="fin-sub-marches" onclick="showFinSub('marches',this)" style="font-size:13px;padding:10px 18px">📊 Marchés</button>
-      <button class="tab-btn" id="fin-sub-watchlist" onclick="showFinSub('watchlist',this)" style="font-size:13px;padding:10px 18px">⭐ Watchlist</button>
-      <button class="tab-btn" id="fin-sub-alertes" onclick="showFinSub('alertes',this)" style="font-size:13px;padding:10px 18px">🔔 Alertes prix</button>
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;align-items:center;justify-content:space-between;">
+      <div style="display:flex">
+        <button class="tab-btn active" id="fin-sub-marches" onclick="showFinSub('marches',this)" style="font-size:13px;padding:10px 18px">📊 Marchés</button>
+        <button class="tab-btn" id="fin-sub-watchlist" onclick="showFinSub('watchlist',this)" style="font-size:13px;padding:10px 18px">⭐ Watchlist</button>
+        <button class="tab-btn" id="fin-sub-alertes" onclick="showFinSub('alertes',this)" style="font-size:13px;padding:10px 18px">🔔 Alertes prix</button>
+      </div>
+      <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px;margin-right:4px">🔄 Actualiser</button>
     </div>
     <!-- Panel Marchés -->
     <div id="fin-panel-marches">
@@ -1027,7 +1022,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- NOUS CONTACTER (lecteurs) -->
   <div class="tab-content" id="tab-contact">
-    <div class="page-header"><div class="page-title">📨 Nous contacter</div></div>
+
     <div class="card" style="max-width:600px;margin:0 auto">
       <div class="profile-grid" style="margin-bottom:14px">
         <div class="profile-field"><label>Nom</label><input type="text" id="ct-nom" placeholder="Nom"></div>
@@ -1050,12 +1045,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="tab-content" id="tab-about" style="padding:0 28px 28px">
     <!-- VUE ADMIN : éditeur -->
     <div id="about-admin-view" style="display:none;max-width:1100px;margin:0 auto">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-        <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700">&#9998; Éditeur — À propos de moi</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-outline" onclick="loadAboutPreview()" style="font-size:13px">&#128065; Prévisualiser</button>
-          <button class="btn btn-primary" onclick="saveAboutData()" style="font-size:13px">&#128190; Enregistrer</button>
-        </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="loadAboutPreview()" style="font-size:13px">&#128065; Prévisualiser</button>
+        <button class="btn btn-primary" onclick="saveAboutData()" style="font-size:13px">&#128190; Enregistrer</button>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
         <!-- Formulaire édition -->
@@ -1115,7 +1107,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- OUTILS CARRIERE -->
   <div class="tab-content" id="tab-careertools" style="padding:0 28px 28px">
-    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:24px;">
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:14px;">
       <button class="tab-btn active" id="career-sub-cv" onclick="showCareerTab('cv',this)" style="font-size:13px;padding:10px 22px">&#128203; Créateur de CV</button>
       <button class="tab-btn" id="career-sub-lm" onclick="showCareerTab('lm',this)" style="font-size:13px;padding:10px 22px">&#9993;&#65039; Lettre de motivation</button>
     </div>
@@ -1236,7 +1228,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- CALCULATEUR FINANCIER -->
   <div class="tab-content" id="tab-calculator" style="padding:0 28px 28px">
     <div style="max-width:900px;margin:0 auto">
-      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">&#129518; Calculateur Financier</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
         <!-- Intérêts composés -->
         <div class="card">
@@ -1282,8 +1273,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- OBJECTIFS & HABITUDES -->
   <div class="tab-content" id="tab-goals" style="padding:0 28px 28px">
     <div style="max-width:860px;margin:0 auto">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">&#127919; Objectifs &amp; Habitudes</div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;flex-wrap:wrap;gap:10px">
         <button class="btn btn-primary" onclick="openAddGoal()" style="font-size:13px">+ Nouvel objectif</button>
       </div>
       <div id="goals-list" style="display:flex;flex-direction:column;gap:12px">
@@ -1312,7 +1302,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- VEILLE FINANCIERE -->
   <div class="tab-content" id="tab-veille" style="padding:0 28px 28px">
     <div style="max-width:900px;margin:0 auto">
-      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:20px">&#128270; Veille Financière</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px">
         <div class="card" style="cursor:pointer;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform=''">
           <div class="card-title">&#127758; Banques centrales</div>
