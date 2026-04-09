@@ -42,6 +42,7 @@
 
 <style>
 :root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--accent:#e63946;--accent2:#ff6b6b;--gold:#f4a261;--text:#f0f0f5;--muted:#6b6b85;--success:#2ecc71;--warning:#f39c12;}
+body.light-mode{--bg:#f4f4f8;--surface:#ffffff;--surface2:#f0f0f5;--border:#e0e0ea;--text:#111118;--muted:#6b6b85;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
@@ -463,6 +464,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         </div>
       </div>
       <div class="user-badge" onclick="goToProfile()"><div class="user-dot"></div><span id="topbar-username">hans</span></div>
+      <!-- Recherche globale -->
+      <div style="position:relative">
+        <input type="text" id="global-search" placeholder="🔍 Rechercher..." oninput="globalSearch(this.value)" onfocus="document.getElementById('gsearch-results').style.display='block'" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:7px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;width:180px;transition:width .2s" onfocus="this.style.width='240px'" onblur="this.style.width='180px'">
+        <div id="gsearch-results" style="position:absolute;top:calc(100% + 6px);right:0;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.5);z-index:9999;display:none;max-height:320px;overflow-y:auto"></div>
+      </div>
+      <button onclick="toggleDarkMode()" id="dark-toggle" title="Changer le thème" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);cursor:pointer;font-size:14px;transition:all .2s">🌙</button>
       <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
     </div>
   </div>
@@ -675,6 +682,50 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         </div>
       </div>
     </div>
+  </div><!-- /agenda-panel-cal -->
+
+    <!-- Panel Tâches -->
+    <div id="agenda-panel-tasks" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--muted)">Gérez vos tâches — cochez pour terminer</div>
+        <button class="btn btn-primary" onclick="openAddTask()" style="font-size:13px">+ Nouvelle tâche</button>
+      </div>
+      <div id="tasks-list" style="display:flex;flex-direction:column;gap:8px">
+        <div class="empty-state"><div class="empty-icon">✅</div><p>Aucune tâche. Créez votre première tâche !</p></div>
+      </div>
+      <div id="task-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:none;align-items:center;justify-content:center">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:400px;max-width:95vw">
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:16px">✅ Nouvelle tâche</div>
+          <div class="profile-field"><label>Titre</label><input type="text" id="task-title" placeholder="Que devez-vous faire ?" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-size:13px;outline:none"></div>
+          <div class="profile-grid">
+            <div class="profile-field"><label>Priorité</label><select id="task-prio" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-size:13px;outline:none"><option value="high">🔴 Haute</option><option value="med" selected>🟡 Moyenne</option><option value="low">🟢 Basse</option></select></div>
+            <div class="profile-field"><label>Échéance</label><input type="date" id="task-due" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px;color:var(--text);font-size:13px;outline:none"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-outline" onclick="document.getElementById('task-modal').style.display='none'" style="flex:1">Annuler</button>
+            <button class="btn btn-primary" onclick="saveTask()" style="flex:2">Créer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Rappels -->
+    <div id="agenda-panel-rappels" style="display:none">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:18px">
+        <div style="flex:2;min-width:140px">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Message du rappel</label>
+          <input type="text" id="rappel-msg" placeholder="Ex: Réunion avec client" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div style="flex:1;min-width:130px">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Date &amp; heure</label>
+          <input type="datetime-local" id="rappel-dt" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+        <button class="btn btn-primary" onclick="addRappel()" style="padding:9px 18px;font-size:13px;white-space:nowrap">+ Ajouter</button>
+      </div>
+      <div id="rappels-list" style="display:flex;flex-direction:column;gap:8px">
+        <div class="empty-state"><div class="empty-icon">⏰</div><p>Aucun rappel configuré.</p></div>
+      </div>
+    </div>
   </div>
 
   <!-- COMPTE -->
@@ -842,10 +893,18 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- FINANCE -->
   <div class="tab-content" id="tab-finance">
-    <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
-      <div><div class="page-title">📈 Finance</div><div class="page-desc">Cours en temps réel — cliquez sur un actif pour les détails</div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:0">
+      <div class="page-title" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">📈 Finance</div>
       <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px">🔄 Actualiser</button>
     </div>
+    <!-- Sous-onglets Finance -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;">
+      <button class="tab-btn active" id="fin-sub-marches" onclick="showFinSub('marches',this)" style="font-size:13px;padding:10px 18px">📊 Marchés</button>
+      <button class="tab-btn" id="fin-sub-watchlist" onclick="showFinSub('watchlist',this)" style="font-size:13px;padding:10px 18px">⭐ Watchlist</button>
+      <button class="tab-btn" id="fin-sub-alertes" onclick="showFinSub('alertes',this)" style="font-size:13px;padding:10px 18px">🔔 Alertes prix</button>
+    </div>
+    <!-- Panel Marchés -->
+    <div id="fin-panel-marches">
     <div id="finance-loading" style="text-align:center;padding:40px;color:var(--muted)">⏳ Chargement...</div>
     <div id="finance-content" style="display:none">
       <div style="margin-bottom:22px">
@@ -859,6 +918,42 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div style="margin-bottom:22px">
         <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:12px;color:var(--gold)">🛢️ Matières premières (15)</div>
         <div class="finance-grid" id="finance-commodities"></div>
+      </div>
+    </div>
+    </div><!-- /fin-panel-marches -->
+
+    <!-- Panel Watchlist -->
+    <div id="fin-panel-watchlist" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-size:13px;color:var(--muted)">Suivez vos actifs préférés — cliquez sur ⭐ dans les marchés pour ajouter</div>
+        <button class="btn btn-outline" onclick="clearWatchlist()" style="font-size:12px">🗑 Vider</button>
+      </div>
+      <div id="watchlist-grid" class="finance-grid"></div>
+      <div id="watchlist-empty" style="text-align:center;padding:40px;color:var(--muted)">⭐ Votre watchlist est vide.<br><span style="font-size:12px">Ajoutez des actifs depuis l'onglet Marchés.</span></div>
+    </div>
+
+    <!-- Panel Alertes prix -->
+    <div id="fin-panel-alertes" style="display:none">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:18px">
+        <div style="flex:2;min-width:120px">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Actif</label>
+          <input type="text" id="alert-ticker" placeholder="BTC, AAPL, XAU..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div style="flex:1;min-width:100px">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Prix cible ($)</label>
+          <input type="number" id="alert-price" placeholder="50000" step="0.01" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div style="flex:1;min-width:100px">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Condition</label>
+          <select id="alert-cond" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+            <option value="above">≥ Au-dessus</option>
+            <option value="below">≤ En-dessous</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="addPriceAlert()" style="padding:9px 18px;font-size:13px;white-space:nowrap">+ Ajouter alerte</button>
+      </div>
+      <div id="alerts-list" style="display:flex;flex-direction:column;gap:8px">
+        <div class="empty-state"><div class="empty-icon">🔔</div><p>Aucune alerte configurée.</p></div>
       </div>
     </div>
   </div>
@@ -3644,31 +3739,249 @@ async function sendAI(){
   const loader=_aiMsg('…','bot',true);
   _aiHist.push({role:'user',content:q});
   if(_aiHist.length>10)_aiHist=_aiHist.slice(-10);
+  const sys='Tu es un assistant IA dans une app web privee. Reponds en francais, sois concis. Pages disponibles: Fichiers, Agenda, Suivi de compte PCG, Comptabilite, Finance 45 actifs, News Bloomberg, Outils Carriere CV+LM, Calculateur, Objectifs, Veille, A propos. Tu peux aussi repondre aux questions generales de finance et autres.';
+  const payload={model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:_aiHist};
+  let ans=null;
+  // Tentative directe (fonctionne dans Claude.ai)
   try{
-    const sys='Tu es un assistant IA intégré dans "Espace Privé". Aide les utilisateurs en français. Tu connais les pages : Fichiers (upload/dossiers), Agenda, Suivi de compte (PCG), Comptabilité (Bilan/CPC/Journal), Finance (45 actifs temps réel), News Bloomberg, Outils Carrière (CV+LM IA), Calculateur financier, Objectifs & Habitudes, Veille financière, À propos. Réponds de façon concise et utile. Tu peux aussi répondre à des questions générales.';
-    const response=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:800,
-        system:sys,
-        messages:_aiHist
-      })
-    });
-    const data=await response.json();
-    const ans=data.content?.[0]?.text||(data.error?'Erreur : '+data.error.message:'Pas de réponse.');
-    loader.remove();
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(r.ok){const d=await r.json();ans=d.content?.[0]?.text||null;}
+  }catch(_){}
+  // Tentative via proxy CORS (pour hors Claude.ai)
+  if(!ans){
+    try{
+      const r2=await fetch('https://corsproxy.io/?url=https%3A%2F%2Fapi.anthropic.com%2Fv1%2Fmessages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      if(r2.ok){const d2=await r2.json();ans=d2.content?.[0]?.text||null;}
+    }catch(_){}
+  }
+  loader.remove();
+  if(ans){
     _aiMsg(ans,'bot',false);
-    if(data.content?.[0]?.text)_aiHist.push({role:'assistant',content:ans});
-  }catch(e){
-    loader.remove();
-    _aiMsg('Impossible de contacter l\'assistant. Vérifiez votre connexion.','bot',false);
+    _aiHist.push({role:'assistant',content:ans});
+  }else{
+    _aiMsg("Je ne suis pas accessible depuis cet environnement. Pour activer l'assistant : hébergez le site sur Claude.ai (artifacts) ou ajoutez une clé API Anthropic valide dans le code.","bot",false);
   }
   inp.disabled=false;inp.focus();
 }
 function toggleChatbot(){}
 function sendChatMsg(){}
+
+// ============ SOUS-PAGES FINANCE ============
+let watchlist=[];let priceAlerts=[];
+function showFinSub(sub,btn){
+  ['marches','watchlist','alertes'].forEach(s=>{
+    const p=document.getElementById('fin-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
+  });
+  document.querySelectorAll('[id^="fin-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(sub==='watchlist')renderWatchlist();
+  if(sub==='alertes')renderAlerts();
+}
+function toggleWatchlist(ticker){
+  const idx=watchlist.indexOf(ticker);
+  if(idx>=0)watchlist.splice(idx,1);else watchlist.push(ticker);
+  try{localStorage.setItem('watchlist',JSON.stringify(watchlist));}catch(_){}
+  renderWatchlist();toast((idx>=0?'Retiré de':'Ajouté à')+' la watchlist','success');
+}
+function loadWatchlist(){try{const w=localStorage.getItem('watchlist');if(w)watchlist=JSON.parse(w);}catch(_){}}
+function renderWatchlist(){
+  const g=document.getElementById('watchlist-grid');const e=document.getElementById('watchlist-empty');
+  if(!g)return;
+  if(!watchlist.length){g.innerHTML='';e&&(e.style.display='block');return;}
+  e&&(e.style.display='none');
+  // Récupérer les données des actifs en watchlist depuis financeData
+  const items=watchlist.map(t=>{
+    const s=financeData?.stocks?.find(x=>x.ticker===t);
+    const co=financeData?.commodities?.find(x=>x.ticker===t);
+    let item=s||co;
+    if(!item){const cr=CRYPTOS?.find(x=>x.ticker===t);if(cr&&financeData?.crypto?.[cr.id]){const d=financeData.crypto[cr.id];item={ticker:cr.ticker,name:cr.name,price:d.usd,change:d.usd_24h_change||0};}}
+    if(!item)return`<div class="finance-card" style="opacity:.5"><div class="finance-ticker">${t}</div><div class="finance-name">Données indisponibles</div></div>`;
+    const chgColor=item.change>=0?'var(--success)':'var(--accent2)';
+    return`<div class="finance-card" onclick="openFinDetail('${t}')">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="finance-ticker">${item.ticker}</div>
+        <button onclick="event.stopPropagation();toggleWatchlist('${t}')" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:14px">★</button>
+      </div>
+      <div class="finance-name">${item.name}</div>
+      <div class="finance-price">$${item.price?.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})||'—'}</div>
+      <div class="finance-change ${item.change>=0?'up':'down'}">${item.change>=0?'▲ +':'▼ '}${item.change?.toFixed(2)||0}%</div>
+    </div>`;
+  });
+  g.innerHTML=items.join('');
+}
+function clearWatchlist(){watchlist=[];try{localStorage.removeItem('watchlist');}catch(_){}renderWatchlist();}
+
+function addPriceAlert(){
+  const ticker=document.getElementById('alert-ticker').value.trim().toUpperCase();
+  const price=parseFloat(document.getElementById('alert-price').value);
+  const cond=document.getElementById('alert-cond').value;
+  if(!ticker||isNaN(price)){toast('Remplissez tous les champs','error');return;}
+  priceAlerts.push({id:'a'+Date.now(),ticker,price,cond,created:new Date().toLocaleString('fr-FR'),triggered:false});
+  try{localStorage.setItem('priceAlerts',JSON.stringify(priceAlerts));}catch(_){}
+  document.getElementById('alert-ticker').value='';document.getElementById('alert-price').value='';
+  renderAlerts();toast(`Alerte ${ticker} @ $${price} ajoutée ✅`,'success');
+}
+function renderAlerts(){
+  const el=document.getElementById('alerts-list');if(!el)return;
+  if(!priceAlerts.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔔</div><p>Aucune alerte configurée.</p></div>';return;}
+  el.innerHTML=priceAlerts.map(a=>`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;${a.triggered?'opacity:.5':''}">
+    <div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px">${a.ticker}</div>
+      <div style="font-size:12px;color:var(--muted)">${a.cond==='above'?'≥ Au-dessus de':'≤ En-dessous de'} <strong style="color:var(--text)">$${a.price.toLocaleString()}</strong> · ${a.created}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      ${a.triggered?'<span style="font-size:11px;color:var(--success)">✅ Déclenchée</span>':'<span style="font-size:11px;color:var(--gold)">⏳ Active</span>'}
+      <button onclick="removeAlert('${a.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button>
+    </div>
+  </div>`).join('');
+}
+function removeAlert(id){priceAlerts=priceAlerts.filter(a=>a.id!==id);try{localStorage.setItem('priceAlerts',JSON.stringify(priceAlerts));}catch(_){}renderAlerts();}
+function checkPriceAlerts(){
+  if(!priceAlerts.length||!financeData)return;
+  priceAlerts.filter(a=>!a.triggered).forEach(a=>{
+    let price=null;
+    const s=financeData.stocks?.find(x=>x.ticker===a.ticker);
+    const co=financeData.commodities?.find(x=>x.ticker===a.ticker);
+    const cr=CRYPTOS?.find(x=>x.ticker===a.ticker);
+    if(s)price=s.price;else if(co)price=co.price;
+    else if(cr&&financeData.crypto?.[cr.id])price=financeData.crypto[cr.id].usd;
+    if(price===null)return;
+    if((a.cond==='above'&&price>=a.price)||(a.cond==='below'&&price<=a.price)){
+      a.triggered=true;
+      toast(`🔔 Alerte : ${a.ticker} a atteint $${price.toFixed(2)}!`,'success');
+      try{localStorage.setItem('priceAlerts',JSON.stringify(priceAlerts));}catch(_){}
+    }
+  });
+}
+
+// ============ SOUS-PAGES AGENDA : TÂCHES ============
+let tasksList=[];
+function showAgendaSub(sub,btn){
+  ['cal','tasks','rappels'].forEach(s=>{
+    const p=document.getElementById('agenda-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
+  });
+  document.querySelectorAll('[id^="agenda-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(sub==='tasks')renderTasks();
+  if(sub==='rappels')renderRappels();
+}
+function openAddTask(){document.getElementById('task-modal').style.display='flex';}
+function loadTasksList(){try{const t=localStorage.getItem('tasksList');if(t)tasksList=JSON.parse(t);}catch(_){}}
+function saveTask(){
+  const title=document.getElementById('task-title').value.trim();
+  if(!title){toast('Titre requis','error');return;}
+  const task={id:'t'+Date.now(),title,prio:document.getElementById('task-prio').value,due:document.getElementById('task-due').value,done:false,created:new Date().toISOString()};
+  tasksList.unshift(task);
+  try{localStorage.setItem('tasksList',JSON.stringify(tasksList));}catch(_){}
+  document.getElementById('task-modal').style.display='none';
+  document.getElementById('task-title').value='';
+  renderTasks();toast('Tâche créée ✅','success');
+}
+function toggleTask(id){
+  const t=tasksList.find(x=>x.id===id);if(!t)return;
+  t.done=!t.done;
+  try{localStorage.setItem('tasksList',JSON.stringify(tasksList));}catch(_){}
+  renderTasks();
+}
+function deleteTask(id){tasksList=tasksList.filter(t=>t.id!==id);try{localStorage.setItem('tasksList',JSON.stringify(tasksList));}catch(_){}renderTasks();}
+function renderTasks(){
+  const el=document.getElementById('tasks-list');if(!el)return;
+  if(!tasksList.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><p>Aucune tâche. Créez votre première tâche !</p></div>';return;}
+  const prioColor={high:'#e63946',med:'#f4a261',low:'#2ecc71'};
+  const prioLabel={high:'🔴 Haute',med:'🟡 Moyenne',low:'🟢 Basse'};
+  const sorted=[...tasksList].sort((a,b)=>(a.done?1:-1)-(b.done?1:-1));
+  el.innerHTML=sorted.map(t=>`<div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-left:3px solid ${prioColor[t.prio]};border-radius:9px;padding:12px 16px;${t.done?'opacity:.55':''}">
+    <input type="checkbox" ${t.done?'checked':''} onchange="toggleTask('${t.id}')" style="width:18px;height:18px;accent-color:var(--accent);cursor:pointer;flex-shrink:0">
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:600;${t.done?'text-decoration:line-through;color:var(--muted)':''}">${t.title}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">${prioLabel[t.prio]}${t.due?' · Échéance : '+new Date(t.due).toLocaleDateString('fr-FR'):''}</div>
+    </div>
+    <button onclick="deleteTask('${t.id}')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;flex-shrink:0">×</button>
+  </div>`).join('');
+}
+
+// ============ RAPPELS ============
+let rappelsList=[];
+function loadRappelsList(){try{const r=localStorage.getItem('rappelsList');if(r)rappelsList=JSON.parse(r);}catch(_){}}
+function addRappel(){
+  const msg=document.getElementById('rappel-msg').value.trim();
+  const dt=document.getElementById('rappel-dt').value;
+  if(!msg||!dt){toast('Remplissez tous les champs','error');return;}
+  rappelsList.push({id:'r'+Date.now(),msg,dt,done:false});
+  try{localStorage.setItem('rappelsList',JSON.stringify(rappelsList));}catch(_){}
+  document.getElementById('rappel-msg').value='';
+  renderRappels();toast('Rappel ajouté ✅','success');
+}
+function renderRappels(){
+  const el=document.getElementById('rappels-list');if(!el)return;
+  if(!rappelsList.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">⏰</div><p>Aucun rappel configuré.</p></div>';return;}
+  const now=new Date();
+  el.innerHTML=[...rappelsList].sort((a,b)=>new Date(a.dt)-new Date(b.dt)).map(r=>{
+    const dt=new Date(r.dt);const past=dt<now;
+    return`<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 16px;${past&&!r.done?'border-color:rgba(230,57,70,.4)':''}">
+      <div>
+        <div style="font-size:13px;font-weight:600">${r.msg}</div>
+        <div style="font-size:11px;color:${past?'var(--accent2)':'var(--muted)'};margin-top:2px">⏰ ${dt.toLocaleString('fr-FR')}${past?' (passé)':''}</div>
+      </div>
+      <button onclick="rappelsList=rappelsList.filter(x=>x.id!=='${r.id}');try{localStorage.setItem('rappelsList',JSON.stringify(rappelsList))}catch(_){}renderRappels()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">×</button>
+    </div>`;
+  }).join('');
+}
+// Vérifier les rappels toutes les 30 secondes
+setInterval(()=>{
+  const now=new Date();
+  rappelsList.filter(r=>!r.done).forEach(r=>{
+    const dt=new Date(r.dt);
+    if(Math.abs(now-dt)<31000&&dt<=now){r.done=true;toast('⏰ Rappel : '+r.msg,'success');try{localStorage.setItem('rappelsList',JSON.stringify(rappelsList));}catch(_){}}
+  });
+},30000);
+
+// Charger données locales au démarrage
+document.addEventListener('firebase-ready',()=>{
+  setTimeout(()=>{loadWatchlist();loadTasksList();loadRappelsList();
+    try{const pa=localStorage.getItem('priceAlerts');if(pa)priceAlerts=JSON.parse(pa);}catch(_){}
+  },600);
+});
+
+// ============ RECHERCHE GLOBALE ============
+function globalSearch(q){
+  const res=document.getElementById('gsearch-results');
+  if(!q||q.length<2){res.style.display='none';return;}
+  q=q.toLowerCase();
+  const results=[];
+  // Chercher dans les fichiers
+  files.filter(f=>f.type!=='folder'&&f.name.toLowerCase().includes(q)).slice(0,3).forEach(f=>
+    results.push({icon:'📄',label:f.name,sub:'Fichiers',action:`showTab('fichiers',document.querySelector('[onclick*=fichiers]'))`}));
+  // Chercher dans les transactions
+  transactions.filter(t=>t.label.toLowerCase().includes(q)).slice(0,3).forEach(t=>
+    results.push({icon:'💰',label:t.label+' — '+t.amount.toFixed(2)+'€',sub:'Suivi de compte',action:`showTab('compte',document.querySelector('[onclick*=compte]'))`}));
+  // Chercher dans les news
+  newsCache.filter(n=>n.title.toLowerCase().includes(q)).slice(0,3).forEach(n=>
+    results.push({icon:'📰',label:n.title.slice(0,60),sub:'News',action:`openNewsDetail('${n.id}')`}));
+  // Pages statiques
+  const pages=[['fichiers','📁','Fichiers'],['agenda','📅','Agenda'],['compte','💰','Suivi de compte'],['finance','📈','Finance'],['news','📰','News'],['careertools','📄','Outils Carrière'],['calculator','🧮','Calculateur'],['goals','🎯','Objectifs'],['veille','🔍','Veille'],['about','👤','À propos']];
+  pages.filter(p=>p[2].toLowerCase().includes(q)).forEach(p=>
+    results.push({icon:p[1],label:'Page : '+p[2],sub:'Navigation',action:`quickNav('${p[0]}')`}));
+
+  if(!results.length){res.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px">Aucun résultat</div>';res.style.display='block';return;}
+  res.innerHTML=results.slice(0,8).map(r=>`<div onclick="${r.action};document.getElementById('global-search').value='';document.getElementById('gsearch-results').style.display='none'" style="display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+    <span style="font-size:18px">${r.icon}</span>
+    <div style="flex:1;min-width:0"><div style="font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.label}</div><div style="font-size:10px;color:var(--muted)">${r.sub}</div></div>
+  </div>`).join('');
+  res.style.display='block';
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#global-search')&&!e.target.closest('#gsearch-results'))document.getElementById('gsearch-results').style.display='none';});
+
+// ============ DARK / LIGHT MODE ============
+function toggleDarkMode(){
+  document.body.classList.toggle('light-mode');
+  const btn=document.getElementById('dark-toggle');
+  const isLight=document.body.classList.contains('light-mode');
+  if(btn)btn.textContent=isLight?'☀️':'🌙';
+  try{localStorage.setItem('theme',isLight?'light':'dark');}catch(_){}
+}
+// Restaurer le thème au chargement
+(function(){try{if(localStorage.getItem('theme')==='light'){document.body.classList.add('light-mode');}}catch(_){})();
 
 // ============ INIT ============
 document.getElementById('tx-date').valueAsDate=new Date();
