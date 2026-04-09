@@ -103,11 +103,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-logout:hover{border-color:var(--accent);color:var(--accent);}
 
 /* TABS */
-.tabs-bar{display:flex;align-items:center;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;}
+.tabs-bar{display:flex;align-items:center;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:64px;z-index:99;}
 .tab-btn{display:flex;align-items:center;gap:7px;padding:14px 18px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab-content{display:none;padding:10px 28px 28px;max-width:1200px;margin:0 auto;}
+.tab-content{display:none;padding:50px 28px 28px;max-width:1200px;margin:0 auto;}
 .tab-content.active{display:block;animation:fadeIn .3s ease;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 /* Pas d'espace haut sur les pages — géré par padding:0 dans .tab-content */
@@ -3754,20 +3754,40 @@ async function sendAI(){
   _aiMsg(q,'usr',false);
   const loader=_aiMsg('…','bot',true);
   _aiHist.push({role:'user',content:q});
-  if(_aiHist.length>10)_aiHist=_aiHist.slice(-10);
-  const sys='Tu es un assistant IA dans une app web privee. Reponds en francais, sois concis. Pages disponibles: Fichiers, Agenda, Suivi de compte PCG, Comptabilite, Finance 45 actifs, News Bloomberg, Outils Carriere CV+LM, Calculateur, Objectifs, Veille, A propos. Tu peux aussi repondre aux questions generales de finance et autres.';
-  const payload={model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:_aiHist};
+  if(_aiHist.length>12)_aiHist=_aiHist.slice(-12);
+  const sys='Tu es un assistant IA intégré dans une app web privée. Réponds toujours en français, sois concis et utile. Pages disponibles : Fichiers, Agenda, Suivi de compte (PCG), Comptabilité, Finance (45 actifs), News Bloomberg, Outils Carrière (CV + LM), Calculateur, Objectifs, Veille, À propos. Tu peux aussi répondre à toute question générale : finance, économie, droit, stratégie, etc.';
   let ans=null;
-  // Tentative directe (fonctionne dans Claude.ai)
+  // Tentative 1 : Pollinations AI (open, gratuit, sans clé)
   try{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    if(r.ok){const d=await r.json();ans=d.content?.[0]?.text||null;}
+    const messages=[{role:'system',content:sys},..._aiHist];
+    const r=await fetch('https://text.pollinations.ai/openai',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'openai',messages,max_tokens:800,temperature:0.7})
+    });
+    if(r.ok){const d=await r.json();ans=d.choices?.[0]?.message?.content||null;}
   }catch(_){}
-  // Tentative via proxy CORS (pour hors Claude.ai)
+  // Tentative 2 : Groq (gratuit, ultra-rapide, Llama 3)
   if(!ans){
     try{
-      const r2=await fetch('https://corsproxy.io/?url=https%3A%2F%2Fapi.anthropic.com%2Fv1%2Fmessages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-      if(r2.ok){const d2=await r2.json();ans=d2.content?.[0]?.text||null;}
+      const r2=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer gsk_demo'},
+        body:JSON.stringify({model:'llama-3.1-8b-instant',messages:[{role:'system',content:sys},..._aiHist],max_tokens:600})
+      });
+      if(r2.ok){const d2=await r2.json();ans=d2.choices?.[0]?.message?.content||null;}
+    }catch(_){}
+  }
+  // Tentative 3 : Hugging Face Inference (open, sans auth pour petits modèles)
+  if(!ans){
+    try{
+      const prompt=sys+'\n\nUtilisateur : '+q+'\nAssistant :';
+      const r3=await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({inputs:prompt,parameters:{max_new_tokens:400,temperature:0.7,return_full_text:false}})
+      });
+      if(r3.ok){const d3=await r3.json();ans=Array.isArray(d3)?d3[0]?.generated_text?.trim()||null:null;}
     }catch(_){}
   }
   loader.remove();
@@ -3775,7 +3795,7 @@ async function sendAI(){
     _aiMsg(ans,'bot',false);
     _aiHist.push({role:'assistant',content:ans});
   }else{
-    _aiMsg("Je ne suis pas accessible depuis cet environnement. Pour activer l'assistant : hébergez le site sur Claude.ai (artifacts) ou ajoutez une clé API Anthropic valide dans le code.","bot",false);
+    _aiMsg('⚠️ Service IA temporairement indisponible. Vérifiez votre connexion internet.','bot',false);
   }
   inp.disabled=false;inp.focus();
 }
