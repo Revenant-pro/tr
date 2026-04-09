@@ -214,7 +214,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .upc-value{color:var(--text);}
 
 /* SOUS-NAVIGATION */
-.sub-nav{display:flex;gap:4px;padding:14px 0 10px;margin-bottom:6px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.sub-nav{display:flex;gap:4px;padding:10px 0 8px;margin-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .sub-nav-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;}
 .sub-nav-btn:hover{color:var(--text);border-color:var(--accent);}
 .sub-nav-btn.active{background:rgba(230,57,70,.12);border-color:var(--accent);color:var(--accent);font-weight:600;}
@@ -482,7 +482,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- FICHIERS -->
   <div class="tab-content active" id="tab-fichiers">
-    <div class="page-header"><div class="page-title">📁 Stockage de fichiers</div><div class="page-desc">Déposez vos fichiers — organisez-les en dossiers</div></div>
     <div class="sub-nav">
       <button id="fichiers-sub-tous" class="sub-nav-btn active" onclick="showFichiersSub('tous',this)">📂 Tous</button>
       <button id="fichiers-sub-recents" class="sub-nav-btn" onclick="showFichiersSub('recents',this)">🕐 Récents</button>
@@ -525,7 +524,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- ACCÈS / PROFIL -->
   <div class="tab-content" id="tab-acces">
     <div id="zone-admin" style="display:none">
-      <div class="page-header"><div class="page-title">👥 Gestion des accès</div><div class="page-desc">Administration des comptes</div></div>
       <div class="sub-nav">
         <button id="acces-sub-users" class="sub-nav-btn active" onclick="showAccesSub('users',this)">👤 Utilisateurs</button>
         <button id="acces-sub-log" class="sub-nav-btn" onclick="showAccesSub('log',this)">🕵️ Journal</button>
@@ -638,7 +636,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   <!-- AGENDA -->
   <div class="tab-content" id="tab-agenda">
-    <div class="page-header"><div class="page-title">📅 Agenda</div><div class="page-desc">Événements — notifiés à tous les membres</div></div>
     <div class="sub-nav">
       <button id="agenda-sub-cal" class="sub-nav-btn active" onclick="showAgendaSub('cal',this)">📅 Calendrier</button>
       <button id="agenda-sub-tasks" class="sub-nav-btn" onclick="showAgendaSub('tasks',this)">✅ Tâches</button>
