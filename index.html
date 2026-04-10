@@ -218,20 +218,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .upc-label{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;width:120px;flex-shrink:0;margin-top:1px;}
 .upc-value{color:var(--text);}
 
-/* MENU GRILLE ··· */
-.more-menu-wrap{position:relative;display:inline-flex;align-items:center;}
-.more-menu-btn{display:flex;align-items:center;gap:7px;padding:14px 16px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:18px;font-weight:700;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;letter-spacing:2px;}
-.more-menu-btn:hover,.more-menu-btn.active{color:var(--accent);}
-.more-menu-btn.active{border-bottom-color:var(--accent);}
-.more-grid-panel{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,.5);z-index:999;display:none;padding:14px;width:260px;}
-.more-grid-panel.open{display:block;}
-.more-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.more-grid-item{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 6px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
-.more-grid-item:hover{border-color:var(--accent);background:rgba(230,57,70,.08);}
-.more-grid-item.active{border-color:var(--accent);background:rgba(230,57,70,.12);color:var(--accent);}
-.more-grid-icon{font-size:20px;}
-.more-grid-label{font-size:10px;font-weight:600;color:var(--muted);text-align:center;line-height:1.2;}
-.more-grid-item.active .more-grid-label{color:var(--accent);}
 
 .sub-nav{display:flex;gap:4px;padding:10px 0 8px;margin-bottom:10px;border-bottom:1px solid var(--border);flex-wrap:wrap;}
 .sub-nav-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .2s;}
@@ -1967,66 +1953,44 @@ function buildTabsBar(isRefresh=false){
   const isViewer=currentUser.role==='viewer';
   const savedTab=isRefresh?loadActiveTab():null;
 
-  const moreItems=[
-    {id:'finance',icon:'▲',label:'Finance'},
-    {id:'news',icon:'N',label:'News'},
-    {id:'careertools',icon:'C',label:'Carriere'},
-    {id:'goals',icon:'O',label:'Objectifs'},
-    {id:'calculator',icon:'K',label:'Calculateur'},
-    {id:'veille',icon:'V',label:'Veille'},
-    {id:'email',icon:'@',label:'Email'},
-    {id:'music',icon:'♪',label:'Musique'},
-  ];
-
-  const moreGridHtml=`<div class="more-menu-wrap" id="more-menu-wrap">
-    <button class="more-menu-btn" id="more-menu-btn" onclick="toggleMoreMenu(event)">···</button>
-    <div class="more-grid-panel" id="more-grid-panel">
-      <div class="more-grid">
-        ${moreItems.map(it=>`<div class="more-grid-item" id="more-item-${it.id}" onclick="showTabFromMore('${it.id}')">
-          <span class="more-grid-icon">${it.icon}</span>
-          <span class="more-grid-label">${it.label}</span>
-        </div>`).join('')}
-      </div>
-    </div>
-  </div>`;
-
   if(isViewer){
-    bar.innerHTML=`<button class="tab-btn" onclick="showTab('compta',this)">Comptabilite</button>
-      <button class="tab-btn" onclick="showTab('contact',this)">Contact</button>
-      <button class="tab-btn" onclick="showTab('about',this)">A propos</button>
-      ${moreGridHtml}`;
+    bar.innerHTML=`
+      <button class="tab-btn" onclick="showTab('compta',this)">Comptabilité</button>
+      <button class="tab-btn" onclick="showTab('finance',this)">Finance</button>
+      <button class="tab-btn" onclick="showTab('news',this)">News</button>
+      <button class="tab-btn" onclick="showTab('careertools',this)">Carrière</button>
+      <button class="tab-btn" onclick="showTab('calculator',this)">Calculateur</button>
+      <button class="tab-btn" onclick="showTab('goals',this)">Objectifs</button>
+      <button class="tab-btn" onclick="showTab('veille',this)">Veille</button>
+      <button class="tab-btn" onclick="showTab('email',this)">Email</button>
+      <button class="tab-btn" onclick="showTab('music',this)">Musique</button>
+      <button class="tab-btn" onclick="showTab('about',this)">À propos</button>`;
   } else {
-    bar.innerHTML=`<button class="tab-btn" onclick="showTab('fichiers',this)">Fichiers</button>
-      <button class="tab-btn" id="tab-btn-acces-profil" onclick="showTab('acces',this)">${isAdmin?'Acces':'Profil'}</button>
-      <button class="tab-btn" onclick="showTab('agenda',this)">📅 Agenda</button>
-      <button class="tab-btn" onclick="showTab('compte',this)">💰 Compte</button>
-      ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">Comptabilite</button>':''}
-      <button class="tab-btn" onclick="showTab('about',this)">A propos</button>
-      ${moreGridHtml}`;
+    bar.innerHTML=`
+      <button class="tab-btn" onclick="showTab('fichiers',this)">Fichiers</button>
+      <button class="tab-btn" id="tab-btn-acces-profil" onclick="showTab('acces',this)">${isAdmin?'Accès':'Profil'}</button>
+      <button class="tab-btn" onclick="showTab('agenda',this)">Agenda</button>
+      <button class="tab-btn" onclick="showTab('compte',this)">Compte</button>
+      ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">Comptabilité</button>':''}
+      <button class="tab-btn" onclick="showTab('finance',this)">Finance</button>
+      <button class="tab-btn" onclick="showTab('news',this)">News</button>
+      <button class="tab-btn" onclick="showTab('careertools',this)">Carrière</button>
+      <button class="tab-btn" onclick="showTab('calculator',this)">Calculateur</button>
+      <button class="tab-btn" onclick="showTab('goals',this)">Objectifs</button>
+      <button class="tab-btn" onclick="showTab('veille',this)">Veille</button>
+      <button class="tab-btn" onclick="showTab('email',this)">Email</button>
+      <button class="tab-btn" onclick="showTab('music',this)">Musique</button>
+      <button class="tab-btn" onclick="showTab('about',this)">À propos</button>`;
   }
-  // Restore active tab on refresh
+
   const targetTab=savedTab||(isViewer?'compta':'fichiers');
-  const btns=bar.querySelectorAll('.tab-btn');
-  btns.forEach(b=>{
+  document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
+  const tc=document.getElementById('tab-'+targetTab);
+  if(tc)tc.classList.add('active');
+  bar.querySelectorAll('.tab-btn').forEach(b=>{
     const t=b.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
-    if(t===targetTab){
-      document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
-      b.classList.add('active');
-      const tc=document.getElementById('tab-'+targetTab);
-      if(tc)tc.classList.add('active');
-    }
+    if(t===targetTab)b.classList.add('active');
   });
-  // Si l'onglet actif est dans le menu ···
-  const moreIds=['finance','news','careertools','goals','calculator','veille','email','music'];
-  if(moreIds.includes(targetTab)){
-    document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
-    const tc=document.getElementById('tab-'+targetTab);
-    if(tc)tc.classList.add('active');
-    const btn=document.getElementById('more-menu-btn');
-    if(btn)btn.classList.add('active');
-    const item=document.getElementById('more-item-'+targetTab);
-    if(item)item.classList.add('active');
-  }
 }
 
 async function loadAboutFromFirebase(){
@@ -2111,6 +2075,8 @@ function showTab(id,btn){
   if(id==='news')loadNewsData();
   if(id==='about')loadAboutPage();
   if(id==='goals')loadGoals();
+  if(id==='music'){showMusicSub('search',document.getElementById('music-sub-search'));loadMusicTrending();}
+  if(id==='email'){showEmailSub('compose',document.getElementById('email-sub-compose'));loadEmailAccounts();}
 }
 
 function showAccessOrProfile(){
@@ -4045,40 +4011,6 @@ function checkPriceAlerts(){
     }
   });
 }
-
-function toggleMoreMenu(e){
-  e.stopPropagation();
-  document.getElementById('more-grid-panel').classList.toggle('open');
-}
-function showTabFromMore(id){
-  // Désactiver tous les tab-btn
-  document.querySelectorAll('#tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
-  // Désactiver tous les items du menu
-  document.querySelectorAll('.more-grid-item').forEach(i=>i.classList.remove('active'));
-  // Activer le bouton ··· et l'item
-  const btn=document.getElementById('more-menu-btn');
-  if(btn)btn.classList.add('active');
-  const item=document.getElementById('more-item-'+id);
-  if(item)item.classList.add('active');
-  // Afficher le tab
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  const tc=document.getElementById('tab-'+id);
-  if(tc)tc.classList.add('active');
-  saveActiveTab(id);
-  document.getElementById('more-grid-panel').classList.remove('open');
-  closeAllDropdowns();
-  if(id==='finance')loadFinanceData();
-  if(id==='news')loadNewsData();
-  if(id==='goals')loadGoals();
-  if(id==='music'){showMusicSub('search',document.getElementById('music-sub-search'));loadMusicTrending();}
-  if(id==='email'){showEmailSub('compose',document.getElementById('email-sub-compose'));loadEmailAccounts();}
-}
-// Fermer le menu ··· si clic ailleurs
-document.addEventListener('click',e=>{
-  const panel=document.getElementById('more-grid-panel');
-  const wrap=document.getElementById('more-menu-wrap');
-  if(panel&&wrap&&!wrap.contains(e.target))panel.classList.remove('open');
-});
 
 // ============ SOUS-PAGES AGENDA : TÂCHES ============
 let tasksList=[];
