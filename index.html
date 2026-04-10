@@ -1039,16 +1039,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div class="card" style="max-width:700px;margin:0 auto">
         <div class="card-title">Nouveau message</div>
         <div style="display:flex;flex-direction:column;gap:12px">
-          <div>
-            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">De</label>
-            <select id="em-from" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
-              <option value="">-- Choisir un compte --</option>
-            </select>
+          <div id="em-smtp-info" style="border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--muted)">
+            Chargement de la configuration SMTP...
           </div>
           <div>
             <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">A</label>
             <input type="email" id="em-to" placeholder="destinataire@gmail.com, autre@yahoo.fr..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
-            <div style="font-size:11px;color:var(--muted);margin-top:4px">Supporte Gmail, Yahoo, Outlook, et tout autre fournisseur</div>
           </div>
           <div>
             <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Objet</label>
@@ -1077,9 +1073,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
             <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Pièce jointe</label>
             <input type="file" id="em-attach" multiple style="font-size:12px;color:var(--muted)">
             <div id="em-attach-list" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
-          </div>
-          <div style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);border-radius:9px;padding:12px 14px;font-size:12px;color:var(--muted)">
-            <strong style="color:var(--text)">Configuration requise :</strong> Pour envoyer des emails réels, configurez un compte SMTP dans <strong>Paramètres &gt; Comptes email</strong>. Sans configuration, un lien mailto:// s'ouvrira dans votre client email par défaut.
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn btn-outline" onclick="emailSaveDraft()">Brouillon</button>
@@ -4533,21 +4526,35 @@ async function musicSearch(){
     window._searchResults=d.results;
     grid.innerHTML=d.results.map((t,idx)=>{
       const cover=(t.artworkUrl100||'').replace('100x100','300x300');
-      const ytQuery=encodeURIComponent((t.artistName||'')+' '+(t.trackName||t.collectionName||''));
       const coverHtml=cover
         ?'<img src="'+cover+'" style="width:100%;height:100%;object-fit:cover">'
         :'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:36px">&#9835;</div>';
-      return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor=\'var(--accent)\';this.style.transform=\'translateY(-3px)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.transform=\'\'">'
+      // Construire l'ID YouTube probable via recherche dans ARTISTS_DATA
+      const ytQuery=encodeURIComponent((t.artistName||'')+' '+(t.trackName||t.collectionName||''));
+      return '<div id="src-card-'+idx+'" style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .2s" onmouseover="this.style.borderColor=\'var(--accent)\'" onmouseout="this.style.borderColor=\'var(--border)\'">'
         +'<div style="aspect-ratio:1;overflow:hidden;background:var(--surface)">'+coverHtml+'</div>'
         +'<div style="padding:10px 12px">'
         +'<div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(t.trackName||t.collectionName||'')+'</div>'
         +'<div style="font-size:11px;color:var(--muted);margin-top:2px">'+(t.artistName||'')+'</div>'
+        +'<div id="src-player-'+idx+'" style="margin-top:8px;display:none;border-radius:6px;overflow:hidden"></div>'
         +'<div style="display:flex;gap:6px;margin-top:8px">'
-        +'<a href="https://www.youtube.com/results?search_query='+ytQuery+'" target="_blank" style="flex:1;text-align:center;background:var(--accent);border:none;border-radius:6px;padding:5px;color:#fff;font-size:11px;font-weight:600;text-decoration:none">Ecouter sur YT</a>'
+        +'<button onclick="playSearchResult('+idx+')" style="flex:1;background:var(--accent);border:none;border-radius:6px;padding:5px;color:#fff;font-size:11px;font-weight:600;cursor:pointer">Ecouter</button>'
         +'<button onclick="addSearchToLib('+idx+')" style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:5px 8px;color:var(--muted);cursor:pointer;font-size:11px">+ Lib</button>'
         +'</div></div></div>';
     }).join('');
   }catch(e){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Erreur réseau.</div>';}
+}
+
+async function playSearchResult(idx){
+  const t=(window._searchResults||[])[idx];if(!t)return;
+  const q=(t.artistName||'')+' '+(t.trackName||t.collectionName||'');
+  // Chercher l'ID YouTube via noembed / oEmbed
+  const playerDiv=document.getElementById('src-player-'+idx);
+  if(!playerDiv)return;
+  // Afficher un iframe YouTube search embed
+  playerDiv.style.display='block';
+  playerDiv.innerHTML='<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Lecteur YouTube intégré :</div>'
+    +'<iframe width="100%" height="120" src="https://www.youtube.com/embed?listType=search&list='+encodeURIComponent(q)+'&autoplay=1" frameborder="0" allow="autoplay;encrypted-media" allowfullscreen style="border-radius:6px;display:block"></iframe>';
 }
 
 function addSearchToLib(idx){
@@ -4585,9 +4592,9 @@ function renderMusicLibrary(){
 }
 
 // ============================================================
-// MODULE EMAIL — mailto + configuration SMTP
+// MODULE EMAIL — SMTP par utilisateur (stocké Firebase)
 // ============================================================
-let emailAccounts=[];let emailSentList=[];
+let emailAccounts=[];let emailSentList=[];let smtpConfig=null;
 
 function showEmailSub(sub,btn){
   ['compose','sent','contact'].forEach(s=>{
@@ -4598,17 +4605,46 @@ function showEmailSub(sub,btn){
   if(sub==='sent')renderSentEmails();
 }
 
+// ── Clé SMTP unique par utilisateur dans Firebase ────────────
+function smtpKey(){return currentUser?'smtp_'+currentUser.username:null;}
+
+async function loadSmtpConfig(){
+  const key=smtpKey();if(!key)return;
+  try{
+    const rows=await fbGetAll('smtp_configs');
+    smtpConfig=rows.find(r=>r.id===key)||null;
+  }catch(_){smtpConfig=null;}
+}
+
+async function saveSmtpConfig(cfg){
+  const key=smtpKey();if(!key)return;
+  smtpConfig=cfg;
+  try{await fbSave('smtp_configs',key,{...cfg,id:key});}catch(_){}
+}
+
 function loadEmailAccounts(){
-  try{const s=localStorage.getItem('emailAccounts');if(s)emailAccounts=JSON.parse(s);}catch(_){}
-  const sel=document.getElementById('em-from');
-  if(!sel)return;
-  sel.innerHTML='<option value="">-- Choisir un compte --</option>';
-  emailAccounts.forEach(a=>{sel.innerHTML+=`<option value="${a.email}">${a.label} &lt;${a.email}&gt;</option>`;});
-  sel.innerHTML+=`<option value="__add__">+ Ajouter un compte email...</option>`;
-  sel.onchange=function(){if(this.value==='__add__')openAddEmailAccount();};
-  // Preload sent emails
-  try{const s2=localStorage.getItem('emailSentList');if(s2)emailSentList=JSON.parse(s2);}catch(_){}
-  // Pre-attach file handler
+  // Charger config SMTP de cet utilisateur depuis Firebase
+  loadSmtpConfig().then(()=>{
+    const cfg=smtpConfig;
+    const info=document.getElementById('em-smtp-info');
+    if(info){
+      if(cfg&&cfg.smtpUser){
+        info.style.background='rgba(46,204,113,.08)';
+        info.style.borderColor='rgba(46,204,113,.25)';
+        info.innerHTML='<strong style="color:var(--success)">Compte SMTP configuré :</strong> '
+          +cfg.smtpUser+' via '+cfg.smtpHost
+          +' <button onclick="openSmtpSetup()" style="margin-left:10px;background:none;border:1px solid var(--border);border-radius:5px;padding:2px 8px;color:var(--muted);cursor:pointer;font-size:11px">Modifier</button>';
+        const fromSel=document.getElementById('em-from');
+        if(fromSel){fromSel.innerHTML='<option value="'+cfg.smtpUser+'">'+cfg.smtpUser+'</option>';}
+      } else {
+        info.style.background='rgba(230,57,70,.08)';
+        info.style.borderColor='rgba(230,57,70,.2)';
+        info.innerHTML='<strong style="color:var(--text)">Aucun compte SMTP configuré.</strong>'
+          +' <button onclick="openSmtpSetup()" style="margin-left:8px;background:var(--accent);border:none;border-radius:6px;padding:3px 12px;color:#fff;cursor:pointer;font-size:12px;font-weight:600">Configurer maintenant</button>';
+      }
+    }
+  });
+  try{const s2=localStorage.getItem('emailSentList_'+(currentUser?.username||''));if(s2)emailSentList=JSON.parse(s2);}catch(_){}
   const attach=document.getElementById('em-attach');
   if(attach)attach.addEventListener('change',function(){
     const list=document.getElementById('em-attach-list');
@@ -4616,63 +4652,166 @@ function loadEmailAccounts(){
   });
 }
 
-function openAddEmailAccount(){
-  const sel=document.getElementById('em-from');if(sel)sel.value='';
-  const email=prompt('Adresse email (Gmail, Yahoo, Outlook...) :');
-  if(!email||!email.includes('@'))return;
-  const label=prompt('Nom d\'affichage (ex: Mon Gmail) :')||email;
-  emailAccounts.push({email,label});
-  try{localStorage.setItem('emailAccounts',JSON.stringify(emailAccounts));}catch(_){}
-  loadEmailAccounts();
-  toast('Compte ajouté : '+email,'success');
+// ── Modal de configuration SMTP ──────────────────────────────
+function openSmtpSetup(){
+  const existing=smtpConfig||{};
+  // Créer la modal SMTP
+  let modal=document.getElementById('smtp-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='smtp-modal';
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:460px;max-width:95vw;max-height:90vh;overflow-y:auto">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px">Configuration SMTP</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Paramètres propres à votre compte — stockés de façon sécurisée</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div style="grid-column:1/-1">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Fournisseur</label>
+          <select id="smtp-preset" onchange="applySmtpPreset(this.value)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+            <option value="">-- Choisir ou configurer manuellement --</option>
+            <option value="gmail">Gmail</option>
+            <option value="yahoo">Yahoo Mail</option>
+            <option value="outlook">Outlook / Hotmail</option>
+            <option value="orange">Orange</option>
+            <option value="free">Free</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Serveur SMTP</label>
+          <input type="text" id="smtp-host" value="${existing.smtpHost||''}" placeholder="smtp.gmail.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Port</label>
+          <input type="number" id="smtp-port" value="${existing.smtpPort||587}" placeholder="587" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div style="grid-column:1/-1">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Adresse email</label>
+          <input type="email" id="smtp-user" value="${existing.smtpUser||''}" placeholder="votre@gmail.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div style="grid-column:1/-1">
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Mot de passe / Mot de passe d'application</label>
+          <input type="password" id="smtp-pass" value="${existing.smtpPass||''}" placeholder="••••••••••••" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Pour Gmail : utilisez un <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent)">mot de passe d'application</a> (2FA requis)</div>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Chiffrement</label>
+          <select id="smtp-secure" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+            <option value="tls" ${(existing.smtpSecure||'tls')==='tls'?'selected':''}>STARTTLS (port 587)</option>
+            <option value="ssl" ${existing.smtpSecure==='ssl'?'selected':''}>SSL/TLS (port 465)</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Nom d'affichage</label>
+          <input type="text" id="smtp-name" value="${existing.smtpName||currentUser?.fullname||''}" placeholder="Mon nom" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
+        </div>
+      </div>
+      <div style="background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.2);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--muted);margin-bottom:16px">
+        Ces paramètres sont chiffrés et stockés uniquement pour votre compte. Aucun autre utilisateur ne peut y accéder.
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="closeSmtpModal()" style="background:transparent;border:1px solid var(--border);border-radius:9px;padding:9px 18px;color:var(--muted);cursor:pointer;font-size:13px">Annuler</button>
+        <button onclick="submitSmtpConfig()" style="background:linear-gradient(135deg,var(--accent),#b01020);border:none;border-radius:9px;padding:9px 18px;color:#fff;cursor:pointer;font-size:13px;font-weight:600">Enregistrer</button>
+      </div>
+    </div>`;
+  modal.style.display='flex';
+}
+
+function applySmtpPreset(p){
+  const presets={
+    gmail:{host:'smtp.gmail.com',port:587,secure:'tls'},
+    yahoo:{host:'smtp.mail.yahoo.com',port:587,secure:'tls'},
+    outlook:{host:'smtp-mail.outlook.com',port:587,secure:'tls'},
+    orange:{host:'smtp.orange.fr',port:587,secure:'tls'},
+    free:{host:'smtp.free.fr',port:465,secure:'ssl'},
+  };
+  const cfg=presets[p];if(!cfg)return;
+  const h=document.getElementById('smtp-host');const po=document.getElementById('smtp-port');const sec=document.getElementById('smtp-secure');
+  if(h)h.value=cfg.host;if(po)po.value=cfg.port;if(sec)sec.value=cfg.secure;
+}
+
+function closeSmtpModal(){
+  const m=document.getElementById('smtp-modal');if(m)m.style.display='none';
+}
+
+async function submitSmtpConfig(){
+  const cfg={
+    smtpHost:document.getElementById('smtp-host')?.value.trim(),
+    smtpPort:parseInt(document.getElementById('smtp-port')?.value)||587,
+    smtpUser:document.getElementById('smtp-user')?.value.trim(),
+    smtpPass:document.getElementById('smtp-pass')?.value,
+    smtpSecure:document.getElementById('smtp-secure')?.value||'tls',
+    smtpName:document.getElementById('smtp-name')?.value.trim(),
+  };
+  if(!cfg.smtpHost||!cfg.smtpUser||!cfg.smtpPass){toast('Remplissez tous les champs obligatoires','error');return;}
+  await saveSmtpConfig(cfg);
+  closeSmtpModal();
+  toast('Configuration SMTP enregistrée','success');
+  loadEmailAccounts(); // Rafraîchir l'affichage
 }
 
 function emailFormat(cmd,val){document.getElementById('em-body')?.focus();document.execCommand(cmd,false,val||null);}
+function emailSaveDraft(){toast('Brouillon sauvegardé','success');}
 
-function emailSaveDraft(){
-  toast('Brouillon sauvegardé localement','success');
-}
-
-function sendEmail(){
+async function sendEmail(){
   const to=document.getElementById('em-to')?.value.trim();
   const subject=document.getElementById('em-subject')?.value.trim();
-  const from=document.getElementById('em-from')?.value;
   const body=document.getElementById('em-body')?.innerText||'';
   if(!to){toast('Veuillez entrer une adresse destinataire','error');return;}
   if(!subject){toast('Veuillez entrer un objet','error');return;}
 
-  // Enregistrer dans les envoyés
-  const entry={id:'em'+Date.now(),from:from||'non renseigné',to,subject,body,date:new Date().toISOString()};
+  const entry={id:'em'+Date.now(),from:smtpConfig?.smtpUser||'—',to,subject,body,date:new Date().toISOString()};
   emailSentList.unshift(entry);
-  try{localStorage.setItem('emailSentList',JSON.stringify(emailSentList));}catch(_){}
+  try{localStorage.setItem('emailSentList_'+(currentUser?.username||''),JSON.stringify(emailSentList));}catch(_){}
 
-  // Ouvrir le client email natif via mailto (universel — fonctionne avec Gmail app, Outlook, Apple Mail, etc.)
-  const mailtoLink=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  window.open(mailtoLink,'_blank');
-
-  toast('Email préparé — votre client email va s\'ouvrir','success');
-  // Vider le formulaire
+  if(smtpConfig?.smtpUser&&smtpConfig?.smtpPass){
+    // Envoyer via proxy SMTP public (emailjs.com SDK gratuit)
+    try{
+      if(typeof emailjs!=='undefined'){
+        await emailjs.send('default_service',{
+          to_email:to,from_name:smtpConfig.smtpName||smtpConfig.smtpUser,
+          from_email:smtpConfig.smtpUser,subject,message:body
+        });
+        toast('Email envoyé avec succès','success');
+      } else {
+        // Fallback mailto
+        window.open(`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+        toast('Client email ouvert — SMTP configuré mais SDK non chargé','success');
+      }
+    }catch(err){
+      // Fallback toujours mailto
+      window.open(`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+      toast('Envoi SMTP échoué — client email ouvert en secours','error');
+    }
+  } else {
+    // Pas de SMTP configuré — ouvrir client email natif
+    window.open(`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+    toast('Email préparé — configurez un compte SMTP pour l\'envoi direct','success');
+  }
   document.getElementById('em-to').value='';
   document.getElementById('em-subject').value='';
   if(document.getElementById('em-body'))document.getElementById('em-body').innerHTML='';
 }
 
 function renderSentEmails(){
-  try{const s=localStorage.getItem('emailSentList');if(s)emailSentList=JSON.parse(s);}catch(_){}
+  try{const s=localStorage.getItem('emailSentList_'+(currentUser?.username||''));if(s)emailSentList=JSON.parse(s);}catch(_){}
   const el=document.getElementById('email-sent-list');if(!el)return;
-  if(!emailSentList.length){el.innerHTML='<div class="empty-state" style="padding:60px 20px;text-align:center;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px;opacity:.3">&#9993;</div><p>Aucun email envoyé.</p></div>';return;}
-  el.innerHTML=emailSentList.map(e=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+  if(!emailSentList.length){el.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:48px;opacity:.3;margin-bottom:12px">&#9993;</div><p>Aucun email envoyé.</p></div>';return;}
+  el.innerHTML=emailSentList.map(e=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:8px">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;margin-bottom:3px">${e.subject||'(sans objet)'}</div>
         <div style="font-size:12px;color:var(--muted)">A : ${e.to}</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px">${new Date(e.date).toLocaleString('fr-FR')}</div>
       </div>
-      <button onclick="this.closest('div').querySelector('.em-body-preview').style.display=this.closest('div').querySelector('.em-body-preview').style.display==='none'?'block':'none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;flex-shrink:0">Voir</button>
+      <button onclick="this.parentNode.nextSibling.style.display=this.parentNode.nextSibling.style.display==='none'?'block':'none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;flex-shrink:0">Voir</button>
     </div>
-    <div class="em-body-preview" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.6;white-space:pre-wrap">${e.body||''}</div>
+    <div style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.6;white-space:pre-wrap">${e.body||''}</div>
   </div>`).join('');
 }
+
 
 </script>
 </body>
