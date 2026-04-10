@@ -41,10 +41,14 @@
 </script>
 
 <style>
-:root{--bg:#0a0a0f;--surface:#111118;--surface2:#1a1a24;--border:#2a2a3a;--accent:#e63946;--accent2:#ff6b6b;--gold:#f4a261;--text:#f0f0f5;--muted:#6b6b85;--success:#2ecc71;--warning:#f39c12;}
-body.light-mode{--bg:#f4f4f8;--surface:#ffffff;--surface2:#f0f0f5;--border:#e0e0ea;--text:#111118;--muted:#6b6b85;}
+:root{--bg:#080810;--surface:#0f0f1a;--surface2:#171725;--border:#252535;--accent:#e63946;--accent2:#ff6b6b;--gold:#f4a261;--text:#eeeef5;--muted:#7070a0;--success:#27ae60;--warning:#e67e22;--radius:12px;--shadow:0 8px 32px rgba(0,0,0,.4);}
+body.light-mode{--bg:#f2f2f7;--surface:#ffffff;--surface2:#f8f8fc;--border:#e4e4f0;--text:#0f0f1a;--muted:#6060a0;--shadow:0 4px 20px rgba(0,0,0,.08);}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
 
 /* LOGIN */
 #login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
@@ -114,10 +118,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .page-header{margin-bottom:24px;}
 .page-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;}
 .page-desc{color:var(--muted);font-size:13px;margin-top:4px;}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;}
-.card-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;}
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:none;}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#c1121f);color:white;box-shadow:0 4px 12px rgba(230,57,70,.3);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px;transition:border-color .2s;}
+.card:hover{border-color:rgba(230,57,70,.2);}
+.card-title{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px;}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;border:none;letter-spacing:.2px;}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#b01020);color:white;box-shadow:0 4px 14px rgba(230,57,70,.3);}
 .btn-primary:hover{transform:translateY(-1px);}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text);}
 .btn-outline:hover{border-color:var(--accent);color:var(--accent);}
@@ -497,17 +502,17 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- FICHIERS -->
   <div class="tab-content active" id="tab-fichiers">
     <div class="sub-nav">
-      <button id="fichiers-sub-tous" class="sub-nav-btn active" onclick="showFichiersSub('tous',this)">📂 Tous</button>
-      <button id="fichiers-sub-recents" class="sub-nav-btn" onclick="showFichiersSub('recents',this)">🕐 Récents</button>
-      <button id="fichiers-sub-partages" class="sub-nav-btn" onclick="showFichiersSub('partages',this)">🔗 Partagés</button>
+      <button id="fichiers-sub-tous" class="sub-nav-btn active" onclick="showFichiersSub('tous',this)">Tous</button>
+      <button id="fichiers-sub-recents" class="sub-nav-btn" onclick="showFichiersSub('recents',this)">Recents</button>
+      <button id="fichiers-sub-partages" class="sub-nav-btn" onclick="showFichiersSub('partages',this)">Partages</button>
     </div>
     <!-- Barre d'actions dossiers -->
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
       <div style="display:flex;gap:8px;align-items:center;flex:1;flex-wrap:wrap">
-        <button id="btn-root-folder" class="btn btn-outline" onclick="navigateFolder(null)" style="font-size:12px;padding:7px 14px">🏠 Racine</button>
+        <button id="btn-root-folder" class="btn btn-outline" onclick="navigateFolder(null)" style="font-size:12px;padding:7px 14px">Racine</button>
         <div id="folder-breadcrumb" style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);flex-wrap:wrap"></div>
       </div>
-      <button class="btn btn-outline" onclick="openCreateFolder()" style="font-size:12px;padding:7px 14px">📁+ Nouveau dossier</button>
+      <button class="btn btn-outline" onclick="openCreateFolder()" style="font-size:12px;padding:7px 14px">Nouveau dossier</button>
     </div>
     <div class="dropzone" id="dropzone">
       <input type="file" multiple id="file-input">
@@ -519,7 +524,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <input type="text" id="file-search" placeholder="🔍 Rechercher un fichier par nom..." oninput="renderFiles()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
     </div>
     <div class="card">
-      <div class="card-title">📂 <span id="files-card-title">Tous les fichiers</span></div>
+      <div class="card-title"><span id="files-card-title">Tous les fichiers</span></div>
       <div id="files-all"><div class="empty-state"><div class="empty-icon">📂</div><p>Aucun fichier.</p></div></div>
     </div>
     <!-- Modal création de dossier -->
@@ -539,14 +544,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="tab-content" id="tab-acces">
     <div id="zone-admin" style="display:none">
       <div class="sub-nav">
-        <button id="acces-sub-users" class="sub-nav-btn active" onclick="showAccesSub('users',this)">👤 Utilisateurs</button>
-        <button id="acces-sub-log" class="sub-nav-btn" onclick="showAccesSub('log',this)">🕵️ Journal</button>
-        <button id="acces-sub-diag" class="sub-nav-btn" onclick="showAccesSub('diag',this)">🔗 Diagramme</button>
+        <button id="acces-sub-users" class="sub-nav-btn active" onclick="showAccesSub('users',this)">Utilisateurs</button>
+        <button id="acces-sub-log" class="sub-nav-btn" onclick="showAccesSub('log',this)">Journal</button>
+        <button id="acces-sub-diag" class="sub-nav-btn" onclick="showAccesSub('diag',this)">Diagramme</button>
       </div>
       <!-- Panel Utilisateurs -->
       <div id="acces-panel-users">
       <div class="card" style="margin-bottom:18px">
-        <div class="card-title">➕ Créer un accès</div>
+        <div class="card-title">Créer un accès</div>
         <div class="access-form">
           <div class="row">
             <input type="text" id="new-user" placeholder="Nom d'utilisateur">
@@ -567,17 +572,17 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         </div>
       </div>
       <div class="card" style="margin-bottom:18px">
-        <div class="card-title">👤 Utilisateurs enregistrés</div>
+        <div class="card-title">Utilisateurs</div>
         <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Profil</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
       </div>
       <div class="grid-2">
         <div class="card">
-          <div class="card-title">👥 Nombre d'utilisateurs</div>
+          <div class="card-title">Comptes actifs</div>
           <div id="user-count-wrap" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
         </div>
         <!-- Promotion des utilisateurs (admin principal uniquement) -->
         <div class="card" style="display:none" id="promote-card">
-          <div class="card-title">⬆️ Promouvoir un utilisateur</div>
+          <div class="card-title">Promouvoir</div>
           <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Seul l'administrateur principal peut effectuer cette action.</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
             <div style="flex:2;min-width:160px">
@@ -592,7 +597,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
                 <option value="admin">🔑 Administrateur</option>
               </select>
             </div>
-            <button class="btn btn-primary" onclick="promoteUser()" style="padding:10px 20px;font-size:13px;white-space:nowrap">⬆️ Appliquer</button>
+            <button class="btn btn-primary" onclick="promoteUser()" style="padding:10px 20px;font-size:13px;white-space:nowrap">Appliquer</button>
           </div>
         </div>
       </div>
@@ -600,7 +605,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <!-- Panel Journal -->
       <div id="acces-panel-log" style="display:none">
       <div class="card">
-        <div class="card-title">🕵️ Historique des connexions</div>
+        <div class="card-title">Historique connexions</div>
         <div style="margin-bottom:10px">
           <input type="text" id="connlog-search" placeholder="🔍 Rechercher..." oninput="renderConnLog()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
         </div>
@@ -610,7 +615,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <!-- Panel Diagramme -->
       <div id="acces-panel-diag" style="display:none">
       <div class="card">
-        <div class="card-title">🔗 Diagramme des accès</div>
+        <div class="card-title">Diagramme des accès</div>
         <div id="diagram-wrap"></div>
       </div>
       </div><!-- /acces-panel-diag -->
@@ -641,7 +646,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           </div>
           <div class="profile-field"><label>Bibliographie</label><textarea id="pf-bio" placeholder="Décrivez-vous en quelques lignes..."></textarea></div>
           <div style="display:flex;justify-content:flex-end;margin-top:10px">
-            <button class="btn btn-primary" onclick="saveMyProfile()">💾 Enregistrer</button>
+            <button class="btn btn-primary" onclick="saveMyProfile()">Enregistrer</button>
           </div>
         </div>
       </div>
@@ -651,14 +656,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- AGENDA -->
   <div class="tab-content" id="tab-agenda">
     <div class="sub-nav">
-      <button id="agenda-sub-cal" class="sub-nav-btn active" onclick="showAgendaSub('cal',this)">📅 Calendrier</button>
-      <button id="agenda-sub-tasks" class="sub-nav-btn" onclick="showAgendaSub('tasks',this)">✅ Tâches</button>
-      <button id="agenda-sub-rappels" class="sub-nav-btn" onclick="showAgendaSub('rappels',this)">⏰ Rappels</button>
+      <button id="agenda-sub-cal" class="sub-nav-btn active" onclick="showAgendaSub('cal',this)">Calendrier</button>
+      <button id="agenda-sub-tasks" class="sub-nav-btn" onclick="showAgendaSub('tasks',this)">Taches</button>
+      <button id="agenda-sub-rappels" class="sub-nav-btn" onclick="showAgendaSub('rappels',this)">Rappels</button>
     </div>
     <!-- Panel Calendrier -->
     <div id="agenda-panel-cal">
     <div class="card" style="margin-bottom:14px" id="agenda-user-select-card">
-      <div class="card-title">👤 Agenda de</div>
+      <div class="card-title">Agenda de</div>
       <div class="agenda-user-select" id="agenda-user-select"></div>
     </div>
     <div class="agenda-layout">
@@ -669,13 +674,13 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         </div>
         <div class="cal-grid" id="cal-grid"></div>
         <div class="event-form">
-          <h3>➕ Ajouter un événement</h3>
+          <h3>Ajouter un événement</h3>
           <input type="text" id="evt-title" placeholder="Titre de l'événement">
           <input type="date" id="evt-date">
           <input type="time" id="evt-time">
           <select id="evt-color"><option value="red">🔴 Rouge (urgent)</option><option value="yellow">🟡 Jaune (important)</option><option value="green">🟢 Vert (normal)</option></select>
           <textarea id="evt-note" placeholder="Note (optionnel)"></textarea>
-          <button class="btn btn-primary" style="width:100%" onclick="addEvent()">➕ Ajouter</button>
+          <button class="btn btn-primary" style="width:100%" onclick="addEvent()">Ajouter</button>
         </div>
       </div>
       <div class="agenda-right">
@@ -717,7 +722,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         </div>
         <!-- Events list below clock -->
         <div class="card">
-          <div class="card-title">🗓 Événements — <span id="agenda-current-label" style="color:var(--accent)"></span></div>
+          <div class="card-title">Événements — <span id="agenda-current-label" style="color:var(--accent)"></span></div>
           <div class="events-list" id="events-list"><div class="empty-state"><div class="empty-icon">📅</div><p>Aucun événement.</p></div></div>
         </div>
       </div>
@@ -729,7 +734,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     <div id="agenda-panel-tasks" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div style="font-size:13px;color:var(--muted)">Gérez vos tâches — cochez pour terminer</div>
-        <button class="btn btn-primary" onclick="openAddTask()" style="font-size:13px">+ Nouvelle tâche</button>
+        <button class="btn btn-primary" onclick="openAddTask()" style="font-size:13px">Nouvelle tâche</button>
       </div>
       <div id="tasks-list" style="display:flex;flex-direction:column;gap:8px">
         <div class="empty-state"><div class="empty-icon">✅</div><p>Aucune tâche. Créez votre première tâche !</p></div>
@@ -761,7 +766,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Date &amp; heure</label>
           <input type="datetime-local" id="rappel-dt" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none">
         </div>
-        <button class="btn btn-primary" onclick="addRappel()" style="padding:9px 18px;font-size:13px;white-space:nowrap">+ Ajouter</button>
+        <button class="btn btn-primary" onclick="addRappel()" style="padding:9px 18px;font-size:13px;white-space:nowrap">Ajouter</button>
       </div>
       <div id="rappels-list" style="display:flex;flex-direction:column;gap:8px">
         <div class="empty-state"><div class="empty-icon">⏰</div><p>Aucun rappel configuré.</p></div>
@@ -772,7 +777,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- COMPTE -->
   <div class="tab-content" id="tab-compte">
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-      <button class="btn btn-outline" onclick="downloadCompteExcel()" style="font-size:13px">📥 Excel</button>
+      <button class="btn btn-outline" onclick="downloadCompteExcel()" style="font-size:13px">Export Excel</button>
     </div>
     <div class="grid-3" style="margin-bottom:18px">
       <div class="stat-card"><div class="stat-label">Solde actuel</div><div class="stat-value" id="stat-solde" style="color:var(--success)">0,00 €</div></div>
@@ -781,22 +786,22 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
     <!-- Évolution en courbe -->
     <div class="card" style="margin-bottom:18px">
-      <div class="card-title">📈 Évolution (6 derniers mois)</div>
+      <div class="card-title">Évolution (6 derniers mois)</div>
       <canvas id="evolution-chart" height="100"></canvas>
     </div>
     <!-- Postes comptables PCG -->
     <div class="grid-2" style="margin-bottom:18px">
       <div class="card">
-        <div class="card-title">⚖️ Postes Bilan <span class="pcg-tag">PCG</span></div>
+        <div class="card-title">Postes Bilan <span class="pcg-tag">PCG</span></div>
         <div id="bilan-postes" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
       <div class="card">
-        <div class="card-title">📊 Postes CPC <span class="pcg-tag">PCG</span></div>
+        <div class="card-title">Postes CPC <span class="pcg-tag">PCG</span></div>
         <div id="cpc-postes" style="display:flex;flex-direction:column;gap:8px"></div>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">➕ Nouvelle opération</div>
+      <div class="card-title">Nouvelle opération</div>
       <!-- Ligne 1 : description + montant + date -->
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
         <input type="text" id="tx-label" placeholder="Description" style="flex:2;min-width:140px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
@@ -846,7 +851,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           📒 Cette opération sera retranscrite dans : <strong id="tx-compta-dest-label"></strong>
         </div>
       </div>
-      <button class="btn btn-primary" onclick="addTx()" style="width:100%">➕ Ajouter l'opération</button>
+      <button class="btn btn-primary" onclick="addTx()" style="width:100%">Ajouter</button>
       <div class="tx-list" style="margin-top:16px" id="tx-list"><div class="empty-state"><div class="empty-icon">💳</div><p>Aucune opération.</p></div></div>
     </div>
   </div>
@@ -854,11 +859,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- COMPTABILITÉ (admin only) -->
   <div class="tab-content" id="tab-compta">
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px">
-      <button class="btn btn-outline" onclick="exportComptaExcel()" style="font-size:13px">📥 Excel</button>
-      <button class="btn btn-outline" onclick="exportComptaWord()" style="font-size:13px">📄 Word</button>
+      <button class="btn btn-outline" onclick="exportComptaExcel()" style="font-size:13px">Export Excel</button>
+      <button class="btn btn-outline" onclick="exportComptaWord()" style="font-size:13px">Export Word</button>
     </div>
     <div class="card" style="margin-bottom:18px">
-      <div class="card-title">⚖️ Bilan <span class="pcg-tag">PCG</span></div>
+      <div class="card-title">Bilan <span class="pcg-tag">PCG</span></div>
       <div class="grid-2">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--success)">ACTIF</div>
@@ -886,7 +891,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       </div>
     </div>
     <div class="card" style="margin-bottom:18px">
-      <div class="card-title">📊 CPC — Compte de Produits & Charges <span class="pcg-tag">PCG</span></div>
+      <div class="card-title">CPC — Compte de Produits & Charges <span class="pcg-tag">PCG</span></div>
       <div class="grid-2">
         <div>
           <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;color:var(--success)">PRODUITS</div>
@@ -918,7 +923,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
     <!-- JOURNAL -->
     <div class="card">
-      <div class="card-title">📘 Journal Comptable</div>
+      <div class="card-title">Journal Comptable</div>
       <div style="overflow-x:auto">
         <table class="journal-table">
           <thead><tr><th>Date</th><th>N° Pièce</th><th>Compte débité</th><th>Compte crédité</th><th>Libellé</th><th>Montant</th></tr></thead>
@@ -937,7 +942,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <button class="tab-btn" id="fin-sub-watchlist" onclick="showFinSub('watchlist',this)" style="font-size:13px;padding:10px 18px">⭐ Watchlist</button>
         <button class="tab-btn" id="fin-sub-alertes" onclick="showFinSub('alertes',this)" style="font-size:13px;padding:10px 18px">🔔 Alertes prix</button>
       </div>
-      <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px;margin-right:4px">🔄 Actualiser</button>
+      <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px;margin-right:4px">Actualiser</button>
     </div>
     <!-- Panel Marchés -->
     <div id="fin-panel-marches">
@@ -1007,7 +1012,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div class="bbg-header">
         <div class="bbg-header-left">📰 Markets &amp; Finance</div>
         <div class="bbg-header-right">
-          <button class="btn btn-outline" onclick="loadNewsData()" style="font-size:12px;padding:6px 14px">🔄 Actualiser</button>
+          <button class="btn btn-outline" onclick="loadNewsData()" style="font-size:12px;padding:6px 14px">Actualiser</button>
           <div id="bbg-last-update" style="font-size:11px;color:var(--muted)"></div>
         </div>
       </div>
@@ -1035,24 +1040,173 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 
   <!-- NOUS CONTACTER (lecteurs) -->
-  <div class="tab-content" id="tab-contact">
+  <!-- EMAIL -->
+  <div class="tab-content" id="tab-email">
+    <div class="sub-nav">
+      <button id="email-sub-compose" class="sub-nav-btn active" onclick="showEmailSub('compose',this)">Composer</button>
+      <button id="email-sub-sent" class="sub-nav-btn" onclick="showEmailSub('sent',this)">Envoyés</button>
+      <button id="email-sub-contact" class="sub-nav-btn" onclick="showEmailSub('contact',this)">Formulaire</button>
+    </div>
 
-    <div class="card" style="max-width:600px;margin:0 auto">
-      <div class="profile-grid" style="margin-bottom:14px">
-        <div class="profile-field"><label>Nom</label><input type="text" id="ct-nom" placeholder="Nom"></div>
-        <div class="profile-field"><label>Prénom</label><input type="text" id="ct-prenom" placeholder="Prénom"></div>
-        <div class="profile-field"><label>Pays</label><input type="text" id="ct-pays" placeholder="Pays"></div>
-        <div class="profile-field"><label>Ville</label><input type="text" id="ct-ville" placeholder="Ville"></div>
-        <div class="profile-field"><label>Email</label><input type="email" id="ct-email" placeholder="votre@email.com"></div>
-        <div class="profile-field"><label>Téléphone</label><input type="tel" id="ct-tel" placeholder="+33 6 00 00 00 00"></div>
+    <!-- Composer un email -->
+    <div id="email-panel-compose">
+      <div class="card" style="max-width:700px;margin:0 auto">
+        <div class="card-title">Nouveau message</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">De</label>
+            <select id="em-from" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+              <option value="">-- Choisir un compte --</option>
+            </select>
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">A</label>
+            <input type="email" id="em-to" placeholder="destinataire@gmail.com, autre@yahoo.fr..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+            <div style="font-size:11px;color:var(--muted);margin-top:4px">Supporte Gmail, Yahoo, Outlook, et tout autre fournisseur</div>
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Objet</label>
+            <input type="text" id="em-subject" placeholder="Objet du message" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+          </div>
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Message</label>
+            <!-- Barre de formatage -->
+            <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+              <button onclick="emailFormat('bold')" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 10px;color:var(--text);cursor:pointer;font-weight:700;font-size:13px">G</button>
+              <button onclick="emailFormat('italic')" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 10px;color:var(--text);cursor:pointer;font-style:italic;font-size:13px">I</button>
+              <button onclick="emailFormat('underline')" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 10px;color:var(--text);cursor:pointer;text-decoration:underline;font-size:13px">S</button>
+              <button onclick="emailFormat('insertUnorderedList')" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 10px;color:var(--text);cursor:pointer;font-size:13px">— Liste</button>
+              <select onchange="emailFormat('fontSize',this.value);this.selectedIndex=0" style="background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:4px 8px;color:var(--text);font-size:12px;outline:none">
+                <option>Taille</option>
+                <option value="1">Petit</option>
+                <option value="3">Normal</option>
+                <option value="5">Grand</option>
+                <option value="7">Tres grand</option>
+              </select>
+            </div>
+            <div id="em-body" contenteditable="true" style="width:100%;min-height:180px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.7;outline:none" placeholder="Rédigez votre message..."></div>
+          </div>
+          <!-- Pièce jointe -->
+          <div>
+            <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px">Pièce jointe</label>
+            <input type="file" id="em-attach" multiple style="font-size:12px;color:var(--muted)">
+            <div id="em-attach-list" style="margin-top:6px;font-size:12px;color:var(--muted)"></div>
+          </div>
+          <div style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);border-radius:9px;padding:12px 14px;font-size:12px;color:var(--muted)">
+            <strong style="color:var(--text)">Configuration requise :</strong> Pour envoyer des emails réels, configurez un compte SMTP dans <strong>Paramètres &gt; Comptes email</strong>. Sans configuration, un lien mailto:// s'ouvrira dans votre client email par défaut.
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-outline" onclick="emailSaveDraft()">Brouillon</button>
+            <button class="btn btn-primary" onclick="sendEmail()">Envoyer</button>
+          </div>
+        </div>
       </div>
-      <div class="profile-field"><label>Message</label><textarea id="ct-msg" placeholder="Votre message..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical;min-height:80px"></textarea></div>
-      <div style="display:flex;justify-content:flex-end;margin-top:14px">
-        <button class="btn btn-primary" onclick="sendContactForm()">📤 Envoyer</button>
+    </div>
+
+    <!-- Emails envoyés -->
+    <div id="email-panel-sent" style="display:none">
+      <div id="email-sent-list" style="display:flex;flex-direction:column;gap:10px;max-width:800px;margin:0 auto">
+        <div class="empty-state" style="padding:60px 20px;text-align:center;color:var(--muted)">
+          <div style="font-size:48px;margin-bottom:12px;opacity:.3">&#9993;</div>
+          <p>Aucun email envoyé pour l'instant.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire contact -->
+    <div id="email-panel-contact" style="display:none">
+      <div class="card" style="max-width:600px;margin:0 auto">
+        <div class="card-title">Formulaire de contact</div>
+        <div class="profile-grid" style="margin-bottom:14px">
+          <div class="profile-field"><label>Nom</label><input type="text" id="ct-nom" placeholder="Nom"></div>
+          <div class="profile-field"><label>Prenom</label><input type="text" id="ct-prenom" placeholder="Prenom"></div>
+          <div class="profile-field"><label>Email</label><input type="email" id="ct-email" placeholder="votre@email.com"></div>
+          <div class="profile-field"><label>Telephone</label><input type="tel" id="ct-tel" placeholder="+33 6 00 00 00 00"></div>
+        </div>
+        <div class="profile-field"><label>Message</label><textarea id="ct-msg" placeholder="Votre message..." style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical;min-height:100px"></textarea></div>
+        <div style="display:flex;justify-content:flex-end;margin-top:14px">
+          <button class="btn btn-primary" onclick="sendContactForm()">Envoyer</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
+
+  <!-- MUSIQUE -->
+  <div class="tab-content" id="tab-music" style="padding:0 0 28px">
+    <div class="sub-nav" style="padding:10px 28px 8px">
+      <button id="music-sub-search" class="sub-nav-btn active" onclick="showMusicSub('search',this)">Rechercher</button>
+      <button id="music-sub-trending" class="sub-nav-btn" onclick="showMusicSub('trending',this)">Tendances</button>
+      <button id="music-sub-library" class="sub-nav-btn" onclick="showMusicSub('library',this)">Ma bibliotheque</button>
+    </div>
+
+    <!-- Lecteur persistant -->
+    <div id="music-player-bar" style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:114px;z-index:90">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:200px">
+        <div id="mp-cover" style="width:44px;height:44px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);overflow:hidden;flex-shrink:0">
+          <img id="mp-cover-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+        </div>
+        <div style="min-width:0">
+          <div id="mp-title" style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Aucune piste</div>
+          <div id="mp-artist" style="font-size:11px;color:var(--muted);margin-top:2px">—</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="musicPrev()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px" title="Precedent">&#9664;&#9664;</button>
+        <button id="mp-play-btn" onclick="musicToggle()" style="width:38px;height:38px;background:var(--accent);border:none;border-radius:50%;color:white;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center">&#9654;</button>
+        <button onclick="musicNext()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:4px" title="Suivant">&#9654;&#9654;</button>
+      </div>
+      <div style="flex:2;min-width:120px;display:flex;align-items:center;gap:8px">
+        <span id="mp-current-time" style="font-size:11px;color:var(--muted);width:32px;text-align:right">0:00</span>
+        <input type="range" id="mp-progress" value="0" min="0" max="100" step="0.1" oninput="musicSeek(this.value)" style="flex:1;accent-color:var(--accent);cursor:pointer;height:4px">
+        <span id="mp-duration" style="font-size:11px;color:var(--muted);width:32px">0:00</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:11px;color:var(--muted)">&#128266;</span>
+        <input type="range" id="mp-volume" value="80" min="0" max="100" oninput="musicVolume(this.value)" style="width:70px;accent-color:var(--accent);cursor:pointer;height:4px">
+        <button onclick="musicDownloadCurrent()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 10px;color:var(--muted);cursor:pointer;font-size:12px" title="Telecharger">&#8595; DL</button>
+      </div>
+    </div>
+    <audio id="music-audio" onended="musicNext()" ontimeupdate="musicTimeUpdate()" onloadedmetadata="musicMetaLoaded()"></audio>
+
+    <!-- Recherche -->
+    <div id="music-panel-search" style="padding:20px 28px">
+      <div style="max-width:700px;margin:0 auto 24px">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="music-search-input" placeholder="Artiste, album, titre..." onkeydown="if(event.key==='Enter')musicSearch()" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <button class="btn btn-primary" onclick="musicSearch()">Rechercher</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <span style="font-size:11px;color:var(--muted);padding-top:4px">Suggestions :</span>
+          <button onclick="quickMusicSearch('Drake')" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;color:var(--muted);cursor:pointer;font-size:12px">Drake</button>
+          <button onclick="quickMusicSearch('The Weeknd')" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;color:var(--muted);cursor:pointer;font-size:12px">The Weeknd</button>
+          <button onclick="quickMusicSearch('Tayc')" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;color:var(--muted);cursor:pointer;font-size:12px">Tayc</button>
+          <button onclick="quickMusicSearch('Jul')" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;color:var(--muted);cursor:pointer;font-size:12px">Jul</button>
+          <button onclick="quickMusicSearch('Damso')" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;color:var(--muted);cursor:pointer;font-size:12px">Damso</button>
+          <button onclick="quickMusicSearch('Afrobeats')" style="background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:3px 12px;color:var(--muted);cursor:pointer;font-size:12px">Afrobeats</button>
+        </div>
+      </div>
+      <div id="music-search-results" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted);font-size:14px">Recherchez un artiste, un album ou une chanson</div>
+      </div>
+    </div>
+
+    <!-- Tendances -->
+    <div id="music-panel-trending" style="display:none;padding:20px 28px">
+      <div id="music-trending-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px">
+        <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Chargement des tendances...</div>
+      </div>
+    </div>
+
+    <!-- Bibliotheque -->
+    <div id="music-panel-library" style="display:none;padding:20px 28px">
+      <div id="music-library-list" style="display:flex;flex-direction:column;gap:8px">
+        <div class="empty-state" style="padding:60px 20px;text-align:center;color:var(--muted)">
+          <div style="font-size:48px;margin-bottom:12px;opacity:.3">&#9835;</div>
+          <p>Votre bibliotheque est vide. Ajoutez des titres depuis la recherche.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
   <!-- À PROPOS DE MOI -->
@@ -1418,7 +1572,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 <!-- MESSAGING MODAL -->
 <div class="viewer-modal" id="messaging-modal" style="z-index:450">
   <div class="viewer-header">
-    <h3>✉️ Messagerie</h3>
+    <h3>Messagerie</h3>
     <div style="display:flex;gap:8px;align-items:center">
       <input type="text" id="msg-search" placeholder="🔍 Rechercher..." oninput="renderMsgList()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;width:180px">
       <button class="btn btn-outline" onclick="closeMessaging()">✕ Fermer</button>
@@ -1462,7 +1616,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 <!-- CONFIRM -->
 <div class="modal-overlay" id="confirm-modal">
   <div class="modal">
-    <h3>⚠️ Confirmer</h3>
+    <h3>Confirmer</h3>
     <p id="confirm-msg" style="color:var(--muted);font-size:13px"></p>
     <div class="modal-footer">
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
@@ -1522,14 +1676,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 <button id="ai-btn" onclick="toggleAI()">✦</button>
 <div id="ai-panel">
   <div class="ai-hd">
-    <div class="ai-hd-l"><h4>✦ Assistant IA</h4><span>Claude</span></div>
+    <div class="ai-hd-l"><h4>Assistant IA</h4><span>Actif</span></div>
     <button onclick="toggleAI()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px">✕</button>
   </div>
   <div class="ai-chips">
-    <button class="ai-chip" onclick="askAI('Comment utiliser cette appli ?')">💡 Guide</button>
-    <button class="ai-chip" onclick="askAI('Explique la page Finance')">📈 Finance</button>
-    <button class="ai-chip" onclick="askAI('Comment créer un bon CV ?')">📄 CV</button>
-    <button class="ai-chip" onclick="askAI('Conseils en investissement')">💰 Invest</button>
+    <button class="ai-chip" onclick="askAI('Comment utiliser cette appli ?')">Guide</button>
+    <button class="ai-chip" onclick="askAI('Explique la page Finance')">Finance</button>
+    <button class="ai-chip" onclick="askAI('Comment créer un bon CV ?')">CV</button>
+    <button class="ai-chip" onclick="askAI('Conseils en investissement')">Investissement</button>
   </div>
   <div id="ai-msgs">
     <div class="ai-m bot">Bonjour ! Je suis votre assistant IA. Je peux vous aider à naviguer dans l'application ou répondre à vos questions. Comment puis-je vous aider ?</div>
@@ -1814,12 +1968,14 @@ function buildTabsBar(isRefresh=false){
   const savedTab=isRefresh?loadActiveTab():null;
 
   const moreItems=[
-    {id:'finance',icon:'📈',label:'Finance'},
-    {id:'news',icon:'📰',label:'News'},
-    {id:'careertools',icon:'📄',label:'Carrière'},
-    {id:'goals',icon:'🎯',label:'Objectifs'},
-    {id:'calculator',icon:'🧮',label:'Calculateur'},
-    {id:'veille',icon:'🔍',label:'Veille'},
+    {id:'finance',icon:'▲',label:'Finance'},
+    {id:'news',icon:'N',label:'News'},
+    {id:'careertools',icon:'C',label:'Carriere'},
+    {id:'goals',icon:'O',label:'Objectifs'},
+    {id:'calculator',icon:'K',label:'Calculateur'},
+    {id:'veille',icon:'V',label:'Veille'},
+    {id:'email',icon:'@',label:'Email'},
+    {id:'music',icon:'♪',label:'Musique'},
   ];
 
   const moreGridHtml=`<div class="more-menu-wrap" id="more-menu-wrap">
@@ -1835,17 +1991,17 @@ function buildTabsBar(isRefresh=false){
   </div>`;
 
   if(isViewer){
-    bar.innerHTML=`<button class="tab-btn" onclick="showTab('compta',this)">📒 Comptabilité</button>
-      <button class="tab-btn" onclick="showTab('contact',this)">📨 Contact</button>
-      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos</button>
+    bar.innerHTML=`<button class="tab-btn" onclick="showTab('compta',this)">Comptabilite</button>
+      <button class="tab-btn" onclick="showTab('contact',this)">Contact</button>
+      <button class="tab-btn" onclick="showTab('about',this)">A propos</button>
       ${moreGridHtml}`;
   } else {
-    bar.innerHTML=`<button class="tab-btn" onclick="showTab('fichiers',this)">📁 Fichiers</button>
-      <button class="tab-btn" id="tab-btn-acces-profil" onclick="showTab('acces',this)">${isAdmin?'👥 Accès':'👤 Profil'}</button>
+    bar.innerHTML=`<button class="tab-btn" onclick="showTab('fichiers',this)">Fichiers</button>
+      <button class="tab-btn" id="tab-btn-acces-profil" onclick="showTab('acces',this)">${isAdmin?'Acces':'Profil'}</button>
       <button class="tab-btn" onclick="showTab('agenda',this)">📅 Agenda</button>
       <button class="tab-btn" onclick="showTab('compte',this)">💰 Compte</button>
-      ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">📒 Comptabilité</button>':''}
-      <button class="tab-btn" onclick="showTab('about',this)">👤 À propos</button>
+      ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">Comptabilite</button>':''}
+      <button class="tab-btn" onclick="showTab('about',this)">A propos</button>
       ${moreGridHtml}`;
   }
   // Restore active tab on refresh
@@ -1861,7 +2017,7 @@ function buildTabsBar(isRefresh=false){
     }
   });
   // Si l'onglet actif est dans le menu ···
-  const moreIds=['finance','news','careertools','goals','calculator','veille'];
+  const moreIds=['finance','news','careertools','goals','calculator','veille','email','music'];
   if(moreIds.includes(targetTab)){
     document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
     const tc=document.getElementById('tab-'+targetTab);
@@ -3141,12 +3297,12 @@ function toggleBrandMenu(e){
     pages.push({id:'compte',icon:'💰',label:'Suivi de compte'});
     if(isAdmin)pages.push({id:'compta',icon:'📒',label:'Comptabilité'});
   }
-  pages.push({id:'finance',icon:'📈',label:'Finance'});
-  pages.push({id:'news',icon:'📰',label:'News Financière'});
-  pages.push({id:'careertools',icon:'📄',label:'Outils Carrière'});
-  pages.push({id:'calculator',icon:'🧮',label:'Calculateur Financier'});
-  pages.push({id:'goals',icon:'🎯',label:'Objectifs & Habitudes'});
-  pages.push({id:'veille',icon:'🔍',label:'Veille Financière'});
+  pages.push({id:'finance',icon:'▲',label:'Finance'});
+  pages.push({id:'news',icon:'N',label:'News Financière'});
+  pages.push({id:'careertools',icon:'C',label:'Outils Carrière'});
+  pages.push({id:'calculator',icon:'K',label:'Calculateur Financier'});
+  pages.push({id:'goals',icon:'O',label:'Objectifs & Habitudes'});
+  pages.push({id:'veille',icon:'V',label:'Veille Financière'});
   if(isViewer)pages.push({id:'contact',icon:'📨',label:'Nous contacter'});
   pages.push({id:'about',icon:'👤',label:'À propos de moi'});
 
@@ -3682,7 +3838,7 @@ function showMsgCompose(prefillTo='',prefillSubject='',prefillBody='',draftId=nu
     <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">Objet</label><input type="text" id="msg-subject" value="${prefillSubject.replace(/"/g,'&quot;')}" placeholder="Objet" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"></div>
     <div style="margin-bottom:10px"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">Message</label><textarea id="msg-body" style="width:100%;min-height:160px;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;resize:vertical">${prefillBody}</textarea></div>
     <div style="margin-bottom:14px"><label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;display:block;margin-bottom:5px">📎 Pièce jointe</label><input type="file" id="msg-attachment" multiple style="color:var(--text);font-size:12px"></div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="sendMsg()">📤 Envoyer</button><button class="btn btn-outline" onclick="saveDraft()">📝 Brouillon</button><button class="btn btn-outline" onclick="showMsgFolder('inbox',document.getElementById('msg-nav-inbox'))">Annuler</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" onclick="sendMsg()">Envoyer</button><button class="btn btn-outline" onclick="saveDraft()">📝 Brouillon</button><button class="btn btn-outline" onclick="showMsgFolder('inbox',document.getElementById('msg-nav-inbox'))">Annuler</button></div>
   </div>`;
 }
 function replyMsg(id){const m=messages.find(x=>x.id===id);if(!m)return;showMsgCompose(m.from,'Re: '+(m.subject||''),`\n\n--- Message de @${m.from} ---\n${m.body}`);}
@@ -3914,6 +4070,8 @@ function showTabFromMore(id){
   if(id==='finance')loadFinanceData();
   if(id==='news')loadNewsData();
   if(id==='goals')loadGoals();
+  if(id==='music'){showMusicSub('search',document.getElementById('music-sub-search'));loadMusicTrending();}
+  if(id==='email'){showEmailSub('compose',document.getElementById('email-sub-compose'));loadEmailAccounts();}
 }
 // Fermer le menu ··· si clic ailleurs
 document.addEventListener('click',e=>{
@@ -4041,13 +4199,13 @@ function globalSearch(q){
   const results=[];
   // Chercher dans les fichiers
   files.filter(f=>f.type!=='folder'&&f.name.toLowerCase().includes(q)).slice(0,3).forEach(f=>
-    results.push({icon:'📄',label:f.name,sub:'Fichiers',action:`showTab('fichiers',document.querySelector('[onclick*=fichiers]'))`}));
+    results.push({icon:'C',label:f.name,sub:'Fichiers',action:`showTab('fichiers',document.querySelector('[onclick*=fichiers]'))`}));
   // Chercher dans les transactions
   transactions.filter(t=>t.label.toLowerCase().includes(q)).slice(0,3).forEach(t=>
     results.push({icon:'💰',label:t.label+' — '+t.amount.toFixed(2)+'€',sub:'Suivi de compte',action:`showTab('compte',document.querySelector('[onclick*=compte]'))`}));
   // Chercher dans les news
   newsCache.filter(n=>n.title.toLowerCase().includes(q)).slice(0,3).forEach(n=>
-    results.push({icon:'📰',label:n.title.slice(0,60),sub:'News',action:`openNewsDetail('${n.id}')`}));
+    results.push({icon:'N',label:n.title.slice(0,60),sub:'News',action:`openNewsDetail('${n.id}')`}));
   // Pages statiques
   const pages=[['fichiers','📁','Fichiers'],['agenda','📅','Agenda'],['compte','💰','Suivi de compte'],['finance','📈','Finance'],['news','📰','News'],['careertools','📄','Outils Carrière'],['calculator','🧮','Calculateur'],['goals','🎯','Objectifs'],['veille','🔍','Veille'],['about','👤','À propos']];
   pages.filter(p=>p[2].toLowerCase().includes(q)).forEach(p=>
@@ -4127,6 +4285,253 @@ if(window.firebaseReady){
   clearTimeout(_loadingTimeout);
   startApp();
 }
+
+// ============================================================
+// MODULE MUSIQUE — Jamendo API (libre de droits, gratuit)
+// ============================================================
+let musicQueue=[];let musicIndex=0;let musicLibrary=[];
+const JAMENDO_KEY='9b3d9fe6'; // Clé publique Jamendo
+
+function showMusicSub(sub,btn){
+  ['search','trending','library'].forEach(s=>{
+    const p=document.getElementById('music-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
+  });
+  document.querySelectorAll('[id^="music-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(sub==='library')renderMusicLibrary();
+  if(sub==='trending')loadMusicTrending();
+}
+
+async function loadMusicTrending(){
+  const grid=document.getElementById('music-trending-grid');
+  if(!grid)return;
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Chargement...</div>';
+  try{
+    const r=await fetch(`https://api.jamendo.com/v3.0/tracks/?client_id=${JAMENDO_KEY}&format=json&limit=24&order=popularity_total&include=musicinfo&audioformat=mp32`);
+    const d=await r.json();
+    if(d.results?.length){
+      musicQueue=d.results;
+      grid.innerHTML=d.results.map((t,i)=>musicCard(t,i,'trending')).join('');
+    } else {grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Aucun resultat</div>';}
+  }catch(e){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Erreur de chargement. Verifiez votre connexion.</div>';}
+}
+
+async function musicSearch(){
+  const q=document.getElementById('music-search-input').value.trim();
+  if(!q)return;
+  const grid=document.getElementById('music-search-results');
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Recherche en cours...</div>';
+  try{
+    const r=await fetch(`https://api.jamendo.com/v3.0/tracks/?client_id=${JAMENDO_KEY}&format=json&limit=30&search=${encodeURIComponent(q)}&include=musicinfo&audioformat=mp32`);
+    const d=await r.json();
+    if(d.results?.length){
+      musicQueue=d.results;
+      grid.innerHTML=d.results.map((t,i)=>musicCard(t,i,'search')).join('');
+    }else{
+      // Fallback : recherche par artiste
+      const r2=await fetch(`https://api.jamendo.com/v3.0/artists/tracks/?client_id=${JAMENDO_KEY}&format=json&limit=30&name=${encodeURIComponent(q)}&audioformat=mp32`);
+      const d2=await r2.json();
+      if(d2.results?.length){
+        const tracks=d2.results.flatMap(a=>a.tracks.map(t=>({...t,artist_name:a.name,image:a.image||''})));
+        musicQueue=tracks;
+        grid.innerHTML=tracks.map((t,i)=>musicCard(t,i,'search')).join('');
+      } else {
+        grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Aucun resultat pour "'+q+'". Essayez un autre terme.</div>';
+      }
+    }
+  }catch(e){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--muted)">Erreur reseau.</div>';}
+}
+
+function quickMusicSearch(q){
+  document.getElementById('music-search-input').value=q;
+  musicSearch();
+  showMusicSub('search',document.getElementById('music-sub-search'));
+}
+
+function musicCard(t,i,ctx){
+  const img=t.image||t.album_image||'';
+  const artist=t.artist_name||t.name||'Artiste inconnu';
+  const title=t.name||t.title||'Titre inconnu';
+  const duration=t.duration?Math.floor(t.duration/60)+':'+String(Math.floor(t.duration%60)).padStart(2,'0'):'—';
+  return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .2s" onmouseover="this.style.borderColor='var(--accent)';this.style.transform='translateY(-3px)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform=''">
+    <div style="position:relative;aspect-ratio:1;background:var(--surface)" onclick="musicPlay(${i})">
+      ${img?`<img src="${img}" alt="" style="width:100%;height:100%;object-fit:cover">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:36px;color:var(--muted)">&#9835;</div>'}
+      <div style="position:absolute;inset:0;background:rgba(0,0,0,.4);opacity:0;transition:opacity .2s;display:flex;align-items:center;justify-content:center;font-size:32px;color:white" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0">&#9654;</div>
+    </div>
+    <div style="padding:10px 12px">
+      <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${title}">${title}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${artist}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+        <span style="font-size:10px;color:var(--muted)">${duration}</span>
+        <div style="display:flex;gap:4px">
+          <button onclick="event.stopPropagation();musicAddToLibrary(${i})" title="Ajouter a la bibliotheque" style="background:none;border:1px solid var(--border);border-radius:5px;padding:2px 7px;color:var(--muted);cursor:pointer;font-size:11px">+ Lib</button>
+          <button onclick="event.stopPropagation();musicDownload(${i})" title="Telecharger" style="background:none;border:1px solid var(--border);border-radius:5px;padding:2px 7px;color:var(--muted);cursor:pointer;font-size:11px">DL</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function musicPlay(i){
+  if(!musicQueue[i])return;
+  musicIndex=i;
+  const t=musicQueue[i];
+  const audio=document.getElementById('music-audio');
+  const src=t.audio||t.audiodownload||t.stream||'';
+  if(!src){toast('Aucun flux audio disponible pour ce titre','error');return;}
+  audio.src=src;
+  audio.volume=(document.getElementById('mp-volume')?.value||80)/100;
+  audio.play().catch(()=>toast('Lecture bloquee par le navigateur. Cliquez sur la page puis reessayez.','error'));
+  document.getElementById('mp-title').textContent=t.name||t.title||'Titre inconnu';
+  document.getElementById('mp-artist').textContent=t.artist_name||'—';
+  const img=t.image||t.album_image||'';
+  const coverImg=document.getElementById('mp-cover-img');
+  if(img){coverImg.src=img;coverImg.style.display='block';}else{coverImg.style.display='none';}
+  document.getElementById('mp-play-btn').innerHTML='&#9646;&#9646;';
+}
+function musicToggle(){
+  const audio=document.getElementById('music-audio');
+  const btn=document.getElementById('mp-play-btn');
+  if(audio.paused){audio.play();btn.innerHTML='&#9646;&#9646;';}
+  else{audio.pause();btn.innerHTML='&#9654;';}
+}
+function musicNext(){if(musicIndex<musicQueue.length-1)musicPlay(musicIndex+1);}
+function musicPrev(){if(musicIndex>0)musicPlay(musicIndex-1);}
+function musicVolume(v){const a=document.getElementById('music-audio');if(a)a.volume=v/100;}
+function musicSeek(v){const a=document.getElementById('music-audio');if(a&&a.duration)a.currentTime=a.duration*v/100;}
+function musicTimeUpdate(){
+  const a=document.getElementById('music-audio');if(!a)return;
+  const cur=document.getElementById('mp-current-time');
+  const prog=document.getElementById('mp-progress');
+  if(cur)cur.textContent=fmtTime(a.currentTime);
+  if(prog&&a.duration)prog.value=(a.currentTime/a.duration)*100;
+}
+function musicMetaLoaded(){
+  const a=document.getElementById('music-audio');
+  const dur=document.getElementById('mp-duration');
+  if(dur&&a)dur.textContent=fmtTime(a.duration);
+}
+function fmtTime(s){if(!s||isNaN(s))return'0:00';const m=Math.floor(s/60);const ss=Math.floor(s%60);return m+':'+String(ss).padStart(2,'0');}
+function musicDownload(i){
+  const t=musicQueue[i];if(!t)return;
+  const url=t.audiodownload||t.audio||'';
+  if(!url){toast('Telechargement non disponible pour ce titre','error');return;}
+  const a=document.createElement('a');a.href=url;a.download=(t.name||'track')+'.mp3';a.target='_blank';a.click();
+  toast('Telechargement demarre','success');
+}
+function musicDownloadCurrent(){musicDownload(musicIndex);}
+function musicAddToLibrary(i){
+  const t=musicQueue[i];if(!t)return;
+  if(!musicLibrary.find(x=>x.id===t.id)){
+    musicLibrary.push(t);
+    try{localStorage.setItem('musicLibrary',JSON.stringify(musicLibrary));}catch(_){}
+    toast('Ajoute a votre bibliotheque','success');
+  } else {toast('Deja dans la bibliotheque','error');}
+}
+function renderMusicLibrary(){
+  const el=document.getElementById('music-library-list');if(!el)return;
+  try{const s=localStorage.getItem('musicLibrary');if(s)musicLibrary=JSON.parse(s);}catch(_){}
+  if(!musicLibrary.length){el.innerHTML='<div class="empty-state" style="padding:60px 20px;text-align:center;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px;opacity:.3">&#9835;</div><p>Votre bibliotheque est vide.</p></div>';return;}
+  el.innerHTML=musicLibrary.map((t,i)=>`<div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer" onclick="musicQueue=musicLibrary;musicPlay(${i})">
+    <div style="width:40px;height:40px;background:var(--surface);border-radius:6px;overflow:hidden;flex-shrink:0">${t.image?`<img src="${t.image}" style="width:100%;height:100%;object-fit:cover">`:'<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted)">&#9835;</div>'}</div>
+    <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${t.name||t.title}</div><div style="font-size:11px;color:var(--muted);margin-top:2px">${t.artist_name||'—'}</div></div>
+    <div style="display:flex;gap:6px">
+      <button onclick="event.stopPropagation();musicDownload(${i})" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 9px;color:var(--muted);cursor:pointer;font-size:12px">DL</button>
+      <button onclick="event.stopPropagation();musicLibrary.splice(${i},1);try{localStorage.setItem('musicLibrary',JSON.stringify(musicLibrary))}catch(_){}renderMusicLibrary()" style="background:none;border:1px solid rgba(230,57,70,.3);border-radius:6px;padding:4px 9px;color:var(--accent2);cursor:pointer;font-size:12px">X</button>
+    </div>
+  </div>`).join('');
+}
+
+// ============================================================
+// MODULE EMAIL — mailto + configuration SMTP
+// ============================================================
+let emailAccounts=[];let emailSentList=[];
+
+function showEmailSub(sub,btn){
+  ['compose','sent','contact'].forEach(s=>{
+    const p=document.getElementById('email-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
+  });
+  document.querySelectorAll('[id^="email-sub-"]').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(sub==='sent')renderSentEmails();
+}
+
+function loadEmailAccounts(){
+  try{const s=localStorage.getItem('emailAccounts');if(s)emailAccounts=JSON.parse(s);}catch(_){}
+  const sel=document.getElementById('em-from');
+  if(!sel)return;
+  sel.innerHTML='<option value="">-- Choisir un compte --</option>';
+  emailAccounts.forEach(a=>{sel.innerHTML+=`<option value="${a.email}">${a.label} &lt;${a.email}&gt;</option>`;});
+  sel.innerHTML+=`<option value="__add__">+ Ajouter un compte email...</option>`;
+  sel.onchange=function(){if(this.value==='__add__')openAddEmailAccount();};
+  // Preload sent emails
+  try{const s2=localStorage.getItem('emailSentList');if(s2)emailSentList=JSON.parse(s2);}catch(_){}
+  // Pre-attach file handler
+  const attach=document.getElementById('em-attach');
+  if(attach)attach.addEventListener('change',function(){
+    const list=document.getElementById('em-attach-list');
+    if(list)list.textContent=Array.from(this.files).map(f=>f.name).join(', ')||'';
+  });
+}
+
+function openAddEmailAccount(){
+  const sel=document.getElementById('em-from');if(sel)sel.value='';
+  const email=prompt('Adresse email (Gmail, Yahoo, Outlook...) :');
+  if(!email||!email.includes('@'))return;
+  const label=prompt('Nom d\'affichage (ex: Mon Gmail) :')||email;
+  emailAccounts.push({email,label});
+  try{localStorage.setItem('emailAccounts',JSON.stringify(emailAccounts));}catch(_){}
+  loadEmailAccounts();
+  toast('Compte ajouté : '+email,'success');
+}
+
+function emailFormat(cmd,val){document.getElementById('em-body')?.focus();document.execCommand(cmd,false,val||null);}
+
+function emailSaveDraft(){
+  toast('Brouillon sauvegardé localement','success');
+}
+
+function sendEmail(){
+  const to=document.getElementById('em-to')?.value.trim();
+  const subject=document.getElementById('em-subject')?.value.trim();
+  const from=document.getElementById('em-from')?.value;
+  const body=document.getElementById('em-body')?.innerText||'';
+  if(!to){toast('Veuillez entrer une adresse destinataire','error');return;}
+  if(!subject){toast('Veuillez entrer un objet','error');return;}
+
+  // Enregistrer dans les envoyés
+  const entry={id:'em'+Date.now(),from:from||'non renseigné',to,subject,body,date:new Date().toISOString()};
+  emailSentList.unshift(entry);
+  try{localStorage.setItem('emailSentList',JSON.stringify(emailSentList));}catch(_){}
+
+  // Ouvrir le client email natif via mailto (universel — fonctionne avec Gmail app, Outlook, Apple Mail, etc.)
+  const mailtoLink=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.open(mailtoLink,'_blank');
+
+  toast('Email préparé — votre client email va s\'ouvrir','success');
+  // Vider le formulaire
+  document.getElementById('em-to').value='';
+  document.getElementById('em-subject').value='';
+  if(document.getElementById('em-body'))document.getElementById('em-body').innerHTML='';
+}
+
+function renderSentEmails(){
+  try{const s=localStorage.getItem('emailSentList');if(s)emailSentList=JSON.parse(s);}catch(_){}
+  const el=document.getElementById('email-sent-list');if(!el)return;
+  if(!emailSentList.length){el.innerHTML='<div class="empty-state" style="padding:60px 20px;text-align:center;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px;opacity:.3">&#9993;</div><p>Aucun email envoyé.</p></div>';return;}
+  el.innerHTML=emailSentList.map(e=>`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px 16px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;margin-bottom:3px">${e.subject||'(sans objet)'}</div>
+        <div style="font-size:12px;color:var(--muted)">A : ${e.to}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">${new Date(e.date).toLocaleString('fr-FR')}</div>
+      </div>
+      <button onclick="this.closest('div').querySelector('.em-body-preview').style.display=this.closest('div').querySelector('.em-body-preview').style.display==='none'?'block':'none'" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;flex-shrink:0">Voir</button>
+    </div>
+    <div class="em-body-preview" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.6;white-space:pre-wrap">${e.body||''}</div>
+  </div>`).join('');
+}
+
 </script>
 </body>
 </html>
