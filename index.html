@@ -425,7 +425,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     <div class="field"><label>Nom d'utilisateur</label><input type="text" id="inp-user" placeholder="Nom d'utilisateur"></div>
     <div class="field"><label>Mot de passe</label><input type="password" id="inp-pass" placeholder="••••••••••"></div>
     <button class="btn-login" id="btn-login-main" onclick="doLogin()">Se connecter →</button>
-    <button onclick="openRegister()" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:13px;color:rgba(255,255,255,.75);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:10px;" onmouseover="this.style.borderColor='rgba(255,255,255,.45)'" onmouseout="this.style.borderColor='rgba(255,255,255,.18)'">✏️ Créer un compte</button>
+    <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.3);margin-top:10px;">Accès sur invitation uniquement — contactez l'administrateur</div>
     <div class="login-error" id="login-err">❌ Identifiants incorrects. Réessayez.</div>
     <div id="login-session-err" style="background:rgba(244,162,97,.12);border:1px solid rgba(244,162,97,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--gold);margin-top:14px;display:none;text-align:center;"></div>
     <div class="firebase-status"><div class="fb-dot"></div><span>Données synchronisées via Firebase</span></div>
@@ -538,15 +538,15 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <!-- Panel Utilisateurs -->
       <div id="acces-panel-users">
       <div class="card" style="margin-bottom:18px">
-        <div class="card-title">Créer un accès</div>
+        <div class="card-title">➕ Créer un compte utilisateur</div>
         <div class="access-form">
           <div class="row">
-            <input type="text" id="new-user" placeholder="Nom d'utilisateur">
+            <input type="text" id="new-user" placeholder="Nom d'utilisateur (login)">
             <input type="password" id="new-pass" placeholder="Mot de passe">
           </div>
           <div class="row">
-            <input type="text" id="new-name" placeholder="Nom complet">
-            <input type="email" id="new-email" placeholder="Email">
+            <input type="text" id="new-name" placeholder="Nom complet affiché">
+            <input type="email" id="new-email" placeholder="Email (optionnel)">
           </div>
           <div class="row">
             <select id="new-role">
@@ -555,19 +555,29 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
               <option value="admin">🔑 Administrateur</option>
             </select>
           </div>
-          <button class="btn btn-primary" onclick="addUser()" style="width:fit-content">Créer le compte</button>
+          <!-- Pages autorisées -->
+          <div style="margin-top:10px;">
+            <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">Pages autorisées pour cet utilisateur</div>
+            <div id="new-user-pages" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;">
+              <!-- Générées par JS via renderPageCheckboxes() -->
+            </div>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button onclick="toggleAllPages(true)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--muted);cursor:pointer;font-size:11px;">✅ Tout sélectionner</button>
+              <button onclick="toggleAllPages(false)" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--muted);cursor:pointer;font-size:11px;">❌ Tout déselectionner</button>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addUser()" style="width:fit-content;margin-top:12px;">Créer le compte</button>
         </div>
       </div>
       <div class="card" style="margin-bottom:18px">
         <div class="card-title">Utilisateurs</div>
-        <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Profil</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
+        <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Pages</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
       </div>
       <div class="grid-2">
         <div class="card">
           <div class="card-title">Comptes actifs</div>
           <div id="user-count-wrap" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
         </div>
-        <!-- Promotion des utilisateurs (admin principal uniquement) -->
         <div class="card" style="display:none" id="promote-card">
           <div class="card-title">Promouvoir</div>
           <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Seul l'administrateur principal peut effectuer cette action.</div>
@@ -1184,8 +1194,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div id="em-compose-view" style="display:none;" class="em-compose-wrap">
         <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:18px;" id="em-compose-title">✏️ Nouveau message</div>
         <div class="em-field">
-          <label>À (adresses email, séparées par des virgules)</label>
-          <input type="text" id="em-to" placeholder="destinataire@gmail.com, autre@yahoo.fr...">
+          <label>À — utilisateurs du site (@username) ou adresses email externes</label>
+          <input type="text" id="em-to" placeholder="@hans, @alice, destinataire@gmail.com..." oninput="emToAutocomplete(this)">
+          <div id="em-to-suggestions" style="position:absolute;z-index:99;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;max-height:180px;overflow-y:auto;width:100%;margin-top:2px;"></div>
         </div>
         <div class="em-field">
           <label>Objet</label>
@@ -1445,10 +1456,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div id="mp-bg-blur"></div>
       <div id="music-player-inner">
 
-        <!-- Cover art -->
+        <!-- Cover art / Video player -->
         <div id="mp-cover-wrap">
           <div class="mp-cover-ph" id="mp-cover-ph">🎵</div>
           <img id="mp-cover-img" src="" alt="" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;">
+          <!-- MP4 local video player -->
+          <video id="mp-video-el" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;" playsinline preload="metadata"></video>
         </div>
 
         <!-- Track info -->
@@ -1542,10 +1555,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <!-- ── IMPORTER ── -->
         <div id="music-panel-upload" style="display:none;">
           <div id="music-upload-zone">
-            <input type="file" id="music-file-input" accept="audio/*,video/mp4,.m4a,.mp3,.flac,.wav,.ogg,.aac" multiple onchange="mpHandleFiles(this.files)">
+            <input type="file" id="music-file-input" accept="audio/*,video/*,.m4a,.mp3,.flac,.wav,.ogg,.aac,.mp4,.webm,.mkv" multiple onchange="mpHandleFiles(this.files)">
             <div style="font-size:42px;margin-bottom:12px;">🎵</div>
-            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Glissez vos fichiers audio ici</div>
-            <div style="font-size:12px;color:var(--muted);">MP3, FLAC, WAV, AAC, M4A, OGG acceptés</div>
+            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px;">Glissez vos fichiers audio / vidéo ici</div>
+            <div style="font-size:12px;color:var(--muted);">MP3, FLAC, WAV, AAC, M4A, OGG · MP4, WEBM acceptés</div>
           </div>
           <div style="margin-bottom:16px;">
             <div style="font-size:12px;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.7px;font-weight:700;">Ajouter via lien YouTube</div>
@@ -2340,47 +2353,59 @@ function launchDashboard(isRefresh=false){
   initDashboard(isRefresh);
 }
 
+// ── Page definitions (used for permission control) ────────────
+const ALL_PAGES=[
+  {id:'fichiers',label:'📁 Fichiers',adminOnly:true},
+  {id:'acces',label:'🔑 Accès',adminOnly:true},
+  {id:'agenda',label:'📅 Agenda',adminOnly:false},
+  {id:'compte',label:'💰 Suivi compte',adminOnly:false},
+  {id:'compta',label:'📒 Comptabilité',adminOnly:true},
+  {id:'finance',label:'📈 Finance',adminOnly:false},
+  {id:'careertools',label:'💼 Carrière',adminOnly:false},
+  {id:'calculator',label:'🧮 Calculateur',adminOnly:false},
+  {id:'goals',label:'🎯 Objectifs',adminOnly:false},
+  {id:'veille',label:'🔍 Veille',adminOnly:false},
+  {id:'email',label:'✉️ Email',adminOnly:false},
+  {id:'music',label:'🎵 Multimédia',adminOnly:false},
+  {id:'about',label:'👤 À propos',adminOnly:false},
+];
+
+function _getUserAllowedPages(user){
+  if(!user)return[];
+  // Admins always get everything
+  if(user.role==='admin')return ALL_PAGES.map(p=>p.id);
+  // Custom allowlist stored on user
+  if(user.allowedPages&&Array.isArray(user.allowedPages)&&user.allowedPages.length>0){
+    return user.allowedPages.filter(id=>!ALL_PAGES.find(p=>p.id===id&&p.adminOnly));
+  }
+  // Default for viewers/editors — all non-admin pages
+  return ALL_PAGES.filter(p=>!p.adminOnly).map(p=>p.id);
+}
+
 function buildTabsBar(isRefresh=false){
   const bar=document.getElementById('tabs-bar');
   const isAdmin=currentUser.role==='admin';
-  const isViewer=currentUser.role==='viewer';
   const savedTab=isRefresh?loadActiveTab():null;
+  const allowed=_getUserAllowedPages(currentUser);
 
-  if(isViewer){
-    bar.innerHTML=`
-      <button class="tab-btn" onclick="showTab('compta',this)">Comptabilité</button>
-      <button class="tab-btn" onclick="showTab('finance',this)">Finance</button>
-      <button class="tab-btn" onclick="showTab('careertools',this)">Carrière</button>
-      <button class="tab-btn" onclick="showTab('calculator',this)">Calculateur</button>
-      <button class="tab-btn" onclick="showTab('goals',this)">Objectifs</button>
-      <button class="tab-btn" onclick="showTab('veille',this)">Veille</button>
-      <button class="tab-btn" onclick="showTab('email',this)">Email</button>
-      <button class="tab-btn" onclick="showTab('music',this)">Musique</button>
-      <button class="tab-btn" onclick="showTab('about',this)">À propos</button>`;
-  } else {
-    bar.innerHTML=`
-      <button class="tab-btn" onclick="showTab('fichiers',this)">Fichiers</button>
-      <button class="tab-btn" id="tab-btn-acces-profil" onclick="showTab('acces',this)">${isAdmin?'Accès':'Profil'}</button>
-      <button class="tab-btn" onclick="showTab('agenda',this)">Agenda</button>
-      <button class="tab-btn" onclick="showTab('compte',this)">Compte</button>
-      ${isAdmin?'<button class="tab-btn" onclick="showTab(\'compta\',this)">Comptabilité</button>':''}
-      <button class="tab-btn" onclick="showTab('finance',this)">Finance</button>
-      <button class="tab-btn" onclick="showTab('careertools',this)">Carrière</button>
-      <button class="tab-btn" onclick="showTab('calculator',this)">Calculateur</button>
-      <button class="tab-btn" onclick="showTab('goals',this)">Objectifs</button>
-      <button class="tab-btn" onclick="showTab('veille',this)">Veille</button>
-      <button class="tab-btn" onclick="showTab('email',this)">Email</button>
-      <button class="tab-btn" onclick="showTab('music',this)">Musique</button>
-      <button class="tab-btn" onclick="showTab('about',this)">À propos</button>`;
-  }
+  const PAGE_LABELS={
+    fichiers:'📁 Fichiers',acces:isAdmin?'🔑 Accès':'👤 Profil',
+    agenda:'📅 Agenda',compte:'💰 Compte',compta:'📒 Comptabilité',
+    finance:'📈 Finance',careertools:'💼 Carrière',calculator:'🧮 Calculateur',
+    goals:'🎯 Objectifs',veille:'🔍 Veille',email:'✉️ Email',
+    music:'🎵 Multimédia',about:'👤 À propos',
+  };
 
-  const targetTab=savedTab||(isViewer?'compta':'fichiers');
+  bar.innerHTML=allowed.map(id=>`<button class="tab-btn" onclick="showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`).join('');
+
+  // Default tab: first allowed
+  const defaultTab=savedTab&&allowed.includes(savedTab)?savedTab:(allowed[0]||'fichiers');
   document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
-  const tc=document.getElementById('tab-'+targetTab);
+  const tc=document.getElementById('tab-'+defaultTab);
   if(tc)tc.classList.add('active');
   bar.querySelectorAll('.tab-btn').forEach(b=>{
     const t=b.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
-    if(t===targetTab)b.classList.add('active');
+    if(t===defaultTab)b.classList.add('active');
   });
 }
 
@@ -2475,9 +2500,10 @@ function showAccessOrProfile(){
   document.getElementById('zone-admin').style.display=isAdmin?'block':'none';
   document.getElementById('zone-profil').style.display=isAdmin?'none':'block';
   if(isAdmin){
-    // Init sub-nav: show users panel by default
     showAccesSub('users',document.getElementById('acces-sub-users'));
     renderUsersTable();renderActivityChart();renderPromoteSelect();
+    // Initialize page checkboxes if not yet done
+    if(!document.querySelector('#new-user-pages input'))renderPageCheckboxes('new-user-pages',null);
   } else {loadMyProfileForm();}
 }
 function goToProfile(){const btn=document.getElementById('tab-btn-acces-profil');if(btn)showTab('acces',btn);}
@@ -2648,6 +2674,29 @@ function fileIcon(t){if(!t)return'📄';if(t.startsWith('image'))return'🖼️'
 function formatSize(b){if(!b)return'0 o';if(b<1024)return b+' o';if(b<1048576)return(b/1024).toFixed(1)+' Ko';return(b/1048576).toFixed(2)+' Mo';}
 
 // ============ USERS ============
+// ── Render page permission checkboxes ─────────────────────────
+function renderPageCheckboxes(containerId,selectedPages){
+  const container=document.getElementById(containerId);
+  if(!container)return;
+  const nonAdminPages=ALL_PAGES.filter(p=>!p.adminOnly);
+  container.innerHTML=nonAdminPages.map(p=>{
+    const checked=!selectedPages||selectedPages.includes(p.id)?'checked':'';
+    return`<label style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;">
+      <input type="checkbox" id="perm-${containerId}-${p.id}" value="${p.id}" ${checked} style="accent-color:var(--accent);">
+      ${p.label}
+    </label>`;
+  }).join('');
+}
+
+function toggleAllPages(state){
+  document.querySelectorAll('#new-user-pages input[type=checkbox]').forEach(cb=>cb.checked=state);
+}
+
+function _collectPageCheckboxes(containerId){
+  const checks=document.querySelectorAll(`#${containerId} input[type=checkbox]`);
+  return Array.from(checks).filter(cb=>cb.checked).map(cb=>cb.value);
+}
+
 async function addUser(){
   if(!currentUser||currentUser.role!=='admin'){toast('Accès réservé aux administrateurs','error');return;}
   const username=document.getElementById('new-user').value.trim();
@@ -2655,14 +2704,18 @@ async function addUser(){
   const name=document.getElementById('new-name').value.trim();
   const email=document.getElementById('new-email').value.trim();
   const role=document.getElementById('new-role').value;
-  if(!username||!pass){toast('Champs requis','error');return;}
-  if(users.find(u=>u.username===username)){toast('Utilisateur existant','error');return;}
-  const nu={id:'u'+Date.now(),username,fullname:name||username,email,role,created:new Date().toISOString(),pass,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
-  await fbSave('users',nu.id,nu);users.push({...nu,created:new Date()});
+  if(!username||!pass){toast('Nom d\'utilisateur et mot de passe requis','error');return;}
+  if(users.find(u=>u.username===username)){toast('Cet utilisateur existe déjà','error');return;}
+  const allowedPages=role==='admin'?ALL_PAGES.map(p=>p.id):_collectPageCheckboxes('new-user-pages');
+  const nu={id:'u'+Date.now(),username,fullname:name||username,email,role,allowedPages,created:new Date().toISOString(),pass,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
+  await fbSave('users',nu.id,nu);
+  users.push({...nu,created:new Date()});
   ['new-user','new-pass','new-name','new-email'].forEach(id=>document.getElementById(id).value='');
+  renderPageCheckboxes('new-user-pages',null);
   renderUsersTable();renderDiagram();initAgendaUserSelect();
-  toast('Compte créé ✅','success');
+  toast('✅ Compte créé pour @'+username,'success');
 }
+
 function renderUsersTable(){
   const isAdmin=currentUser&&currentUser.role==='admin';
   document.getElementById('users-tbody').innerHTML=users.map(u=>{
@@ -2672,12 +2725,55 @@ function renderUsersTable(){
     const canDeleteThisUser=u.username!=='hans'&&isAdmin&&(u.role!=='admin'||isPrincipal);
     const actionCell=u.username==='hans'
       ?'<span style="color:var(--muted);font-size:11px">Principal</span>'
-      :(canDeleteThisUser?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button>`:(isAdmin&&u.role==='admin'?'<span style="color:var(--muted);font-size:11px">Admin</span>':'—'));
+      :(canDeleteThisUser?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button><button class="btn btn-outline" style="padding:4px 10px;font-size:12px;margin-left:4px" onclick="openEditUserPages('${u.id}')">Pages</button>`:(isAdmin&&u.role==='admin'?'<span style="color:var(--muted);font-size:11px">Admin</span>':'—'));
     const isPrincipalView=currentUser&&currentUser.username==='hans';
     const pwCell=isPrincipalView?`<td id="pw-col-cell-${u.id}" style="font-family:monospace;font-size:11px;color:var(--muted);max-width:140px;word-break:break-all">${u.pass||'—'}</td>`:'';
     if(isPrincipalView)document.getElementById('pw-col-header')?.style&&(document.getElementById('pw-col-header').style.display='');
-    return`<tr><td><div style="display:flex;align-items:center;gap:8px"><div class="user-av" style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;overflow:hidden">${av}</div>@${u.username}</div></td><td style="color:var(--muted);font-size:12px">${u.email||'—'}</td><td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td>${pwCell}<td><button class="btn btn-outline" style="padding:4px 10px;font-size:12px" onclick="openUserProfile('${u.id}')">👤</button></td><td>${actionCell}</td></tr>`;
+    const pagesCount=u.role==='admin'?'Tout':((u.allowedPages||[]).length+' pages');
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="user-av" style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;overflow:hidden">${av}</div>@${u.username}</div></td>
+      <td style="color:var(--muted);font-size:12px">${u.email||'—'}</td>
+      <td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td>
+      ${pwCell}
+      <td style="font-size:11px;color:var(--muted);">${pagesCount}</td>
+      <td>${actionCell}</td>
+    </tr>`;
   }).join('');
+}
+
+// Edit user pages modal
+function openEditUserPages(userId){
+  const u=users.find(x=>x.id===userId);if(!u)return;
+  let modal=document.getElementById('edit-pages-modal');
+  if(!modal){modal=document.createElement('div');modal.id='edit-pages-modal';modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';document.body.appendChild(modal);}
+  const nonAdminPages=ALL_PAGES.filter(p=>!p.adminOnly);
+  const curAllowed=u.allowedPages||nonAdminPages.map(p=>p.id);
+  modal.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;">
+    <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:6px;">📋 Pages de @${u.username}</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Sélectionnez les pages auxquelles cet utilisateur a accès.</div>
+    <div id="edit-pages-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px;">
+      ${nonAdminPages.map(p=>`<label style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;">
+        <input type="checkbox" value="${p.id}" ${curAllowed.includes(p.id)?'checked':''} style="accent-color:var(--accent);">
+        ${p.label}
+      </label>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="document.getElementById('edit-pages-modal').style.display='none'" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:9px;padding:9px;color:var(--muted);cursor:pointer;font-size:13px;">Annuler</button>
+      <button onclick="saveUserPages('${u.id}')" style="flex:2;background:linear-gradient(135deg,var(--accent),#b01020);border:none;border-radius:9px;padding:9px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">Enregistrer</button>
+    </div>
+  </div>`;
+  modal.style.display='flex';
+}
+
+async function saveUserPages(userId){
+  const u=users.find(x=>x.id===userId);if(!u)return;
+  const checks=document.querySelectorAll('#edit-pages-grid input[type=checkbox]');
+  const allowedPages=Array.from(checks).filter(cb=>cb.checked).map(cb=>cb.value);
+  u.allowedPages=allowedPages;
+  await fbSave('users',u.id,{...u,created:u.created instanceof Date?u.created.toISOString():u.created});
+  document.getElementById('edit-pages-modal').style.display='none';
+  renderUsersTable();
+  toast('✅ Pages mises à jour pour @'+u.username,'success');
 }
 
 function renderPromoteSelect(){
@@ -5209,14 +5305,14 @@ let _localObjectURLs={};  // title->objectURL for local files
 (function(){
   if(document.getElementById('yt-api-script'))return;
   const s=document.createElement('script');
-  s.id='yt-api-script';s.src='https://www.youtube.com/iframe_api';
+  s.id='yt-api-script';s.src='https://www.youtube-nocookie.com/iframe_api';
   document.head.appendChild(s);
 })();
 
 window.onYouTubeIframeAPIReady=function(){
   ytPlayer=new YT.Player('yt-player',{
     height:'1',width:'1',
-    playerVars:{autoplay:0,controls:0,modestbranding:1,rel:0},
+    playerVars:{autoplay:0,controls:0,modestbranding:1,rel:0,iv_load_policy:3,disablekb:0,playsinline:1,origin:window.location.origin,host:'https://www.youtube-nocookie.com'},
     events:{
       onReady:(e)=>{ytReady=true;e.target.setVolume(mpVolume);},
       onStateChange:(e)=>{
@@ -5377,7 +5473,10 @@ function showMusicTab(tab,btn){
 }
 
 // ── PLAYBACK ENGINE ───────────────────────────────────────────
-let _localAudio=null; // HTMLAudioElement for local files
+let _localAudio=null; // HTMLAudioElement for local audio files
+// Video handled by #mp-video-el
+
+function _getVideoEl(){return document.getElementById('mp-video-el');}
 
 function playFromQueue(i){
   const tracks=mpShuffle?_shuffledQueue:musicQueue;
@@ -5387,23 +5486,51 @@ function playFromQueue(i){
   _mpUpdatePlayerUI(t);
 
   if(t.localUrl){
-    // Local file — use HTMLAudio
     _stopYT();
-    if(!_localAudio)_localAudio=new Audio();
-    _localAudio.src=t.localUrl;
-    _localAudio.volume=mpMuted?0:mpVolume/100;
-    _localAudio.play().catch(()=>{});
-    _localAudio.onended=()=>{
-      if(mpRepeatMode==='one'){_localAudio.currentTime=0;_localAudio.play();}
-      else musicNext();
-    };
+    const isVideo=t.isVideo||false;
+    if(isVideo){
+      // Video file
+      if(_localAudio){_localAudio.pause();_localAudio.src='';}
+      const vid=_getVideoEl();
+      if(vid){
+        vid.src=t.localUrl;
+        vid.volume=mpMuted?0:mpVolume/100;
+        vid.style.display='block';
+        // Hide cover/placeholder
+        const img=document.getElementById('mp-cover-img');
+        const ph=document.getElementById('mp-cover-ph');
+        if(img)img.style.display='none';
+        if(ph)ph.style.display='none';
+        vid.play().catch(()=>{});
+        vid.onended=()=>{
+          if(mpRepeatMode==='one'){vid.currentTime=0;vid.play();}
+          else musicNext();
+        };
+      }
+      if(!_localAudio)_localAudio=new Audio();
+      // Use video el as the "audio" for timer
+      _localAudio=vid;
+    } else {
+      // Audio file
+      const vid=_getVideoEl();
+      if(vid){vid.pause();vid.src='';vid.style.display='none';}
+      if(!_localAudio||_localAudio===_getVideoEl())_localAudio=new Audio();
+      _localAudio.src=t.localUrl;
+      _localAudio.volume=mpMuted?0:mpVolume/100;
+      _localAudio.play().catch(()=>{});
+      _localAudio.onended=()=>{
+        if(mpRepeatMode==='one'){_localAudio.currentTime=0;_localAudio.play();}
+        else musicNext();
+      };
+    }
     musicPlaying=true;
     _mpSetPlayBtn(true);
     startMpTimer();
     document.getElementById('mp-cover-wrap')?.classList.add('playing');
   } else if(t.ytId){
-    // YouTube — stop local audio first
-    if(_localAudio){_localAudio.pause();_localAudio.src='';}
+    // YouTube — stop local
+    if(_localAudio&&_localAudio!==_getVideoEl()){_localAudio.pause();_localAudio.src='';}
+    const vid=_getVideoEl();if(vid){vid.pause();vid.src='';vid.style.display='none';}
     if(ytReady&&ytPlayer){
       ytPlayer.loadVideoById(t.ytId);
       ytPlayer.playVideo();
@@ -5695,26 +5822,24 @@ function mpHandleFiles(files){
   const log=document.getElementById('upload-log');
   if(!log)return;
   Array.from(files).forEach(file=>{
-    if(!file.type.startsWith('audio/')&&!file.name.match(/\.(mp3|flac|wav|ogg|aac|m4a|mp4)$/i)){
-      _logUpload(file.name,'❌ Format non supporté','error');return;
-    }
+    const isAudio=file.type.startsWith('audio/')||file.name.match(/\.(mp3|flac|wav|ogg|aac|m4a)$/i);
+    const isVideo=file.type.startsWith('video/')||file.name.match(/\.(mp4|webm|mkv|avi|mov)$/i);
+    if(!isAudio&&!isVideo){_logUpload(file.name,'❌ Format non supporté','error');return;}
     const url=URL.createObjectURL(file);
     const name=file.name.replace(/\.[^.]+$/,'');
     const track={
       id:'local_'+Date.now()+'_'+Math.random().toString(36).slice(2),
       title:name,
-      artist:'Local',
-      cover:'',
-      ytId:'',
+      artist:isVideo?'Vidéo locale':'Local',
+      cover:'',ytId:'',
       localUrl:url,
-      local:true
+      local:true,
+      isVideo:!!isVideo
     };
     _localObjectURLs[name]=url;
     addToLibrary(track);
-    _logUpload(file.name,'✅ Importé avec succès','success');
+    _logUpload(file.name,'✅ '+(isVideo?'Vidéo':'Audio')+' importé(e)','success');
   });
-  // Also restore ObjectURLs for library items when page reloads won't persist,
-  // so we update the in-memory library with the new URL
   musicLibrary.forEach(t=>{
     if(t.local&&!t.localUrl&&_localObjectURLs[t.title])t.localUrl=_localObjectURLs[t.title];
   });
@@ -6262,10 +6387,9 @@ async function sendEmail(){
   const body=bodyEl?.innerText||'';
   const bodyHtml=bodyEl?.innerHTML||'';
 
-  if(!toRaw){toast('Veuillez entrer une adresse destinataire','error');return;}
+  if(!toRaw){toast('Veuillez entrer un destinataire','error');return;}
   if(!subject){toast('Veuillez entrer un objet','error');return;}
 
-  // Support multiple recipients
   const recipients=toRaw.split(/[,;]+/).map(s=>s.trim()).filter(Boolean);
 
   const sendBtn=document.getElementById('em-send-btn');
@@ -6276,64 +6400,60 @@ async function sendEmail(){
   const msgId='em'+Date.now();
   const now=new Date().toISOString();
 
-  let allOk=true;
-  for(const to of recipients){
-    // Check if recipient is a user on this site
-    const siteUser=users.find(u=>(u.email||'').toLowerCase()===to.toLowerCase()||(u.username||'').toLowerCase()===to.toLowerCase());
+  for(const toRawItem of recipients){
+    // Strip leading @ for username lookup
+    const toClean=toRawItem.startsWith('@')?toRawItem.slice(1):toRawItem;
+    // Check if recipient is a user on this site (by username or email)
+    const siteUser=users.find(u=>
+      (u.username||'').toLowerCase()===toClean.toLowerCase()||
+      (u.email||'').toLowerCase()===toClean.toLowerCase()
+    );
     if(siteUser){
-      // Deliver internally via Firebase
       try{
         const internalMsg={
           id:'inbox_'+Date.now()+'_'+Math.random().toString(36).slice(2),
-          from,fromName,to:siteUser.email||siteUser.username,
-          toUsername:siteUser.username,
+          from:currentUser.username,fromName,
+          to:siteUser.username,toUsername:siteUser.username,
           subject,body,bodyHtml,
           date:now,readBy:[],internal:true
         };
         await fbSave('emails_inbox',internalMsg.id,internalMsg);
-        toast('✅ Livré en interne à @'+siteUser.username,'success');
-      }catch(e){toast('Erreur livraison interne','error');allOk=false;}
-    } else {
-      // External email — use FormSubmit
+        toast('✅ Message livré à @'+siteUser.username,'success');
+      }catch(e){toast('Erreur livraison à @'+siteUser.username,'error');}
+    } else if(toRawItem.includes('@')&&!toRawItem.startsWith('@')){
+      // External email address
       try{
-        const formData=new FormData();
-        formData.append('_to',to);
-        formData.append('_subject',subject);
-        formData.append('_captcha','false');
-        formData.append('_template','basic');
-        formData.append('_replyto',from);
-        formData.append('De',fromName||from);
-        formData.append('Message',body);
-        const resp=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(to),{
-          method:'POST',headers:{'Accept':'application/json'},body:formData,signal:AbortSignal.timeout(8000)
+        const fd=new FormData();
+        fd.append('_to',toRawItem);fd.append('_subject',subject);fd.append('_captcha','false');
+        fd.append('_template','basic');fd.append('_replyto',from);
+        fd.append('De',fromName||from);fd.append('Message',body);
+        const resp=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(toRawItem),{
+          method:'POST',headers:{'Accept':'application/json'},body:fd,signal:AbortSignal.timeout(8000)
         });
         const result=await resp.json().catch(()=>({}));
-        if(result.success==='true'||result.success===true){toast('✅ Email envoyé à '+to,'success');}
-        else{toast('Email envoyé à '+to+' (vérifiez la boîte)','success');}
+        toast(result.success==='true'||result.success===true?'✅ Email envoyé à '+toRawItem:'✅ Email transmis à '+toRawItem,'success');
       }catch(err){
-        // Silently try alternate JSON format
         try{
-          await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(to),{
+          await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(toRawItem),{
             method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
             body:JSON.stringify({_subject:subject,_captcha:'false',De:fromName||from,Message:body,_replyto:from})
           });
-          toast('✅ Email transmis à '+to,'success');
-        }catch(_){toast('⚠️ Impossible d\'envoyer à '+to,'error');allOk=false;}
+          toast('✅ Email transmis à '+toRawItem,'success');
+        }catch(_){toast('⚠️ Échec envoi à '+toRawItem,'error');}
       }
+    } else {
+      toast('⚠️ Destinataire introuvable : '+toRawItem+' (utilisez @username ou email)','error');
     }
   }
 
   // Save to sent
-  const sentEntry={id:msgId,from,fromName,to:toRaw,subject,body,bodyHtml,date:now};
-  emailSentList.unshift(sentEntry);
+  emailSentList.unshift({id:msgId,from:currentUser.username,fromName,to:toRaw,subject,body,bodyHtml,date:now});
   _emSave('emailSent',emailSentList);
 
   if(sendBtn){sendBtn.disabled=false;sendBtn.textContent='📤 Envoyer';}
-  // Clear form
   document.getElementById('em-to').value='';
   document.getElementById('em-subject').value='';
   if(bodyEl)bodyEl.innerHTML='';
-  // Go to sent folder
   emailShowFolder('sent',document.getElementById('ef-sent'));
 }
 
@@ -6513,6 +6633,44 @@ async function sendPublicContactForm(){
     _emLoadInbox();
   }catch(e){toast('Erreur d\'envoi — réessayez','error');}
 }
+
+// ── To field autocomplete ─────────────────────────────────────
+function emToAutocomplete(input){
+  const val=input.value;
+  const sug=document.getElementById('em-to-suggestions');
+  if(!sug)return;
+  // Get the last token being typed
+  const parts=val.split(/[,;]/);
+  const last=(parts[parts.length-1]||'').trim().toLowerCase().replace(/^@/,'');
+  if(last.length<1){sug.style.display='none';return;}
+  const matches=users.filter(u=>
+    u.username!==currentUser?.username&&(
+      u.username.toLowerCase().includes(last)||
+      (u.fullname||'').toLowerCase().includes(last)
+    )
+  ).slice(0,6);
+  if(!matches.length){sug.style.display='none';return;}
+  sug.style.display='block';
+  sug.innerHTML=matches.map(u=>`<div onclick="emToSelectUser('${u.username}')" style="padding:8px 12px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+    <span style="font-weight:600;">@${u.username}</span>
+    <span style="font-size:11px;color:var(--muted);">${u.fullname||''}</span>
+    <span style="margin-left:auto;font-size:10px;background:rgba(230,57,70,.1);color:var(--accent2);padding:2px 6px;border-radius:10px;">interne</span>
+  </div>`).join('');
+}
+function emToSelectUser(username){
+  const input=document.getElementById('em-to');
+  if(!input)return;
+  const parts=input.value.split(/[,;]/);
+  parts[parts.length-1]='@'+username;
+  input.value=parts.join(', ')+', ';
+  document.getElementById('em-to-suggestions').style.display='none';
+  input.focus();
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#em-to')&&!e.target.closest('#em-to-suggestions')){
+    const s=document.getElementById('em-to-suggestions');if(s)s.style.display='none';
+  }
+});
 
 // ── COMPAT aliases for old code ───────────────────────────────
 function showEmailSub(sub,btn){}  // no-op, replaced by emailShowFolder
