@@ -557,17 +557,10 @@ body::after {
 .fb-dot { background: var(--hud-green) !important; box-shadow: 0 0 8px var(--hud-green) !important; }
 
 /* ═══ DASHBOARD LAYOUT — SIDEBAR VERTICAL ═══ */
-#dashboard {
-  display: grid !important;
-  grid-template-columns: var(--hud-sidebar-w) 1fr !important;
-  grid-template-rows: var(--hud-topbar-h) 1fr !important;
-  height: 100vh !important;
-  overflow: hidden !important;
-}
+/* Layout handled below in LAYOUT SYSTEM block */
 
 /* ═══ TOPBAR ═══ */
 .topbar {
-  grid-column: 1 / -1 !important;
   height: var(--hud-topbar-h) !important;
   background: rgba(2,6,9,.95) !important;
   border-bottom: 1px solid var(--hud-border2) !important;
@@ -631,25 +624,7 @@ body::after {
 #gsearch-results { background: rgba(4,13,20,.98) !important; border: 1px solid var(--hud-border2) !important; border-radius: 4px !important; }
 #dark-toggle { background: rgba(0,200,255,.05) !important; border: 1px solid var(--hud-border) !important; border-radius: 2px !important; color: var(--hud-cyan) !important; }
 
-/* ═══ SIDEBAR — NAVIGATION VERTICALE ═══ */
-.tabs-bar {
-  /* Transformer la barre horizontale en sidebar verticale */
-  grid-column: 1 !important;
-  grid-row: 2 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  width: var(--hud-sidebar-w) !important;
-  height: 100% !important;
-  background: rgba(2,6,9,.97) !important;
-  border-right: 1px solid var(--hud-border2) !important;
-  border-bottom: none !important;
-  overflow-x: visible !important;
-  overflow-y: auto !important;
-  padding: 16px 0 !important;
-  position: relative !important;
-  top: auto !important;
-  z-index: 100 !important;
-}
+/* ═══ SIDEBAR — NAVIGATION VERTICALE (handled in LAYOUT SYSTEM) ═══ */
 .tabs-bar::before {
   content: 'NAVIGATION';
   display: block;
@@ -706,26 +681,7 @@ body::after {
 }
 
 /* ═══ CONTENT AREA ═══ */
-.tab-content {
-  grid-column: 2 !important;
-  grid-row: 2 !important;
-  overflow-y: auto !important;
-  height: calc(100vh - var(--hud-topbar-h)) !important;
-  background: var(--hud-bg) !important;
-  padding: 24px 28px !important;
-}
-/* Override display for active */
-.tab-content.active {
-  display: block !important;
-}
-/* Remove all tab-content stacking - only active shows */
-#dashboard .tab-content:not(.active) { display: none !important; }
-
-/* But the first tab-content needs proper grid placement - handled via wrapper */
-#dashboard > .tabs-bar + .tab-content,
-#dashboard > .tab-content { 
-  /* all tab-contents are in the same grid cell 2/2 */
-}
+/* tab-content styling is handled in the LAYOUT SYSTEM block below */
 
 /* ═══ CARDS ═══ */
 .card {
@@ -1024,55 +980,6 @@ select option { background: #040d14 !important; color: var(--hud-text) !importan
 .tab-content::-webkit-scrollbar { width: 4px; }
 .tab-content::-webkit-scrollbar-thumb { background: rgba(0,200,255,.2); }
 
-/* ═══ GRID LAYOUT FIX — make sidebar + content work ═══ */
-#dashboard {
-  display: block !important;
-  position: relative !important;
-  height: 100vh !important;
-  overflow: hidden !important;
-}
-.topbar {
-  position: fixed !important;
-  top: 0 !important; left: 0 !important; right: 0 !important;
-  height: var(--hud-topbar-h) !important;
-  z-index: 300 !important;
-}
-.tabs-bar {
-  position: fixed !important;
-  top: var(--hud-topbar-h) !important;
-  left: 0 !important;
-  width: var(--hud-sidebar-w) !important;
-  height: calc(100vh - var(--hud-topbar-h)) !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  z-index: 200 !important;
-  padding-top: 16px !important;
-}
-.tab-content {
-  position: fixed !important;
-  top: var(--hud-topbar-h) !important;
-  left: var(--hud-sidebar-w) !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 24px 28px !important;
-  background: var(--hud-bg) !important;
-  z-index: 50 !important;
-  display: none !important;
-}
-.tab-content.active {
-  display: block !important;
-  animation: hudFadeIn .3s ease !important;
-}
-@keyframes hudFadeIn { from { opacity: 0; transform: translateX(8px); } to { opacity: 1; transform: translateX(0); } }
-
-/* Email & Music full-height fix */
-#tab-email, #tab-music { padding: 0 !important; }
-#email-root { height: calc(100vh - var(--hud-topbar-h)) !important; }
-#music-root { height: calc(100vh - var(--hud-topbar-h)) !important; }
-.calc-layout { height: calc(100vh - var(--hud-topbar-h)) !important; }
-
 /* ═══ HUD CORNER DECORATIONS ON CARDS ═══ */
 .card::after {
   content: '';
@@ -1099,6 +1006,89 @@ select option { background: #040d14 !important; color: var(--hud-text) !importan
   opacity: .6;
   animation: hud-pulse 3s ease-in-out infinite;
 }
+
+
+/* ════════════════════════════════════════════════════════
+   LAYOUT SYSTEM — CORRECT FLEXBOX SIDEBAR LAYOUT
+   ════════════════════════════════════════════════════════ */
+
+/* Dashboard = flex column, full screen */
+#dashboard {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  background: var(--hud-bg) !important;
+}
+
+/* Topbar = fixed height row at top */
+.topbar {
+  flex-shrink: 0 !important;
+  height: var(--hud-topbar-h) !important;
+  position: relative !important;
+  top: auto !important;
+  z-index: 300 !important;
+}
+
+/* Below topbar: a flex row that fills remaining height */
+.tabs-bar ~ * { /* placeholder, real wrapper below */ }
+
+/* Wrap sidebar + content in a flex row */
+#dashboard::after { display: none !important; } /* kill pseudo */
+
+/* Sidebar = vertical nav, fixed width */
+.tabs-bar {
+  /* removed from normal flow via JS wrapper — see below */
+  flex-shrink: 0 !important;
+  width: var(--hud-sidebar-w) !important;
+  min-width: var(--hud-sidebar-w) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: rgba(2,6,9,.97) !important;
+  border-right: 1px solid var(--hud-border2) !important;
+  border-bottom: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  padding: 16px 0 0 !important;
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  z-index: 100 !important;
+  height: 100% !important;
+}
+
+/* Content wrapper = fills remaining space */
+#hud-content-wrap {
+  display: flex !important;
+  flex: 1 !important;
+  overflow: hidden !important;
+  min-height: 0 !important;
+}
+
+/* tab-content inside wrapper */
+.tab-content {
+  position: relative !important;
+  top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+  flex: 1 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 24px 28px !important;
+  background: var(--hud-bg) !important;
+  display: none !important;
+  min-height: 0 !important;
+  z-index: auto !important;
+}
+.tab-content.active {
+  display: block !important;
+  animation: hudFadeIn .3s ease !important;
+}
+@keyframes hudFadeIn { from { opacity: 0; transform: translateX(6px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Email / Music / Calculator need full height */
+#tab-email.active, #tab-music.active, #tab-calculator.active { display: flex !important; flex-direction: column !important; padding: 0 !important; }
+#email-root { height: 100% !important; flex: 1 !important; min-height: 0 !important; }
+#music-root { height: 100% !important; flex: 1 !important; min-height: 0 !important; }
+.calc-layout  { height: 100% !important; flex: 1 !important; min-height: 0 !important; }
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 900px) {
@@ -3130,7 +3120,18 @@ function launchDashboard(isRefresh=false){
   currentAgendaUser=currentUser.username;
   document.getElementById('loading-screen').style.display='none';
   document.getElementById('login-page').style.display='none';
-  document.getElementById('dashboard').style.display='block';
+  const dash=document.getElementById('dashboard');
+  dash.style.display='flex';
+  // Build flex wrapper (sidebar + content) if not already done
+  if(!document.getElementById('hud-content-wrap')){
+    const wrap=document.createElement('div');
+    wrap.id='hud-content-wrap';
+    const sidebar=document.getElementById('tabs-bar');
+    // Move sidebar and all tab-content divs into the wrapper
+    dash.appendChild(wrap);
+    wrap.appendChild(sidebar);
+    document.querySelectorAll('.tab-content').forEach(tc=>wrap.appendChild(tc));
+  }
   document.getElementById('topbar-username').textContent=currentUser.fullname||currentUser.username;
   const aiBtn=document.getElementById('ai-btn');
   if(aiBtn)aiBtn.style.display='flex';
