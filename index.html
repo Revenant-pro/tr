@@ -1098,7 +1098,7 @@ select option { background: #040d14 !important; color: var(--hud-text) !importan
   .tabs-bar { width: 56px !important; padding-top: 8px !important; }
   .tab-btn { padding: 12px !important; justify-content: center !important; font-size: 16px !important; }
   .tab-btn span:not(:first-child) { display: none !important; }
-  .tab-content { left: 56px !important; }
+  /* tab-content fills wrapper automatically at small screens */
 }
 
 /* ═══ JOURNAL TABLE ═══ */
@@ -1259,6 +1259,7 @@ h1, h2, h3, h4, h5 { font-family: var(--font-hud) !important; color: var(--hud-c
       <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
     </div>
   </div>
+  <div id="hud-content-wrap">
   <div class="tabs-bar" id="tabs-bar"></div>
 
   <!-- FICHIERS -->
@@ -2697,6 +2698,8 @@ h1, h2, h3, h4, h5 { font-family: var(--font-hud) !important; color: var(--hud-c
   </div>
 
 
+</div><!-- /hud-content-wrap -->
+
 <!-- FINANCE DETAIL MODAL -->
 <div class="fin-modal" id="fin-modal">
   <div class="fin-modal-card">
@@ -3122,16 +3125,7 @@ function launchDashboard(isRefresh=false){
   document.getElementById('login-page').style.display='none';
   const dash=document.getElementById('dashboard');
   dash.style.display='flex';
-  // Build flex wrapper (sidebar + content) if not already done
-  if(!document.getElementById('hud-content-wrap')){
-    const wrap=document.createElement('div');
-    wrap.id='hud-content-wrap';
-    const sidebar=document.getElementById('tabs-bar');
-    // Move sidebar and all tab-content divs into the wrapper
-    dash.appendChild(wrap);
-    wrap.appendChild(sidebar);
-    document.querySelectorAll('.tab-content').forEach(tc=>wrap.appendChild(tc));
-  }
+  // No DOM manipulation needed — CSS handles layout
   document.getElementById('topbar-username').textContent=currentUser.fullname||currentUser.username;
   const aiBtn=document.getElementById('ai-btn');
   if(aiBtn)aiBtn.style.display='flex';
@@ -7664,15 +7658,8 @@ function _hudInjectHeaders(){
     tab.insertBefore(banner,tab.firstChild);
   });
 }
-// Patch showTab to inject headers on first view
-const _origShowTab=window.showTab;
-function showTab(id,btn){
-  if(_origShowTab)_origShowTab(id,btn);
-  setTimeout(_hudInjectHeaders,50);
-}
-
-// Init HUD on launch
-document.addEventListener("DOMContentLoaded",()=>setTimeout(_hudInjectHeaders,500));
+// Init HUD headers on launch (called from launchDashboard)
+document.addEventListener("DOMContentLoaded",()=>setTimeout(_hudInjectHeaders,800));
 </script>
 </body>
 </html>
