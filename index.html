@@ -1009,39 +1009,23 @@ select option { background: #040d14 !important; color: var(--hud-text) !importan
 
 
 /* ════════════════════════════════════════════════════════
-   LAYOUT SYSTEM — CORRECT FLEXBOX SIDEBAR LAYOUT
+   LAYOUT SYSTEM — MINIMAL WORKING SIDEBAR
    ════════════════════════════════════════════════════════ */
 
-/* Dashboard = flex column, full screen */
-#dashboard {
+/* Sidebar wrapper: flex row that fills space below topbar */
+#hud-content-wrap {
   display: flex !important;
-  flex-direction: column !important;
-  height: 100vh !important;
+  flex-direction: row !important;
+  height: calc(100vh - var(--hud-topbar-h)) !important;
   overflow: hidden !important;
-  background: var(--hud-bg) !important;
-}
-
-/* Topbar = fixed height row at top */
-.topbar {
-  flex-shrink: 0 !important;
-  height: var(--hud-topbar-h) !important;
   position: relative !important;
-  top: auto !important;
-  z-index: 300 !important;
 }
 
-/* Below topbar: a flex row that fills remaining height */
-.tabs-bar ~ * { /* placeholder, real wrapper below */ }
-
-/* Wrap sidebar + content in a flex row */
-#dashboard::after { display: none !important; } /* kill pseudo */
-
-/* Sidebar = vertical nav, fixed width */
+/* Sidebar: left column, fixed width */
 .tabs-bar {
-  /* removed from normal flow via JS wrapper — see below */
-  flex-shrink: 0 !important;
   width: var(--hud-sidebar-w) !important;
   min-width: var(--hud-sidebar-w) !important;
+  flex-shrink: 0 !important;
   display: flex !important;
   flex-direction: column !important;
   background: rgba(2,6,9,.97) !important;
@@ -1053,22 +1037,18 @@ select option { background: #040d14 !important; color: var(--hud-text) !importan
   position: relative !important;
   top: auto !important;
   left: auto !important;
-  z-index: 100 !important;
+  z-index: 10 !important;
   height: 100% !important;
 }
 
-/* Content wrapper = fills remaining space */
-#hud-content-wrap {
-  display: flex !important;
-  flex: 1 !important;
-  overflow: hidden !important;
-  min-height: 0 !important;
-}
-
-/* tab-content inside wrapper */
+/* Content area: takes remaining width */
 .tab-content {
   position: relative !important;
-  top: auto !important; left: auto !important; right: auto !important; bottom: auto !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 0 !important;
   flex: 1 !important;
   overflow-y: auto !important;
   overflow-x: hidden !important;
@@ -1076,7 +1056,9 @@ select option { background: #040d14 !important; color: var(--hud-text) !importan
   background: var(--hud-bg) !important;
   display: none !important;
   min-height: 0 !important;
-  z-index: auto !important;
+  z-index: 1 !important;
+  max-width: none !important;
+  margin: 0 !important;
 }
 .tab-content.active {
   display: block !important;
@@ -1084,11 +1066,27 @@ select option { background: #040d14 !important; color: var(--hud-text) !importan
 }
 @keyframes hudFadeIn { from { opacity: 0; transform: translateX(6px); } to { opacity: 1; transform: translateX(0); } }
 
+/* Topbar: stays above content */
+.topbar {
+  position: relative !important;
+  top: auto !important;
+  z-index: 200 !important;
+  height: var(--hud-topbar-h) !important;
+}
+
+/* Dashboard: just a block container */
+#dashboard {
+  display: block !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  background: var(--hud-bg) !important;
+}
+
 /* Email / Music / Calculator need full height */
-#tab-email.active, #tab-music.active, #tab-calculator.active { display: flex !important; flex-direction: column !important; padding: 0 !important; }
-#email-root { height: 100% !important; flex: 1 !important; min-height: 0 !important; }
-#music-root { height: 100% !important; flex: 1 !important; min-height: 0 !important; }
-.calc-layout  { height: 100% !important; flex: 1 !important; min-height: 0 !important; }
+#tab-email.active, #tab-music.active { display: flex !important; flex-direction: column !important; padding: 0 !important; }
+#email-root { height: 100% !important; }
+#music-root { height: 100% !important; }
+.calc-layout { height: 100% !important; }
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 900px) {
@@ -3124,7 +3122,7 @@ function launchDashboard(isRefresh=false){
   document.getElementById('loading-screen').style.display='none';
   document.getElementById('login-page').style.display='none';
   const dash=document.getElementById('dashboard');
-  dash.style.display='flex';
+  dash.style.display='block';
   // No DOM manipulation needed — CSS handles layout
   document.getElementById('topbar-username').textContent=currentUser.fullname||currentUser.username;
   const aiBtn=document.getElementById('ai-btn');
