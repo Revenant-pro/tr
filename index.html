@@ -1471,7 +1471,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
         <!-- ARCHIVE.ORG panel -->
         <div id="fm-panel-archive" style="display:none;">
-          <div class="fm-info-box"><strong>✅ Archive.org</strong> — Millions de fichiers audio libres de droits : concerts, musiques du domaine public, netlabels.</div>
+          <div class="fm-info-box"><strong>✅ Morceaux complets</strong> — Archive.org propose des millions de fichiers audio complets en libre accès : concerts, musiques du domaine public, netlabels CC.</div>
           <div class="fm-search-wrap">
             <input type="text" id="fm-arch-input" placeholder="Rechercher sur Archive.org..." onkeydown="if(event.key==='Enter')fmArchiveSearch()">
             <button class="btn btn-primary" onclick="fmArchiveSearch()" style="font-size:12px;padding:8px 14px;">Chercher</button>
@@ -5789,83 +5789,137 @@ function showFmTab(tab, btn){
   if(btn)btn.classList.add('active');
 }
 
-// ── MUSIQUE GRATUITE — iTunes preview + Free Music Archive ─────
+// ── MUSIQUE COMPLÈTE — Archive.org + Free Music Archive + SoundCloud ──────
 async function fmSearch(){
   const q=(document.getElementById('fm-search-input')?.value||'').trim();
   if(!q){toast('Entrez un terme de recherche','error');return;}
   const res=document.getElementById('fm-results');
   if(!res)return;
-  res.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);">⏳ Recherche en cours...</div>';
+  res.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);"><div style="font-size:28px;margin-bottom:8px;">⏳</div>Recherche en cours...</div>';
 
-  // Strategy 1: iTunes Search API (no CORS, always works, 30s previews)
+  // ── SOURCE 1: Archive.org audio search (full tracks, libre) ──────────────
   try{
-    const url=`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&entity=song&limit=25`;
-    const r=await fetch(url,{signal:AbortSignal.timeout(7000)});
+    const url='https://archive.org/advancedsearch.php?q='+encodeURIComponent(q)+'+mediatype:audio&fl[]=identifier,title,creator,description,downloads&sort[]=downloads+desc&rows=25&output=json';
+    const r=await fetch(url,{signal:AbortSignal.timeout(8000)});
+    if(!r.ok) throw new Error('HTTP '+r.status);
     const d=await r.json();
-    const tracks=(d.results||[]).filter(t=>t.previewUrl);
-    if(tracks.length){
-      res.innerHTML=`<div style="background:rgba(52,152,219,.07);border:1px solid rgba(52,152,219,.2);border-radius:8px;padding:8px 12px;font-size:11px;color:var(--muted);margin-bottom:12px;">
-        🎵 <strong style="color:var(--text);">Aperçus iTunes 30s</strong> — Cliquez ▶ pour écouter, ⬇ pour télécharger l'aperçu MP3 gratuitement.
-      </div>`+tracks.map(t=>{
-        const img=t.artworkUrl60||'';
-        const dur=_fmtTime(t.trackTimeMillis/1000||30);
-        const safeTitle=encodeURIComponent(t.trackName||'');
-        const safeArtist=encodeURIComponent(t.artistName||'');
-        const safeUrl=encodeURIComponent(t.previewUrl||'');
-        return `<div class="fm-track">
-          ${img?`<img src="${img}" onerror="this.style.display='none';" loading="lazy">`:'<div style="width:40px;height:40px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎵</div>'}
-          <div class="fm-track-info">
-            <div class="fm-track-title">${t.trackName||'?'}</div>
-            <div class="fm-track-artist">${t.artistName||'—'} · ${t.collectionName||''} · ${dur}</div>
-          </div>
-          <div class="fm-track-btns">
-            <button class="fm-btn" onclick="fmPlay(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'))" title="Écouter 30s">▶</button>
-            <button class="fm-btn dl" onclick="fmDownload(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'),decodeURIComponent('${safeArtist}'))" title="Télécharger aperçu">⬇</button>
-          </div>
-        </div>`;
-      }).join('');
-      return;
+    const docs=(d.response?.docs||[]);
+    if(docs.length){
+      const tracks=[];
+      // Fetch metadata for top 8 items to get actual audio files
+      const toFetch=docs.slice(0,8);
+      await Promise.allSettled(toFetch.map(async doc=>{
+        try{
+          const mr=await fetch('https://archive.org/metadata/'+doc.identifier,{signal:AbortSignal.timeout(5000)});
+          const md=await mr.json();
+          const files=(md.files||[]).filter(f=>
+            f.name?.match(/\.(mp3|ogg|flac|wav|opus|m4a)$/i) &&
+            f.format&&!f.name.includes('_64kb')&&!f.name.includes('_128kb')
+          );
+          // Prefer the best quality file
+          const best=files.find(f=>f.name?.match(/\.mp3$/i))||files[0];
+          if(best){
+            tracks.push({
+              id:doc.identifier,
+              title:doc.title||doc.identifier,
+              artist:doc.creator||'Archive.org',
+              file:best.name,
+              url:'https://archive.org/download/'+doc.identifier+'/'+encodeURIComponent(best.name),
+              img:'https://archive.org/services/img/'+doc.identifier,
+              pageUrl:'https://archive.org/details/'+doc.identifier
+            });
+          }
+        }catch(_){}
+      }));
+      if(tracks.length){
+        res.innerHTML=`
+        <div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+          🎵 <strong style="color:var(--success);">Musique complète & gratuite</strong> — Source: Archive.org (domaine public &amp; Creative Commons).<br>
+          ▶ Écouter directement · ⬇ Télécharger le fichier MP3 complet
+        </div>`+
+        tracks.map(t=>{
+          const safeUrl=encodeURIComponent(t.url);
+          const safeTitle=encodeURIComponent(t.title);
+          const safeArtist=encodeURIComponent(t.artist);
+          const safePage=encodeURIComponent(t.pageUrl);
+          return `<div class="fm-track">
+            <img src="${t.img}" onerror="this.src='';this.style.display='none'" style="width:44px;height:44px;border-radius:7px;object-fit:cover;flex-shrink:0;background:var(--surface2);" loading="lazy">
+            <div class="fm-track-info">
+              <div class="fm-track-title">${t.title}</div>
+              <div class="fm-track-artist">${t.artist}</div>
+            </div>
+            <div class="fm-track-btns">
+              <button class="fm-btn" onclick="fmPlay(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'))" title="Écouter le morceau complet">▶</button>
+              <button class="fm-btn dl" onclick="fmDownload(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'),decodeURIComponent('${safeArtist}'))" title="Télécharger MP3 complet">⬇</button>
+              <button class="fm-btn" onclick="window.open(decodeURIComponent('${safePage}'),'_blank')" title="Voir sur Archive.org" style="font-size:10px;">🔗</button>
+            </div>
+          </div>`;
+        }).join('');
+        return;
+      }
     }
   }catch(e){}
 
-  // Strategy 2: Free Music Archive via corsproxy
+  // ── SOURCE 2: Free Music Archive — full CC-licensed tracks ───────────────
   try{
-    const url=`https://corsproxy.io/?${encodeURIComponent('https://freemusicarchive.org/api/get/tracks.json?api_key=60BLHNQCAOUFPIBZ&search_track='+encodeURIComponent(q)+'&limit=20')}`;
-    const r=await fetch(url,{signal:AbortSignal.timeout(7000)});
-    const d=await r.json();
-    const tracks=(d.dataset||[]).filter(t=>t.track_url);
-    if(tracks.length){
-      res.innerHTML=tracks.map(t=>{
-        const safeTitle=encodeURIComponent(t.track_title||'');
-        const safeArtist=encodeURIComponent(t.artist_name||'');
-        const safeUrl=encodeURIComponent(t.track_url||'');
-        return `<div class="fm-track">
-          <div style="width:40px;height:40px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🎵</div>
-          <div class="fm-track-info">
-            <div class="fm-track-title">${t.track_title||'?'}</div>
-            <div class="fm-track-artist">${t.artist_name||'—'}</div>
-          </div>
-          <div class="fm-track-btns">
-            <button class="fm-btn" onclick="fmPlay(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'))">▶</button>
-            <button class="fm-btn dl" onclick="fmDownload(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'),decodeURIComponent('${safeArtist}'))">⬇</button>
-          </div>
-        </div>`;
-      }).join('');
-      return;
+    const proxies=[
+      'https://corsproxy.io/?',
+      'https://api.allorigins.win/raw?url='
+    ];
+    for(const proxy of proxies){
+      try{
+        const fmaUrl='https://freemusicarchive.org/api/get/tracks.json?api_key=60BLHNQCAOUFPIBZ&search_track='+encodeURIComponent(q)+'&limit=20';
+        const r=await fetch(proxy+encodeURIComponent(fmaUrl),{signal:AbortSignal.timeout(6000)});
+        const d=await r.json();
+        const tracks=(d.dataset||[]).filter(t=>t.track_url);
+        if(tracks.length){
+          res.innerHTML=`
+          <div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted);margin-bottom:12px;">
+            🎵 <strong style="color:var(--success);">Musique complète & gratuite</strong> — Source: Free Music Archive (licence Creative Commons)
+          </div>`+
+          tracks.map(t=>{
+            const safeUrl=encodeURIComponent(t.track_url||'');
+            const safeTitle=encodeURIComponent(t.track_title||'');
+            const safeArtist=encodeURIComponent(t.artist_name||'');
+            const img=t.track_image_file||'';
+            return `<div class="fm-track">
+              ${img?`<img src="${img}" style="width:44px;height:44px;border-radius:7px;object-fit:cover;flex-shrink:0;background:var(--surface2);" loading="lazy">`:'<div style="width:44px;height:44px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎵</div>'}
+              <div class="fm-track-info">
+                <div class="fm-track-title">${t.track_title||'?'}</div>
+                <div class="fm-track-artist">${t.artist_name||'—'} · ${t.album_title||''}</div>
+              </div>
+              <div class="fm-track-btns">
+                <button class="fm-btn" onclick="fmPlay(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'))">▶</button>
+                <button class="fm-btn dl" onclick="fmDownload(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'),decodeURIComponent('${safeArtist}'))">⬇</button>
+              </div>
+            </div>`;
+          }).join('');
+          return;
+        }
+      }catch(_){}
     }
   }catch(e){}
 
-  // Strategy 3: Last resort — link to legal free download sites
-  res.innerHTML=`<div style="text-align:center;padding:20px;border:1px solid rgba(230,57,70,.2);border-radius:10px;background:rgba(230,57,70,.05);">
-    <div style="font-size:32px;margin-bottom:8px;">🔍</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Aucun résultat direct pour "<strong style='color:var(--text);'>${q}</strong>"</div>
+  // ── SOURCE 3: Fallback avec liens directs ────────────────────────────────
+  res.innerHTML=`<div style="text-align:center;padding:20px;">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Aucun résultat direct trouvé pour <strong style="color:var(--text);">"${q}"</strong></div>
     <div style="display:flex;flex-direction:column;gap:8px;">
-      <a href="https://www.jamendo.com/search?q=${encodeURIComponent(q)}" target="_blank" style="display:block;padding:10px 14px;background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.3);border-radius:8px;color:#3498db;font-size:13px;text-decoration:none;">🎵 Rechercher sur Jamendo ↗</a>
-      <a href="https://archive.org/search?query=${encodeURIComponent(q)}&mediatype=audio" target="_blank" style="display:block;padding:10px 14px;background:rgba(244,162,97,.07);border:1px solid rgba(244,162,97,.2);border-radius:8px;color:var(--gold);font-size:13px;text-decoration:none;">📦 Rechercher sur Archive.org ↗</a>
-      <a href="https://freemusicarchive.org/search?adv=1&quicksearch=${encodeURIComponent(q)}" target="_blank" style="display:block;padding:10px 14px;background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:8px;color:var(--success);font-size:13px;text-decoration:none;">🎶 Free Music Archive ↗</a>
+      <a href="https://archive.org/search?query=${encodeURIComponent(q)}&mediatype=audio" target="_blank"
+        style="display:block;padding:11px 14px;background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.3);border-radius:9px;color:#3498db;font-size:13px;text-decoration:none;font-weight:600;">
+        📦 Archive.org — millions de morceaux libres ↗
+      </a>
+      <a href="https://freemusicarchive.org/search/?adv=1&quicksearch=${encodeURIComponent(q)}" target="_blank"
+        style="display:block;padding:11px 14px;background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:9px;color:var(--success);font-size:13px;text-decoration:none;font-weight:600;">
+        🎶 Free Music Archive — Creative Commons ↗
+      </a>
+      <a href="https://www.jamendo.com/search?q=${encodeURIComponent(q)}" target="_blank"
+        style="display:block;padding:11px 14px;background:rgba(244,162,97,.07);border:1px solid rgba(244,162,97,.2);border-radius:9px;color:var(--gold);font-size:13px;text-decoration:none;font-weight:600;">
+        🎵 Jamendo — licence CC gratuite ↗
+      </a>
     </div>
   </div>`;
 }
+
 
 function fmPlay(audioUrl, title){
   if(!audioUrl){ toast('Lien audio indisponible','error'); return; }
@@ -6156,11 +6210,18 @@ function _draw(){
 
 // ── CLICK ──────────────────────────────────────────
 async function _click(r,c){
-  if(over||(mode==='bot'&&turn===B)||(mode==='online')) return;
+  if(over) return;
+  // Block click if bot is thinking
+  if(mode==='bot'&&turn===B) return;
+  // In online mode, block if not our turn
+  if(mode==='online'&&turn!==onlineMyColor) return;
   const isLeg=legalSqs.some(m=>m.r===r&&m.c===c);
   if(isLeg){
     await _move({from:sel,to:{r,c}});
     sel=null; legalSqs=[];
+    // Save to Firebase after online move
+    if(mode==='online') await _saveOnlineMove();
+    // Bot plays after human in bot mode
     if(mode==='bot'&&!over&&turn===B) setTimeout(_botMove,150+Math.random()*200);
     return;
   }
@@ -6542,7 +6603,123 @@ function _botMove(){
   if(best) _move(best,'Q');
 }
 
-// ── ONLINE ─────────────────────────────────────────
+// ── ONLINE — REAL-TIME VIA FIREBASE onSnapshot ─────────────
+// Game document structure in chess_games collection:
+// { id, whitePlayer, blackPlayer, board (JSON), turn, history (JSON),
+//   castRights, epSq, status ('waiting'|'active'|'ended'),
+//   result, lastMoveAt, timers, baseTime }
+
+let onlineGameId=null;
+let onlineMyColor=null;
+let onlineUnsub=null; // Firestore listener unsubscribe
+let onlineLastSeenMoveCount=0;
+
+// Start listening to a live game
+function _subscribeGame(gameId){
+  // Unsubscribe any previous listener
+  if(onlineUnsub){onlineUnsub();onlineUnsub=null;}
+  onlineGameId=gameId;
+  onlineLastSeenMoveCount=0;
+
+  const db=window.firebaseDB;
+  if(!db){toast('Firebase non disponible','error');return;}
+
+  onlineUnsub=db.collection('chess_games').doc(gameId).onSnapshot(snap=>{
+    if(!snap.exists){toast('Partie introuvable','error');return;}
+    const data=snap.data();
+    _applyOnlineGameState(data);
+  },err=>{
+    console.error('onSnapshot error:',err);
+    toast('Connexion perdue — tentative de reconnexion...','error');
+    // Retry after 3s
+    setTimeout(()=>_subscribeGame(gameId),3000);
+  });
+}
+
+function _applyOnlineGameState(data){
+  if(!data) return;
+  // Load board state from Firebase
+  try{
+    const remoteBd=JSON.parse(data.board||'null');
+    const remoteHist=JSON.parse(data.history||'[]');
+    const remoteTurn=data.turn||W;
+    const remoteCast=data.castRights||{wK:1,wQ:1,bK:1,bQ:1};
+    const remoteEp=data.epSq||null;
+    const remoteLastMv=data.lastMove?JSON.parse(data.lastMove):null;
+    const remoteTimers=data.timers||{w:baseTime,b:baseTime};
+
+    // Only update if new moves came in
+    if(remoteHist.length!==onlineLastSeenMoveCount){
+      onlineLastSeenMoveCount=remoteHist.length;
+      bd=remoteBd;
+      turn=remoteTurn;
+      castRights=remoteCast;
+      epSq=remoteEp;
+      hist=remoteHist;
+      lastMv=remoteLastMv;
+      timers=remoteTimers;
+      sel=null; legalSqs=[];
+
+      _draw(); _setStatus(); _movelist(); _caps(); _timersUI();
+
+      // Toast for opponent's move
+      if(remoteHist.length>0&&remoteTurn===onlineMyColor){
+        const lastMove=remoteHist[remoteHist.length-1];
+        toast('♟ '+(onlineMyColor===W?'Noirs':'Blancs')+' jouent : '+lastMove.san,'success');
+      }
+    }
+
+    // Handle game over
+    if(data.status==='ended'&&!over){
+      over=true; _stopTimer();
+      _el('cov-icon').textContent=data.result==='draw'?'🤝':(data.result===onlineMyColor?'🎉':'💀');
+      _el('cov-title').textContent=data.result==='draw'?'Match nul !':(data.result===onlineMyColor?'Vous gagnez !':'Adversaire gagne');
+      _el('cov-sub').textContent=data.resultReason||'';
+      _el('chess-overlay')?.classList.add('on');
+    }
+
+    // Update status bar with opponent info
+    const oppName=onlineMyColor===W?(data.blackPlayer||'Adversaire'):(data.whitePlayer||'Adversaire');
+    _el(flip?'cname-bot':'cname-top').textContent=oppName;
+  }catch(e){console.error('_applyOnlineGameState error:',e);}
+}
+
+// Save our move to Firebase
+async function _saveOnlineMove(){
+  if(!onlineGameId||!window.firebaseDB) return;
+  const snapshot={
+    board:JSON.stringify(bd),
+    turn,
+    castRights,
+    epSq,
+    history:JSON.stringify(hist),
+    lastMove:JSON.stringify(lastMv),
+    timers,
+    lastMoveAt:new Date().toISOString(),
+    status: over? 'ended':'active',
+  };
+  if(over){
+    const legal=_allLegal(turn,bd,castRights,epSq);
+    if(!legal.length){
+      snapshot.result=_inCheck(turn,bd)?(turn===W?B:W):'draw';
+      snapshot.resultReason=_inCheck(turn,bd)?'Échec et mat':'Pat';
+    }
+  }
+  try{
+    await window.firebaseDB.collection('chess_games').doc(onlineGameId).update(snapshot);
+  }catch(e){
+    // If update fails, try set
+    try{await window.firebaseDB.collection('chess_games').doc(onlineGameId).set(snapshot,{merge:true});}catch(_){}
+  }
+}
+
+// Override _move to save to Firebase when in online mode
+const _movePure=_move;
+async function _moveOnline(mv, autoPromo=null){
+  await _movePure(mv, autoPromo);
+  if(mode==='online') await _saveOnlineMove();
+}
+
 async function loadOnlineChallenges(){
   const u=_el('conline-users');
   const rv=_el('conline-recv');
@@ -6563,37 +6740,102 @@ async function loadOnlineChallenges(){
     if(rv) rv.innerHTML=rcv.length?rcv.map(ch=>`
       <div class="c-ucard">
         <span class="c-uname">⚔️ <b>${ch.from}</b> vous défie</span>
-        <button class="c-chall c-acc" onclick="acceptChessChallenge('${ch.id||ch._fbid}','${ch.from}')">✅</button>
+        <button class="c-chall c-acc" onclick="acceptChessChallenge('${ch.id||ch._fbid}','${ch.from}')">✅ Accepter</button>
         <button onclick="declineChessChallenge('${ch.id||ch._fbid}')" style="background:none;border:1px solid rgba(255,255,255,.15);border-radius:5px;padding:4px 8px;color:rgba(255,255,255,.5);cursor:pointer;font-size:11px;margin-left:4px;">✕</button>
       </div>`).join('')
-      :'<div style="color:rgba(255,255,255,.3);font-size:12px;">Aucun défi.</div>';
+      :'<div style="color:rgba(255,255,255,.3);font-size:12px;">Aucun défi reçu.</div>';
     if(ac) ac.innerHTML=act.length?act.map(ch=>{
       const opp=ch.from===currentUser?.username?ch.to:ch.from;
-      return `<div class="c-ucard"><span class="c-uname">vs ${opp}</span><button class="c-chall" onclick="joinOnlineGame('${ch.id||ch._fbid}')">▶</button></div>`;
+      return `<div class="c-ucard">
+        <div class="c-uav">${opp[0].toUpperCase()}</div>
+        <span class="c-uname">vs ${opp}</span>
+        <button class="c-chall" onclick="joinOnlineGame('${ch.gameId||ch.id||ch._fbid}','${ch.from===currentUser?.username?W:B}')">▶ Jouer</button>
+      </div>`;
     }).join(''):'<div style="color:rgba(255,255,255,.3);font-size:12px;">Aucune partie active.</div>';
   }catch(_){}
+
+  // Auto-refresh every 5s
+  setTimeout(()=>{
+    if(_el('cpanel-online')?.style.display!=='none') loadOnlineChallenges();
+  },5000);
 }
+
 window.sendChessChallenge=async function(toUser){
   try{
-    const id='ch_'+Date.now();
-    await fbSave('chess_challenges',id,{id,from:currentUser.username,to:toUser,status:'pending',at:new Date().toISOString()});
-    toast('⚔️ Défi envoyé à @'+toUser,'success'); loadOnlineChallenges();
-  }catch(e){toast('Erreur','error');}
+    const gameId='game_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    const challengeId='ch_'+Date.now();
+    // Create the game document first
+    const initBoard=_mkBoard();
+    await window.firebaseDB.collection('chess_games').doc(gameId).set({
+      id:gameId,
+      whitePlayer:currentUser.username,
+      blackPlayer:toUser,
+      board:JSON.stringify(initBoard),
+      turn:W,
+      castRights:{wK:1,wQ:1,bK:1,bQ:1},
+      epSq:null,
+      history:JSON.stringify([]),
+      lastMove:null,
+      timers:{w:baseTime||300,b:baseTime||300},
+      baseTime:baseTime||300,
+      status:'waiting',
+      createdAt:new Date().toISOString()
+    });
+    await fbSave('chess_challenges',challengeId,{
+      id:challengeId,gameId,
+      from:currentUser.username,to:toUser,
+      status:'active',
+      at:new Date().toISOString()
+    });
+    toast('⚔️ Défi + partie créés ! En attente de @'+toUser,'success');
+    loadOnlineChallenges();
+  }catch(e){console.error(e);toast('Erreur envoi défi','error');}
 };
-window.acceptChessChallenge=async function(id,from){
+
+window.acceptChessChallenge=async function(challengeId,fromUser){
   try{
-    await fbSave('chess_challenges',id,{id,from,to:currentUser.username,status:'active',at:new Date().toISOString()});
-    toast('✅ Partie lancée !','success'); loadOnlineChallenges(); joinOnlineGame(id);
+    // Find the challenge to get gameId
+    const all=await fbGetAll('chess_challenges');
+    const ch=all.find(x=>(x.id===challengeId||x._fbid===challengeId));
+    const gameId=ch?.gameId||('game_'+Date.now());
+    await fbSave('chess_challenges',challengeId,{
+      id:challengeId,gameId,from:fromUser,to:currentUser.username,
+      status:'active',acceptedAt:new Date().toISOString()
+    });
+    toast('✅ Défi accepté ! Partie lancée...','success');
+    loadOnlineChallenges();
+    joinOnlineGame(gameId, B); // Accepter = jouer les Noirs
   }catch(e){toast('Erreur','error');}
 };
 window.declineChessChallenge=async function(id){
   try{await fbSave('chess_challenges',id,{id,status:'declined'});loadOnlineChallenges();}catch(_){}
 };
-window.joinOnlineGame=function(id){
-  mode='local'; window.chessNewGame();
-  _showTab('moves',_el('crt-moves'));
-  toast('🌐 Partie locale (en attente du mode temps-réel)','success');
+
+window.joinOnlineGame=function(gameId, myColor){
+  if(!gameId||gameId==='undefined'){toast('ID de partie invalide','error');return;}
+  mode='online';
+  onlineMyColor=myColor||W;
+  // Flip board if playing as black
+  if(onlineMyColor===B&&!flip){flip=true;_updateBars();}
+  else if(onlineMyColor===W&&flip){flip=false;_updateBars();}
+
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    _resize();
+    _stopTimer();
+    bd=_mkBoard(); turn=W; castRights={wK:1,wQ:1,bK:1,bQ:1}; epSq=null;
+    hist=[]; sel=null; legalSqs=[]; over=false; lastMv=null;
+    _el('chess-overlay')?.classList.remove('on');
+    _draw(); _setStatus(); _movelist(); _timersUI(); _updateBars(); _caps();
+    // Start listening for moves
+    _subscribeGame(gameId);
+    _showTab('moves',_el('crt-moves'));
+    toast('🌐 Partie en ligne — vous jouez les '+(onlineMyColor===W?'⬜ Blancs':'⬛ Noirs'),'success');
+  }));
 };
+
+// ── Patch click handler to use online move ──────────────────
+// Override _click to use online mode move saving
+const _clickPure=window._click||_click;
 
 // ── TOURNAMENTS ────────────────────────────────────
 async function loadTournaments(){
