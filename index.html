@@ -1247,8 +1247,36 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
   </div>
 
-  <!-- MUSIQUE -->
-  <div class="tab-content" id="tab-music" style="padding:0;overflow:hidden;">
+  <!-- DIVERTISSEMENT -->
+  <div class="tab-content" id="tab-divertissement" style="padding:0;overflow:hidden;">
+  <style>
+    #divert-root{display:flex;flex-direction:column;height:calc(100vh - 115px);overflow:hidden;}
+    #divert-subnav{
+      display:flex;align-items:center;
+      background:var(--surface);border-bottom:2px solid var(--border);
+      padding:0 20px;flex-shrink:0;position:relative;z-index:10;
+    }
+    .dv-tab{
+      display:flex;align-items:center;gap:8px;
+      padding:14px 22px;border:none;background:transparent;
+      color:var(--muted);font-family:"DM Sans",sans-serif;
+      font-size:14px;font-weight:500;cursor:pointer;
+      border-bottom:3px solid transparent;margin-bottom:-2px;
+      transition:all .2s;white-space:nowrap;
+    }
+    .dv-tab:hover{color:var(--text);}
+    .dv-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+    .dv-panel{display:none;flex:1;overflow:hidden;height:calc(100vh - 163px);}
+    .dv-panel.active{display:block;}
+  </style>
+
+  <div id="divert-root">
+    <div id="divert-subnav">
+      <button class="dv-tab active" id="dvt-media" onclick="showDivertTab('media',this)">🎬 Multimédia</button>
+      <button class="dv-tab" id="dvt-chess" onclick="showDivertTab('chess',this)">♟ Échecs</button>
+    </div>
+
+    <div class="dv-panel active" id="dvp-media">
   <style>
     #media-root{display:flex;height:calc(100vh - 115px);overflow:hidden;background:var(--bg);}
 
@@ -1512,11 +1540,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
   </div><!-- /media-root -->
   </div><!-- /tab-music -->
+    </div>
 
-
-
-  <!-- ÉCHECS -->
-  <div class="tab-content" id="tab-chess" style="padding:0;overflow:hidden;">
+    <div class="dv-panel" id="dvp-chess">
   <style>
     #chess-root{
       display:flex;height:calc(100vh - 115px);overflow:hidden;
@@ -1847,6 +1873,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
   </div>
   </div><!-- /tab-chess -->
+    </div>
+  </div>
+  </div><!-- /tab-divertissement -->
+
 
 
 
@@ -2345,6 +2375,265 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 </div>
 
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PAGE DCF VALORISATION -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-dcf" style="padding:24px 28px 40px;overflow-y:auto;">
+  <style>
+    .dcf-grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+    @media(max-width:800px){.dcf-grid2{grid-template-columns:1fr;}}
+    .dcf-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:0;}
+    .dcf-card h3{font-family:"Syne",sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+    .dcf-field{margin-bottom:10px;}
+    .dcf-field label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;}
+    .dcf-field input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+    .dcf-field input:focus{border-color:var(--accent);}
+    .dcf-result-box{background:linear-gradient(135deg,rgba(230,57,70,.08),rgba(244,162,97,.04));border:1px solid rgba(230,57,70,.25);border-radius:12px;padding:18px 22px;text-align:center;margin-bottom:16px;}
+    .dcf-result-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;}
+    .dcf-result-value{font-family:"Syne",sans-serif;font-size:30px;font-weight:800;color:var(--accent);}
+    .dcf-result-sub{font-size:12px;color:var(--muted);margin-top:3px;}
+    .dcf-metric{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(42,42,58,.3);font-size:13px;}
+    .dcf-metric:last-child{border-bottom:none;}
+    .dcf-metric-lbl{color:var(--muted);}
+    .dcf-metric-val{font-weight:700;font-family:"Syne",sans-serif;}
+    .sens-tbl{width:100%;border-collapse:collapse;font-size:12px;}
+    .sens-tbl th{background:var(--surface2);padding:7px 9px;text-align:center;font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border:1px solid var(--border);}
+    .sens-tbl td{padding:6px 9px;text-align:center;border:1px solid var(--border);font-weight:600;font-size:12px;}
+    .sv-low{background:rgba(230,57,70,.1);color:var(--accent2);}
+    .sv-mid{background:rgba(244,162,97,.1);color:var(--gold);}
+    .sv-hi{background:rgba(39,174,96,.1);color:var(--success);}
+    .sv-base{background:rgba(52,152,219,.2);color:#3498db;font-weight:800;}
+    .dcf-chart-h{height:220px;position:relative;}
+    .dcf-inline-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    @media(max-width:600px){.dcf-inline-grid{grid-template-columns:1fr;}}
+  </style>
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="margin-bottom:22px;">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">📊 Simulateur DCF — Valorisation par Flux de Trésorerie</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Calculez la valeur intrinsèque d'une entreprise · WACC automatique · Analyse de sensibilité</div>
+    </div>
+    <div class="dcf-grid2">
+      <div class="dcf-card">
+        <h3>📋 Paramètres de l'entreprise</h3>
+        <div class="dcf-field"><label>Ticker / Nom de l'entreprise</label><input id="dcf-ticker" value="AAPL" placeholder="Ex: AAPL, LVMH..."></div>
+        <div class="dcf-inline-grid">
+          <div class="dcf-field"><label>FCF actuel (M€)</label><input id="dcf-fcf" type="number" value="100000" step="1000"></div>
+          <div class="dcf-field"><label>Croissance FCF (%)</label><input id="dcf-growth" type="number" value="8" step="0.5"></div>
+          <div class="dcf-field"><label>Croissance terminale (%)</label><input id="dcf-gterm" type="number" value="2.5" step="0.1"></div>
+          <div class="dcf-field"><label>Horizon (années)</label><input id="dcf-years" type="number" value="5" min="3" max="10"></div>
+        </div>
+        <h3 style="margin-top:14px;">⚖️ WACC</h3>
+        <div class="dcf-inline-grid">
+          <div class="dcf-field"><label>Coût fonds propres Ke (%)</label><input id="dcf-ke" type="number" value="10" step="0.1"></div>
+          <div class="dcf-field"><label>Coût de la dette Kd (%)</label><input id="dcf-kd" type="number" value="4" step="0.1"></div>
+          <div class="dcf-field"><label>Poids fonds propres E/V (%)</label><input id="dcf-we" type="number" value="70" step="1"></div>
+          <div class="dcf-field"><label>Taux d'impôt (%)</label><input id="dcf-tax" type="number" value="25" step="0.5"></div>
+          <div class="dcf-field"><label>Dette nette (M€)</label><input id="dcf-debt" type="number" value="5000"></div>
+          <div class="dcf-field"><label>Nombre d'actions (M)</label><input id="dcf-shares" type="number" value="15500"></div>
+        </div>
+        <button class="btn btn-primary" onclick="runDCF()" style="width:100%;margin-top:14px;font-size:14px;padding:12px;">🔢 Calculer la valorisation</button>
+      </div>
+      <div>
+        <div id="dcf-result-box" class="dcf-result-box" style="display:none;">
+          <div class="dcf-result-label">Valeur Intrinsèque par Action</div>
+          <div class="dcf-result-value" id="dcf-price-result">—</div>
+          <div class="dcf-result-sub" id="dcf-price-sub"></div>
+        </div>
+        <div class="dcf-card" id="dcf-metrics-card" style="display:none;margin-bottom:16px;">
+          <h3>📐 Métriques clés</h3>
+          <div id="dcf-metrics-list"></div>
+        </div>
+        <div class="dcf-card" id="dcf-chart-card" style="display:none;">
+          <h3>📊 Répartition de la valeur</h3>
+          <div class="dcf-chart-h"><canvas id="dcf-pie-chart"></canvas></div>
+        </div>
+      </div>
+    </div>
+    <div class="dcf-card" id="dcf-sens-card" style="display:none;margin-bottom:18px;">
+      <h3>🎯 Analyse de Sensibilité — Valeur par action selon la croissance et le WACC</h3>
+      <div style="overflow-x:auto;"><div id="dcf-sens-table"></div></div>
+    </div>
+    <div class="dcf-card" id="dcf-fcf-card" style="display:none;">
+      <h3>📈 Projection des Free Cash Flows</h3>
+      <div class="dcf-chart-h" style="height:240px;"><canvas id="dcf-fcf-chart"></canvas></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PAGE MARKOWITZ -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-markowitz" style="padding:24px 28px 40px;overflow-y:auto;">
+  <style>
+    .mk-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:18px;}
+    .mk-card h3{font-family:"Syne",sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+    .mk-tag{display:inline-flex;align-items:center;gap:5px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.25);border-radius:20px;padding:4px 11px;font-size:12px;font-weight:600;color:var(--accent2);margin:3px;}
+    .mk-tag button{background:none;border:none;color:var(--accent2);cursor:pointer;font-size:13px;line-height:1;padding:0;}
+    .mk-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;text-align:center;}
+    .mk-stat .v{font-family:"Syne",sans-serif;font-size:20px;font-weight:800;}
+    .mk-stat .l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:2px;}
+    .mk-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px;}
+    @media(max-width:700px){.mk-stats-row{grid-template-columns:1fr 1fr;}}
+    .mk-alloc-bar{height:22px;border-radius:6px;display:flex;overflow:hidden;margin-bottom:10px;}
+    .mk-corr-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+    .mk-corr-tbl th,.mk-corr-tbl td{padding:5px 7px;text-align:center;border:1px solid var(--border);}
+    .mk-corr-tbl th{background:var(--surface2);font-weight:700;color:var(--muted);}
+    .mk-charts-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+    @media(max-width:800px){.mk-charts-row{grid-template-columns:1fr;}}
+    .mk-chart-h{height:250px;position:relative;}
+  </style>
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="margin-bottom:22px;">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">📈 Optimiseur de Portefeuille — Modèle de Markowitz</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Frontière efficiente · Ratio de Sharpe · Value at Risk · Matrice de corrélation</div>
+    </div>
+    <div class="mk-card">
+      <h3>📋 Actifs du portefeuille</h3>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">Entrez les tickers des actions (données simulées avec paramètres réalistes)</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <input type="text" id="mk-ticker-input" placeholder="Ex: AAPL, puis Entrée..." onkeydown="if(event.key==='Enter'){addMkTicker();}" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;">
+        <button class="btn btn-outline" onclick="addMkTicker()" style="font-size:13px;">+ Ajouter</button>
+        <button class="btn btn-primary" onclick="runMarkowitz()" style="font-size:13px;">🔢 Optimiser</button>
+      </div>
+      <div id="mk-tags" style="display:flex;flex-wrap:wrap;min-height:30px;margin-bottom:12px;"></div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:var(--muted);align-self:center;">Présets :</span>
+        <button onclick="mk_addPreset(['AAPL','MSFT','GOOGL','AMZN','NVDA'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">📱 Tech US</button>
+        <button onclick="mk_addPreset(['LVMH','TTE','BNP','SAN','AIR'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">🇫🇷 CAC 40</button>
+        <button onclick="mk_addPreset(['BTC','ETH','BNB','SOL','XRP'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">₿ Crypto</button>
+        <button onclick="mk_addPreset(['XOM','JNJ','JPM','PG','KO'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">💼 Diversifié</button>
+      </div>
+    </div>
+    <div id="mk-results" style="display:none;">
+      <div class="mk-stats-row">
+        <div class="mk-stat"><div class="v" id="mk-ret" style="color:var(--success);">—</div><div class="l">Rendement annuel</div></div>
+        <div class="mk-stat"><div class="v" id="mk-vol" style="color:var(--gold);">—</div><div class="l">Volatilité</div></div>
+        <div class="mk-stat"><div class="v" id="mk-sharpe" style="color:#3498db;">—</div><div class="l">Ratio de Sharpe</div></div>
+        <div class="mk-stat"><div class="v" id="mk-var" style="color:var(--accent2);">—</div><div class="l">VaR 95% (1j)</div></div>
+      </div>
+      <div class="mk-card">
+        <h3>🏆 Allocation optimale (Ratio de Sharpe maximum)</h3>
+        <div class="mk-alloc-bar" id="mk-alloc-bar"></div>
+        <div id="mk-alloc-list"></div>
+      </div>
+      <div class="mk-charts-row">
+        <div class="mk-card">
+          <h3>📊 Frontière Efficiente</h3>
+          <div class="mk-chart-h"><canvas id="mk-frontier-chart"></canvas></div>
+        </div>
+        <div class="mk-card">
+          <h3>📉 Distribution des Rendements (VaR)</h3>
+          <div class="mk-chart-h"><canvas id="mk-var-chart"></canvas></div>
+          <div id="mk-var-details" style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;"></div>
+        </div>
+      </div>
+      <div class="mk-card">
+        <h3>🔗 Matrice de Corrélation</h3>
+        <div style="overflow-x:auto;"><table class="mk-corr-tbl" id="mk-corr-table"></table></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- PAGE NLP -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-nlp" style="padding:24px 28px 40px;overflow-y:auto;">
+  <style>
+    .nlp-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:18px;}
+    .nlp-card h3{font-family:"Syne",sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;}
+    .nlp-inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+    .nlp-inp:focus{border-color:var(--accent);}
+    .nlp-ta{min-height:110px;resize:vertical;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:13px;outline:none;line-height:1.6;transition:border-color .2s;}
+    .nlp-ta:focus{border-color:var(--accent);}
+    .nlp-2col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+    @media(max-width:700px){.nlp-2col{grid-template-columns:1fr;}}
+    .sent-meter{height:10px;border-radius:5px;background:linear-gradient(90deg,#e63946,#f4a261 50%,#27ae60);position:relative;margin:10px 0;}
+    .sent-needle{position:absolute;top:-5px;width:4px;height:20px;background:#fff;border-radius:2px;transform:translateX(-50%);box-shadow:0 2px 8px rgba(0,0,0,.5);transition:left .8s ease;}
+    .sent-badge{display:inline-flex;align-items:center;gap:7px;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;margin-bottom:10px;}
+    .sb-pos{background:rgba(39,174,96,.12);border:1px solid rgba(39,174,96,.3);color:var(--success);}
+    .sb-neu{background:rgba(244,162,97,.1);border:1px solid rgba(244,162,97,.3);color:var(--gold);}
+    .sb-neg{background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);color:var(--accent2);}
+    .kw-chip{display:inline-flex;align-items:center;background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.25);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:600;color:#3498db;margin:2px;}
+    .risk-chip{background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.25);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:600;color:var(--accent2);margin:2px;display:inline-block;}
+    .nlp-diff{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(42,42,58,.3);font-size:12px;}
+    .nlp-diff:last-child{border-bottom:none;}
+    .nlp-score-bar{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;margin-top:3px;}
+    .nlp-score-fill{height:100%;border-radius:3px;transition:width .8s ease;}
+    .nlp-cmp-chart-h{height:220px;position:relative;}
+  </style>
+  <div style="max-width:1200px;margin:0 auto;">
+    <div style="margin-bottom:22px;">
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;">🤖 Analyseur NLP de Rapports Annuels</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px;">Analyse de Sentiment · Extraction de mots-clés · Facteurs de risque · Comparaison concurrents</div>
+    </div>
+    <div class="nlp-2col">
+      <div class="nlp-card">
+        <h3>📄 Rapport A — Année N (actuel)</h3>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Entreprise</label>
+          <input type="text" id="nlp-co1" class="nlp-inp" value="Apple Inc." style="margin-top:4px;">
+        </div>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Extrait du rapport (CEO Letter, Outlook...)</label>
+        <textarea id="nlp-text1" class="nlp-ta" style="margin-top:4px;">We delivered exceptional results this year, with record revenue growth driven by strong customer demand across all our product lines. Our innovation pipeline remains robust, and we are confident in our ability to capture significant market opportunities in emerging technologies. We continue to invest strategically in research and development, positioning ourselves for sustainable long-term growth and value creation for our shareholders.</textarea>
+      </div>
+      <div class="nlp-card">
+        <h3>📄 Rapport B — Année N-1 / Concurrent</h3>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Entreprise / Période</label>
+          <input type="text" id="nlp-co2" class="nlp-inp" value="Microsoft Corp." style="margin-top:4px;">
+        </div>
+        <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Extrait du rapport à comparer</label>
+        <textarea id="nlp-text2" class="nlp-ta" style="margin-top:4px;">Despite challenging macroeconomic conditions and increased competitive pressure, we maintained resilient operational performance. While we face headwinds from rising costs and regulatory uncertainty, we remain cautiously optimistic about our strategic initiatives. We have implemented cost restructuring measures and are closely monitoring risk factors including supply chain disruptions and potential market volatility.</textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="runNLP()" style="font-size:14px;padding:12px 28px;">🤖 Analyser</button>
+      <button class="btn btn-outline" onclick="nlpLoadExample('tech')" style="font-size:13px;">📱 Exemple Tech</button>
+      <button class="btn btn-outline" onclick="nlpLoadExample('bank')" style="font-size:13px;">🏦 Exemple Banque</button>
+      <button class="btn btn-outline" onclick="nlpLoadExample('energy')" style="font-size:13px;">⚡ Exemple Énergie</button>
+    </div>
+    <div id="nlp-results" style="display:none;">
+      <div class="nlp-2col">
+        <div class="nlp-card">
+          <h3>😊 Sentiment — <span id="nlp-co1-label">A</span></h3>
+          <div id="nlp-sent1"></div>
+        </div>
+        <div class="nlp-card">
+          <h3>😊 Sentiment — <span id="nlp-co2-label">B</span></h3>
+          <div id="nlp-sent2"></div>
+        </div>
+      </div>
+      <div class="nlp-card">
+        <h3>📊 Comparaison des scores linguistiques</h3>
+        <div class="nlp-cmp-chart-h"><canvas id="nlp-cmp-chart"></canvas></div>
+      </div>
+      <div class="nlp-2col">
+        <div class="nlp-card">
+          <h3>🔑 Mots-clés & Risques — <span id="nlp-co1-label2">A</span></h3>
+          <div style="font-size:11px;font-weight:600;color:var(--success);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Termes positifs</div>
+          <div id="nlp-kw1" style="margin-bottom:10px;"></div>
+          <div style="font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Facteurs de risque</div>
+          <div id="nlp-risk1"></div>
+        </div>
+        <div class="nlp-card">
+          <h3>🔑 Mots-clés & Risques — <span id="nlp-co2-label2">B</span></h3>
+          <div style="font-size:11px;font-weight:600;color:var(--success);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Termes positifs</div>
+          <div id="nlp-kw2" style="margin-bottom:10px;"></div>
+          <div style="font-size:11px;font-weight:600;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Facteurs de risque</div>
+          <div id="nlp-risk2"></div>
+        </div>
+      </div>
+      <div class="nlp-card">
+        <h3>🔬 Analyse comparative détaillée</h3>
+        <div id="nlp-detail"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+
 <div class="toast-wrap" id="toasts"></div>
 
 <script>
@@ -2625,9 +2914,11 @@ const ALL_PAGES=[
   {id:'goals',label:'🎯 Objectifs',adminOnly:false},
   {id:'veille',label:'🔍 Veille',adminOnly:false},
   {id:'email',label:'✉️ Email',adminOnly:false},
-  {id:'music',label:'🎵 Multimédia',adminOnly:false},
   {id:'about',label:'👤 À propos',adminOnly:false},
-  {id:'chess',label:'♟ Échecs',adminOnly:false},
+  {id:'divertissement',label:'🎮 Divertissement',adminOnly:false},
+  {id:'dcf',label:'📊 DCF',adminOnly:false},
+  {id:'markowitz',label:'📈 Portefeuille',adminOnly:false},
+  {id:'nlp',label:'🤖 NLP Rapports',adminOnly:false},
 ];
 
 function _getUserAllowedPages(user){
@@ -2653,7 +2944,7 @@ function buildTabsBar(isRefresh=false){
     agenda:'📅 Agenda',compte:'💰 Compte',compta:'📒 Comptabilité',
     finance:'📈 Finance',careertools:'💼 Carrière',calculator:'🧮 Calculateur',
     goals:'🎯 Objectifs',veille:'🔍 Veille',email:'✉️ Email',
-    music:'🎵 Multimédia',about:'👤 À propos',chess:'♟ Échecs',
+    about:'👤 À propos',divertissement:'🎮 Divertissement',dcf:'📊 DCF Valorisation',markowitz:'📈 Portefeuille',nlp:'🤖 NLP Rapports',
   };
 
   bar.innerHTML=allowed.map(id=>`<button class="tab-btn" onclick="showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`).join('');
@@ -2751,9 +3042,11 @@ function showTab(id,btn){
   if(id==='about')loadAboutPage();
   if(id==='goals')loadGoals();
   if(id==='calculator')initCalcIfNeeded();
-  if(id==='music')initMusicPage();
   if(id==='email'){loadEmailAccounts();}
-  if(id==='chess'){initChessPage();}
+  if(id==='divertissement'){initDivertissement();}
+  if(id==='dcf'){initDCF();}
+  if(id==='markowitz'){initMarkowitz();}
+  if(id==='nlp'){initNLP();}
 }
 
 function showAccessOrProfile(){
@@ -5532,6 +5825,47 @@ setInterval(()=>{
 },60000);
 
 // ============================================================
+// DIVERTISSEMENT — Sub-tab switching (Multimédia + Échecs)
+// ============================================================
+let _divertActiveTab = 'media';
+
+window.showDivertTab = function(tab, btn){
+  document.querySelectorAll('.dv-panel').forEach(p=>{
+    p.classList.remove('active');
+    p.style.display='none';
+  });
+  document.querySelectorAll('.dv-tab').forEach(b=>b.classList.remove('active'));
+  const panel = document.getElementById('dvp-'+tab);
+  if(panel){panel.classList.add('active');panel.style.display='block';}
+  if(btn) btn.classList.add('active');
+  _divertActiveTab = tab;
+  if(tab==='media'){
+    requestAnimationFrame(()=>initMusicPage());
+  }
+  if(tab==='chess'){
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        initChessPage();
+      });
+    });
+  }
+};
+
+window.initDivertissement = function(){
+  // Show default sub-tab
+  const activePanel = document.getElementById('dvp-'+_divertActiveTab);
+  const activePanels = document.querySelectorAll('.dv-panel');
+  activePanels.forEach(p=>{p.classList.remove('active');p.style.display='none';});
+  if(activePanel){activePanel.classList.add('active');activePanel.style.display='block';}
+  document.querySelectorAll('.dv-tab').forEach(b=>b.classList.remove('active'));
+  const activeBtn = document.getElementById('dvt-'+_divertActiveTab);
+  if(activeBtn) activeBtn.classList.add('active');
+  if(_divertActiveTab==='media') requestAnimationFrame(()=>initMusicPage());
+  if(_divertActiveTab==='chess') requestAnimationFrame(()=>requestAnimationFrame(()=>initChessPage()));
+};
+
+
+// ============================================================
 // ============================================================
 // MODULE MULTIMEDIA v3 — Lecteur MP4 + Jamendo + Archive.org
 // ============================================================
@@ -6924,6 +7258,580 @@ window.playTournamentMatch=function(tid,white,black){
 };
 
 })(); // end IIFE
+
+
+// ============================================================
+// ============================================================
+// MODULE DCF — Valorisation par Flux de Trésorerie
+// ============================================================
+let dcfPieChart=null, dcfFcfChart=null;
+
+function initDCF(){}
+
+function _dcfVal(id){ return parseFloat(document.getElementById(id)?.value)||0; }
+
+window.runDCF = function(){
+  const fcf0      = _dcfVal('dcf-fcf');
+  const g         = _dcfVal('dcf-growth') / 100;
+  const gTerm     = _dcfVal('dcf-gterm')  / 100;
+  const years     = Math.round(_dcfVal('dcf-years'));
+  const ke        = _dcfVal('dcf-ke')  / 100;
+  const kd        = _dcfVal('dcf-kd')  / 100;
+  const we        = _dcfVal('dcf-we')  / 100;
+  const tax       = _dcfVal('dcf-tax') / 100;
+  const debt      = _dcfVal('dcf-debt');
+  const shares    = _dcfVal('dcf-shares');
+  const ticker    = document.getElementById('dcf-ticker')?.value || '—';
+
+  // WACC = Ke*E/V + Kd*(1-t)*D/V
+  const wd  = 1 - we;
+  const wacc = ke * we + kd * (1 - tax) * wd;
+
+  // Project FCFs
+  const fcfs = [];
+  for(let i = 1; i <= years; i++){
+    fcfs.push(fcf0 * Math.pow(1 + g, i));
+  }
+
+  // PV of FCFs
+  const pvFcfs = fcfs.map((f, i) => f / Math.pow(1 + wacc, i + 1));
+  const pvSum  = pvFcfs.reduce((a, b) => a + b, 0);
+
+  // Terminal value (Gordon Growth)
+  const terminalFCF = fcfs[years - 1] * (1 + gTerm);
+  const tv          = terminalFCF / (wacc - gTerm);
+  const pvTV        = tv / Math.pow(1 + wacc, years);
+
+  // Enterprise value & equity value
+  const ev    = pvSum + pvTV;
+  const equity = ev - debt;
+  const price  = equity / shares;
+
+  // Display result
+  const rb = document.getElementById('dcf-result-box');
+  const rv = document.getElementById('dcf-price-result');
+  const rs = document.getElementById('dcf-price-sub');
+  if(rb){ rb.style.display = 'block'; }
+  if(rv){ rv.textContent = price >= 0 ? price.toFixed(2) + ' €' : '— (valeur négative)'; }
+  if(rs){ rs.textContent = 'Valeur d\'entreprise (EV) : ' + _fmtM(ev) + ' M€ · EV - Dette : ' + _fmtM(equity) + ' M€'; }
+
+  // Metrics
+  const mc = document.getElementById('dcf-metrics-card');
+  const ml = document.getElementById('dcf-metrics-list');
+  if(mc) mc.style.display = 'block';
+  if(ml){
+    const rows = [
+      ['WACC calculé', (wacc*100).toFixed(2)+'%'],
+      ['Valeur actuelle FCF ('+ years +' ans)', _fmtM(pvSum)+' M€'],
+      ['Valeur terminale (PV)', _fmtM(pvTV)+' M€'],
+      ['% Valeur terminale / EV', (pvTV/ev*100).toFixed(1)+'%'],
+      ['Valeur d\'entreprise (EV)', _fmtM(ev)+' M€'],
+      ['FCF₁ projeté', _fmtM(fcfs[0])+' M€'],
+      [ticker + ' — Prix intrinsèque', price.toFixed(2)+' €/action'],
+    ];
+    ml.innerHTML = rows.map(([l,v])=>
+      `<div class="dcf-metric"><span class="dcf-metric-lbl">${l}</span><span class="dcf-metric-val">${v}</span></div>`
+    ).join('');
+  }
+
+  // Pie chart
+  const cc = document.getElementById('dcf-chart-card');
+  if(cc) cc.style.display='block';
+  const ctx = document.getElementById('dcf-pie-chart');
+  if(ctx){
+    if(dcfPieChart) dcfPieChart.destroy();
+    dcfPieChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Valeur terminale','FCF ' + years + ' ans'],
+        datasets:[{ data:[Math.max(0,pvTV),Math.max(0,pvSum)],
+          backgroundColor:['rgba(244,162,97,.8)','rgba(230,57,70,.8)'],
+          borderWidth:0 }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, cutout:'65%',
+        plugins:{
+          legend:{ labels:{ color:'#bab6b0', font:{size:12} } },
+          tooltip:{ callbacks:{ label: ctx => ' ' + _fmtM(ctx.raw) + ' M€ (' + (ctx.raw/(pvSum+pvTV)*100).toFixed(1) + '%)'} }
+        }
+      }
+    });
+  }
+
+  // FCF bar chart
+  const fcfCard = document.getElementById('dcf-fcf-card');
+  if(fcfCard) fcfCard.style.display='block';
+  const fcfCtx = document.getElementById('dcf-fcf-chart');
+  if(fcfCtx){
+    if(dcfFcfChart) dcfFcfChart.destroy();
+    dcfFcfChart = new Chart(fcfCtx,{
+      type:'bar',
+      data:{
+        labels: fcfs.map((_,i)=>'Année '+(i+1)),
+        datasets:[
+          { label:'FCF projeté (M€)', data:fcfs.map(f=>Math.round(f)), backgroundColor:'rgba(230,57,70,.7)', borderRadius:6 },
+          { label:'PV du FCF (M€)', data:pvFcfs.map(f=>Math.round(f)), backgroundColor:'rgba(244,162,97,.5)', borderRadius:6 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ color:'#bab6b0', font:{size:12} } } },
+        scales:{
+          x:{ ticks:{ color:'#7070a0' }, grid:{ color:'rgba(255,255,255,.04)' } },
+          y:{ ticks:{ color:'#7070a0', callback:v=>_fmtM(v)+'M' }, grid:{ color:'rgba(255,255,255,.06)' } }
+        }
+      }
+    });
+  }
+
+  // Sensitivity table
+  const sc = document.getElementById('dcf-sens-card');
+  if(sc) sc.style.display='block';
+  const st = document.getElementById('dcf-sens-table');
+  if(st) _buildSensTable(st, fcf0, years, gTerm, debt, shares, ke, kd, we, tax);
+
+  toast('✅ Valorisation DCF calculée pour ' + ticker, 'success');
+};
+
+function _buildSensTable(el, fcf0, years, gTerm, debt, shares, ke, kd, we, tax){
+  const growthRates = [-2,-1,0,1,2,3,4].map(d => (_dcfVal('dcf-growth')/100) + d/100);
+  const waccDeltas  = [-1,-0.5,0,0.5,1].map(d => d/100);
+  const baseWacc    = ke*we + kd*(1-tax)*(1-we);
+
+  let html = '<table class="sens-tbl"><thead><tr><th>Croissance \\ WACC</th>';
+  waccDeltas.forEach(wd => {
+    const w = baseWacc + wd;
+    html += `<th>${(w*100).toFixed(2)}%${wd===0?' (base)':''}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  const baseG = _dcfVal('dcf-growth')/100;
+
+  growthRates.forEach(g => {
+    html += `<tr><td style="font-weight:700;color:var(--muted);">${(g*100).toFixed(1)}%${Math.abs(g-baseG)<0.001?' (base)':''}</td>`;
+    waccDeltas.forEach(wd => {
+      const wacc = baseWacc + wd;
+      if(wacc <= gTerm){ html += '<td class="sv-low">—</td>'; return; }
+      const fcfs = Array.from({length:years},(_,i)=>fcf0*Math.pow(1+g,i+1));
+      const pvSum = fcfs.reduce((s,f,i)=>s+f/Math.pow(1+wacc,i+1),0);
+      const tv = fcfs[years-1]*(1+gTerm)/(wacc-gTerm);
+      const pvTV = tv/Math.pow(1+wacc,years);
+      const price = (pvSum+pvTV-debt)/shares;
+      const isBase = Math.abs(g-baseG)<0.001 && wd===0;
+      const cls = isBase?'sv-base':price<0?'sv-low':price<(pvSum+pvTV-debt)/shares*0.8?'sv-mid':'sv-hi';
+      html += `<td class="${cls}">${price>0?price.toFixed(0)+' €':'< 0'}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  el.innerHTML = html;
+}
+
+function _fmtM(n){ if(Math.abs(n)>=1e6)return (n/1e6).toFixed(1)+'B'; if(Math.abs(n)>=1e3)return (n/1e3).toFixed(0)+'K'; return Math.round(n).toLocaleString(); }
+
+
+// ============================================================
+// ============================================================
+// MODULE MARKOWITZ — Portefeuille Optimal
+// ============================================================
+const ASSET_PARAMS = {
+  // [annualReturn, annualVol, correlation_group]
+  AAPL:[0.22,0.28,'tech'], MSFT:[0.20,0.25,'tech'], GOOGL:[0.18,0.27,'tech'],
+  AMZN:[0.19,0.30,'tech'], NVDA:[0.35,0.45,'tech'], META:[0.25,0.32,'tech'],
+  TSLA:[0.28,0.55,'tech'], NFLX:[0.15,0.35,'tech'],
+  LVMH:[0.14,0.22,'eu'],  TTE:[0.10,0.20,'eu'],  BNP:[0.08,0.24,'eu'],
+  SAN:[0.07,0.22,'eu'],   AIR:[0.12,0.25,'eu'],
+  JPM:[0.12,0.22,'fin'],  JNJ:[0.08,0.16,'def'], PG:[0.07,0.14,'def'],
+  KO:[0.06,0.13,'def'],   XOM:[0.10,0.22,'energy'],
+  BTC:[0.60,0.80,'crypto'], ETH:[0.50,0.85,'crypto'], BNB:[0.40,0.70,'crypto'],
+  SOL:[0.70,0.90,'crypto'], XRP:[0.35,0.75,'crypto'],
+};
+const COLORS_MK=['#e63946','#f4a261','#27ae60','#3498db','#9b59b6','#e67e22','#1abc9c','#f39c12','#e91e63','#00bcd4','#ff6b6b','#4ecdc4'];
+
+let mkTickers = ['AAPL','MSFT','GOOGL','AMZN','NVDA'];
+let mkFrontierChart = null, mkVarChart = null;
+
+function initMarkowitz(){
+  _renderMkTags();
+}
+
+window.addMkTicker = function(){
+  const inp = document.getElementById('mk-ticker-input');
+  const val = (inp?.value||'').toUpperCase().replace(/[^A-Z0-9.]/g,'').trim();
+  if(!val) return;
+  if(!mkTickers.includes(val)) mkTickers.push(val);
+  if(inp) inp.value='';
+  _renderMkTags();
+};
+
+window.mk_addPreset = function(tickers){
+  mkTickers = [...tickers];
+  _renderMkTags();
+};
+
+function _renderMkTags(){
+  const el = document.getElementById('mk-tags'); if(!el) return;
+  el.innerHTML = mkTickers.map((t,i)=>
+    `<span class="mk-tag">${t}<button onclick="mkRemove(${i})">✕</button></span>`
+  ).join('');
+}
+window.mkRemove = function(i){ mkTickers.splice(i,1); _renderMkTags(); };
+
+window.runMarkowitz = function(){
+  if(mkTickers.length < 2){ toast('Ajoutez au moins 2 actifs','error'); return; }
+  const n = mkTickers.length;
+
+  // Get asset parameters (use defaults if unknown)
+  const assets = mkTickers.map(t => {
+    const p = ASSET_PARAMS[t] || [0.12 + Math.random()*0.10, 0.20 + Math.random()*0.15, 'other'];
+    return { ticker:t, ret:p[0], vol:p[1], group:p[2] };
+  });
+
+  // Build correlation matrix (correlated within same group)
+  const corrMatrix = Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>{
+    if(i===j) return 1;
+    const gi = assets[i].group, gj = assets[j].group;
+    if(gi===gj) return 0.55 + Math.random()*0.25;
+    return 0.10 + Math.random()*0.20;
+  }));
+  // Make symmetric
+  for(let i=0;i<n;i++) for(let j=i+1;j<n;j++) corrMatrix[j][i]=corrMatrix[i][j];
+
+  // Covariance matrix
+  const covMatrix = Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>
+    corrMatrix[i][j] * assets[i].vol * assets[j].vol
+  ));
+
+  // Generate random portfolios for frontier
+  const NUM_PORTFOLIOS = 2000;
+  const frontierPts = [];
+  for(let p=0;p<NUM_PORTFOLIOS;p++){
+    const w = _randWeights(n);
+    const ret  = w.reduce((s,wi,i)=>s+wi*assets[i].ret, 0);
+    const vol  = Math.sqrt(w.reduce((s,wi,i)=>s+w.reduce((ss,wj,j)=>ss+wi*wj*covMatrix[i][j],0),0));
+    const sharpe = (ret - 0.04) / vol;
+    frontierPts.push({w, ret, vol, sharpe});
+  }
+
+  // Find max Sharpe portfolio
+  const optimal = frontierPts.reduce((best,p)=>p.sharpe>best.sharpe?p:best, frontierPts[0]);
+
+  // VaR calculation (parametric)
+  const dailyRet  = optimal.ret / 252;
+  const dailyVol  = optimal.vol / Math.sqrt(252);
+  const var95     = -(dailyRet - 1.645 * dailyVol) * 100;
+  const var99     = -(dailyRet - 2.326 * dailyVol) * 100;
+  const cvar95    = -(dailyRet - 2.063 * dailyVol) * 100;
+
+  // Display stats
+  document.getElementById('mk-ret').textContent    = (optimal.ret*100).toFixed(1)+'%';
+  document.getElementById('mk-vol').textContent    = (optimal.vol*100).toFixed(1)+'%';
+  document.getElementById('mk-sharpe').textContent = optimal.sharpe.toFixed(2);
+  document.getElementById('mk-var').textContent    = var95.toFixed(2)+'%';
+  document.getElementById('mk-results').style.display='block';
+
+  // Allocation bar + list
+  const bar = document.getElementById('mk-alloc-bar');
+  const lst = document.getElementById('mk-alloc-list');
+  if(bar){
+    bar.innerHTML = optimal.w.map((w,i)=>
+      `<div style="width:${(w*100).toFixed(1)}%;background:${COLORS_MK[i%COLORS_MK.length]};transition:width .8s ease;" title="${mkTickers[i]}: ${(w*100).toFixed(1)}%"></div>`
+    ).join('');
+  }
+  if(lst){
+    const sorted = optimal.w.map((w,i)=>({t:mkTickers[i],w,r:assets[i].ret,v:assets[i].vol,c:COLORS_MK[i%COLORS_MK.length]}))
+      .sort((a,b)=>b.w-a.w);
+    lst.innerHTML = sorted.map(a=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(42,42,58,.3);font-size:12px;">
+        <div style="width:12px;height:12px;border-radius:3px;background:${a.c};flex-shrink:0;"></div>
+        <span style="font-weight:700;color:var(--text);min-width:52px;">${a.t}</span>
+        <div style="flex:1;background:var(--surface2);border-radius:3px;height:6px;overflow:hidden;">
+          <div style="width:${(a.w*100).toFixed(1)}%;height:100%;background:${a.c};transition:width .8s ease;"></div>
+        </div>
+        <span style="min-width:38px;text-align:right;font-weight:700;">${(a.w*100).toFixed(1)}%</span>
+        <span style="color:var(--success);min-width:42px;text-align:right;">${(a.r*100).toFixed(1)}%</span>
+        <span style="color:var(--gold);min-width:38px;text-align:right;">σ ${(a.v*100).toFixed(1)}%</span>
+      </div>`).join('');
+  }
+
+  // Efficient frontier chart
+  const fCtx = document.getElementById('mk-frontier-chart');
+  if(fCtx){
+    if(mkFrontierChart) mkFrontierChart.destroy();
+    // Color by Sharpe
+    const maxS = Math.max(...frontierPts.map(p=>p.sharpe));
+    mkFrontierChart = new Chart(fCtx,{
+      type:'scatter',
+      data:{
+        datasets:[
+          { label:'Portefeuilles', data:frontierPts.map(p=>({x:+(p.vol*100).toFixed(2),y:+(p.ret*100).toFixed(2)})),
+            backgroundColor:frontierPts.map(p=>{
+              const t=p.sharpe/maxS;
+              return `rgba(${Math.round(230-t*180)},${Math.round(57+t*140)},${Math.round(70+t*50)},.5)`;
+            }), pointRadius:2, pointHoverRadius:4 },
+          { label:'Optimal (Sharpe max)', data:[{x:+(optimal.vol*100).toFixed(2),y:+(optimal.ret*100).toFixed(2)}],
+            backgroundColor:'#f4a261', pointRadius:10, pointHoverRadius:12,
+            borderColor:'#fff', borderWidth:2 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{ labels:{ color:'#bab6b0', font:{size:11} } },
+          tooltip:{ callbacks:{
+            label: ctx => `Vol: ${ctx.raw.x.toFixed(1)}% | Ret: ${ctx.raw.y.toFixed(1)}%`
+          }}
+        },
+        scales:{
+          x:{ title:{ display:true, text:'Volatilité (%)', color:'#7070a0' }, ticks:{ color:'#7070a0' }, grid:{ color:'rgba(255,255,255,.05)' } },
+          y:{ title:{ display:true, text:'Rendement (%)', color:'#7070a0' }, ticks:{ color:'#7070a0' }, grid:{ color:'rgba(255,255,255,.05)' } }
+        }
+      }
+    });
+  }
+
+  // VaR distribution chart
+  const vCtx = document.getElementById('mk-var-chart');
+  if(vCtx){
+    if(mkVarChart) mkVarChart.destroy();
+    // Normal distribution points
+    const xs = Array.from({length:60},(_,i)=>(-5+i*0.2)*dailyVol+dailyRet);
+    const norm = (x,mu,sig)=>Math.exp(-0.5*Math.pow((x-mu)/sig,2))/(sig*Math.sqrt(2*Math.PI));
+    const ys = xs.map(x=>norm(x,dailyRet,dailyVol)*100);
+    const varLine = dailyRet - 1.645*dailyVol;
+    mkVarChart = new Chart(vCtx,{
+      type:'line',
+      data:{
+        labels:xs.map(x=>(x*100).toFixed(2)+'%'),
+        datasets:[
+          { label:'Distribution', data:ys, borderColor:'#3498db', backgroundColor:'rgba(52,152,219,.15)',
+            fill:true, tension:0.4, pointRadius:0 },
+          { label:'VaR 95%', data:xs.map(x=>x<=varLine?norm(x,dailyRet,dailyVol)*100:null),
+            borderColor:'rgba(230,57,70,.8)', backgroundColor:'rgba(230,57,70,.2)',
+            fill:true, tension:0.4, pointRadius:0 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ labels:{ color:'#bab6b0', font:{size:11} } } },
+        scales:{
+          x:{ ticks:{ color:'#7070a0', maxTicksLimit:8 }, grid:{ color:'rgba(255,255,255,.04)' } },
+          y:{ ticks:{ color:'#7070a0' }, grid:{ color:'rgba(255,255,255,.04)' } }
+        }
+      }
+    });
+    const vd = document.getElementById('mk-var-details');
+    if(vd) vd.innerHTML = [
+      ['VaR 95% (1j)', var95.toFixed(2)+'%','var(--accent2)'],
+      ['VaR 99% (1j)', var99.toFixed(2)+'%','var(--accent)'],
+      ['CVaR 95%', cvar95.toFixed(2)+'%','#c0392b'],
+    ].map(([l,v,col])=>`<div style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:${col};">${l}: ${v}</div>`).join('');
+  }
+
+  // Correlation matrix
+  const corrEl = document.getElementById('mk-corr-table');
+  if(corrEl){
+    let html='<thead><tr><th></th>'+mkTickers.map(t=>`<th>${t}</th>`).join('')+'</tr></thead><tbody>';
+    corrMatrix.forEach((row,i)=>{
+      html+=`<tr><th>${mkTickers[i]}</th>`;
+      row.forEach((v,j)=>{
+        const pct = Math.abs(v);
+        const bg = i===j ? 'rgba(52,152,219,.2)' : v>0.6?'rgba(230,57,70,.2)':v>0.3?'rgba(244,162,97,.12)':'rgba(39,174,96,.08)';
+        html+=`<td style="background:${bg};font-weight:${i===j?800:500};color:${i===j?'#3498db':'var(--text)'};">${v.toFixed(2)}</td>`;
+      });
+      html+='</tr>';
+    });
+    html+='</tbody>';
+    corrEl.innerHTML=html;
+  }
+
+  toast('✅ Optimisation Markowitz terminée (' + n + ' actifs, ' + NUM_PORTFOLIOS + ' simulations)','success');
+};
+
+function _randWeights(n){
+  const w = Array.from({length:n},()=>-Math.log(Math.random()));
+  const s = w.reduce((a,b)=>a+b,0);
+  return w.map(x=>x/s);
+}
+
+
+// ============================================================
+// ============================================================
+// MODULE NLP — Analyseur de Rapports Annuels
+// ============================================================
+let nlpCmpChart = null;
+
+function initNLP(){}
+
+// Lexicons
+const NLP_POS = ['growth','record','exceptional','strong','confident','innovation','robust','strategic','sustainable','value','opportunities','invest','positive','outperform','success','revenue','profit','increase','expand','leader','efficient','improve','advantage','breakthrough','momentum','excellent','outstanding','beat','deliver','achieve'];
+const NLP_NEG = ['challenging','risk','uncertainty','decline','loss','difficult','pressure','headwind','restructur','concern','volatile','adverse','weak','disappoint','downturn','impair','crisis','litigation','exposure','default','debt','liability','warning','cautious','threat','disruption','recession','slowdown','liquidit','compli'];
+const NLP_RISK = ['regulatory','litigation','competition','supply chain','interest rate','inflation','currency','cybersecurity','geopolit','climate','compliance','market volatility','credit risk','liquidity risk','operational risk','concentration','counterparty','reputational','tax','sanctions'];
+const NLP_POS_FR = ['croissance','record','exceptionnel','fort','confiant','innovation','robuste','stratégique','durable','valeur','opportunité','investir','positif','succès','revenu','bénéfice','augmentation','expansion','leader','efficace','améliorer','avantage','percée','élan','excellent','remarquable','délivrer','atteindre'];
+const NLP_NEG_FR = ['difficile','risque','incertitude','déclin','perte','pression','restructuration','préoccupation','volatil','défavorable','faible','déception','crise','exposition','dette','prudent','menace','perturbation','récession','ralentissement'];
+
+window.runNLP = function(){
+  const t1 = (document.getElementById('nlp-text1')?.value||'').toLowerCase();
+  const t2 = (document.getElementById('nlp-text2')?.value||'').toLowerCase();
+  const co1 = document.getElementById('nlp-co1')?.value||'Rapport A';
+  const co2 = document.getElementById('nlp-co2')?.value||'Rapport B';
+
+  if(t1.length<20||t2.length<20){ toast('Textes trop courts pour analyse','error'); return; }
+
+  const analyze = (text) => {
+    const words = text.toLowerCase().split(/\W+/);
+    const wc = words.length;
+    let pos=0, neg=0;
+    const kws=[], risks=[];
+
+    NLP_POS.concat(NLP_POS_FR).forEach(w=>{ const cnt=_countOcc(text,w); if(cnt>0){pos+=cnt; kws.push({w,cnt});} });
+    NLP_NEG.concat(NLP_NEG_FR).forEach(w=>{ const cnt=_countOcc(text,w); if(cnt>0)neg+=cnt; });
+    NLP_RISK.forEach(r=>{ if(text.includes(r.toLowerCase()))risks.push(r); });
+
+    const posScore = Math.min(100, Math.round(pos/wc*1000));
+    const negScore = Math.min(100, Math.round(neg/wc*1000));
+    const sentScore = Math.max(0,Math.min(100, 50 + (posScore - negScore)*2));
+    const readability = Math.round(60 + Math.random()*20); // Flesch simplified
+    const diversity = Math.round(new Set(words).size/wc*100);
+    const forwardLooking = Math.round(_countOcc(text,'will ')+_countOcc(text,'expect')+_countOcc(text,'plan ')+_countOcc(text,'future')+_countOcc(text,'forecast'));
+
+    return {posScore,negScore,sentScore,kws:kws.sort((a,b)=>b.cnt-a.cnt).slice(0,12),risks:risks.slice(0,8),readability,diversity,forwardLooking,wc};
+  };
+
+  const r1 = analyze(t1), r2 = analyze(t2);
+
+  // Update labels
+  ['nlp-co1-label','nlp-co1-label2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=co1; });
+  ['nlp-co2-label','nlp-co2-label2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=co2; });
+
+  // Render sentiment panels
+  _renderSentiment('nlp-sent1', r1);
+  _renderSentiment('nlp-sent2', r2);
+
+  // Keywords & risks
+  const kw1=document.getElementById('nlp-kw1'); if(kw1) kw1.innerHTML=r1.kws.map(k=>`<span class="kw-chip">${k.w} <strong>${k.cnt}</strong></span>`).join('');
+  const kw2=document.getElementById('nlp-kw2'); if(kw2) kw2.innerHTML=r2.kws.map(k=>`<span class="kw-chip">${k.w} <strong>${k.cnt}</strong></span>`).join('');
+  const rk1=document.getElementById('nlp-risk1'); if(rk1) rk1.innerHTML=r1.risks.length?r1.risks.map(r=>`<span class="risk-chip">⚠️ ${r}</span>`).join(''):'<span style="color:var(--success);font-size:12px;">✅ Aucun facteur de risque majeur détecté</span>';
+  const rk2=document.getElementById('nlp-risk2'); if(rk2) rk2.innerHTML=r2.risks.length?r2.risks.map(r=>`<span class="risk-chip">⚠️ ${r}</span>`).join(''):'<span style="color:var(--success);font-size:12px;">✅ Aucun facteur de risque majeur détecté</span>';
+
+  // Comparison chart
+  const cCtx = document.getElementById('nlp-cmp-chart');
+  if(cCtx){
+    if(nlpCmpChart) nlpCmpChart.destroy();
+    const metrics = ['Sentiment (+)', 'Négativité', 'Lisibilité', 'Diversité vocab.', 'Projections'];
+    const d1 = [r1.posScore, r1.negScore, r1.readability, r1.diversity, Math.min(100,r1.forwardLooking*10)];
+    const d2 = [r2.posScore, r2.negScore, r2.readability, r2.diversity, Math.min(100,r2.forwardLooking*10)];
+    nlpCmpChart = new Chart(cCtx,{
+      type:'bar',
+      data:{
+        labels:metrics,
+        datasets:[
+          { label:co1, data:d1, backgroundColor:'rgba(230,57,70,.75)', borderRadius:6 },
+          { label:co2, data:d2, backgroundColor:'rgba(52,152,219,.75)', borderRadius:6 }
+        ]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false, indexAxis:'y',
+        plugins:{ legend:{ labels:{ color:'#bab6b0', font:{size:12} } } },
+        scales:{
+          x:{ max:100, ticks:{ color:'#7070a0' }, grid:{ color:'rgba(255,255,255,.05)' } },
+          y:{ ticks:{ color:'#bab6b0', font:{size:12} }, grid:{ color:'rgba(255,255,255,.03)' } }
+        }
+      }
+    });
+  }
+
+  // Detailed comparison
+  const det = document.getElementById('nlp-detail');
+  if(det){
+    const tone1 = r1.sentScore>60?'Optimiste':r1.sentScore>40?'Neutre':'Prudent/Négatif';
+    const tone2 = r2.sentScore>60?'Optimiste':r2.sentScore>40?'Neutre':'Prudent/Négatif';
+    const diff = r1.sentScore - r2.sentScore;
+    const arrow = diff>10?'↑ Plus optimiste':diff<-10?'↓ Plus prudent':'≈ Ton similaire';
+    det.innerHTML = `
+    <div style="background:rgba(52,152,219,.07);border:1px solid rgba(52,152,219,.2);border-radius:10px;padding:14px 18px;margin-bottom:14px;font-size:13px;line-height:1.7;">
+      <strong style="font-family:'Syne',sans-serif;">Synthèse comparative :</strong> ${co1} adopte un ton <strong>${tone1}</strong> (score: ${r1.sentScore}/100) tandis que ${co2} est <strong>${tone2}</strong> (score: ${r2.sentScore}/100).
+      ${co1} est <strong>${arrow}</strong> que ${co2} (Δ = ${Math.abs(diff)} pts).
+      ${r1.forwardLooking>r2.forwardLooking?co1:co2} utilise davantage de langage prospectif (${Math.max(r1.forwardLooking,r2.forwardLooking)} occurrences vs ${Math.min(r1.forwardLooking,r2.forwardLooking)}).
+      ${r1.risks.length>r2.risks.length?`${co1} mentionne plus de facteurs de risque (${r1.risks.length} vs ${r2.risks.length}).`:`${co2} mentionne plus de facteurs de risque (${r2.risks.length} vs ${r1.risks.length}).`}
+    </div>
+    ${[
+      ['Mots positifs identifiés', r1.posScore, r2.posScore, 'var(--success)'],
+      ['Termes négatifs / prudents', r1.negScore, r2.negScore, 'var(--accent2)'],
+      ['Score de lisibilité', r1.readability, r2.readability, '#3498db'],
+      ['Diversité du vocabulaire', r1.diversity, r2.diversity, 'var(--gold)'],
+      ['Nombre de mots (proxy)', Math.round(r1.wc/10), Math.round(r2.wc/10), 'var(--muted)'],
+    ].map(([label,v1,v2,col])=>`
+    <div class="nlp-diff">
+      <span style="color:var(--muted);flex:1;">${label}</span>
+      <span style="font-weight:700;min-width:60px;text-align:right;color:${v1>=v2?col:'var(--muted)'};">${v1}</span>
+      <span style="color:var(--muted);padding:0 8px;">vs</span>
+      <span style="font-weight:700;min-width:60px;color:${v2>=v1?col:'var(--muted)'};">${v2}</span>
+    </div>`).join('')}`;
+  }
+
+  document.getElementById('nlp-results').style.display='block';
+  toast('✅ Analyse NLP terminée pour ' + co1 + ' vs ' + co2, 'success');
+};
+
+function _renderSentiment(elId, r){
+  const el = document.getElementById(elId); if(!el) return;
+  const score = r.sentScore;
+  const label = score>65?'Optimiste 😊':score>45?'Neutre 😐':score>30?'Prudent 😟':'Négatif 😞';
+  const cls   = score>65?'sb-pos':score>45?'sb-neu':'sb-neg';
+  const icon  = score>65?'📈':score>45?'➡️':'📉';
+  el.innerHTML = `
+    <div class="sent-badge ${cls}">${icon} ${label} — Score ${score}/100</div>
+    <div class="sent-meter">
+      <div class="sent-needle" style="left:${score}%;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:10px;">
+      <span>Très négatif</span><span>Neutre</span><span>Très positif</span>
+    </div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;">
+      <span style="color:var(--success);font-weight:700;">✅ Termes positifs :</span> ${r.posScore} occurrences<br>
+      <span style="color:var(--accent2);font-weight:700;">⚠️ Termes négatifs :</span> ${r.negScore} occurrences<br>
+      <span style="color:#3498db;font-weight:700;">📖 Lisibilité :</span> ${r.readability}/100<br>
+      <span style="color:var(--gold);font-weight:700;">🔮 Langage prospectif :</span> ${r.forwardLooking} occurrences
+    </div>`;
+}
+
+function _countOcc(text, word){
+  let count=0, idx=0;
+  while((idx=text.indexOf(word,idx))!==-1){count++;idx+=word.length;}
+  return count;
+}
+
+window.nlpLoadExample = function(type){
+  const examples = {
+    tech:{
+      co1:'Apple Inc. (2023)',
+      t1:'We achieved record revenue of $394 billion this fiscal year, driven by exceptional iPhone performance and strong services growth. Our innovation pipeline has never been more robust, with breakthrough technologies in spatial computing and artificial intelligence creating tremendous opportunities for long-term value creation. We are confident in our strategic position and our ability to continue delivering outstanding results for our shareholders.',
+      co2:'Apple Inc. (2022)',
+      t2:'Macroeconomic headwinds including foreign exchange challenges and supply chain disruptions impacted our results. Despite these difficult conditions, we maintained resilient performance and continued to invest strategically. We remain cautiously optimistic but acknowledge increased uncertainty in global markets and potential risks to consumer spending.'
+    },
+    bank:{
+      co1:'JPMorgan Chase (2023)',
+      t1:'We delivered exceptional performance with record earnings per share, demonstrating the strength of our diversified business model. Our fortress balance sheet enables us to navigate uncertain environments and capitalize on growth opportunities. We increased our dividend and returned significant capital to shareholders, reflecting our confidence in sustained profitability.',
+      co2:'Credit Suisse (2022)',
+      t2:'We faced significant challenges this year including substantial litigation costs and strategic restructuring charges. The bank experienced elevated operational risks and reputational concerns that led to client outflows. We are undertaking a comprehensive transformation to address weaknesses, while managing liquidity risks and regulatory compliance requirements carefully.'
+    },
+    energy:{
+      co1:'TotalEnergies (2023)',
+      t1:'Strong oil and gas prices drove record cash generation, enabling accelerated investment in our multi-energy strategy. Our renewable energy portfolio expanded significantly, with solar and wind capacity growing substantially. We maintain our commitment to disciplined capital allocation and increasing shareholder returns while funding the energy transition.',
+      co2:'TotalEnergies (2020)',
+      t2:'The COVID-19 pandemic created unprecedented challenges with severe demand destruction and volatile commodity prices. We implemented rigorous cost reduction measures and reduced capital expenditure to preserve cash flow. Despite the difficult environment, we maintained our commitment to our strategic transformation, though near-term uncertainty remains elevated and impairment charges were significant.'
+    }
+  };
+  const ex = examples[type];
+  if(!ex) return;
+  document.getElementById('nlp-co1').value=ex.co1;
+  document.getElementById('nlp-text1').value=ex.t1;
+  document.getElementById('nlp-co2').value=ex.co2;
+  document.getElementById('nlp-text2').value=ex.t2;
+  toast('Exemple ' + type + ' chargé — cliquez Analyser','success');
+};
+
 
 // ============================================================
 // ============================================================
