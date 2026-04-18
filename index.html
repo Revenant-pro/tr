@@ -77,7 +77,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
 /* DASHBOARD */
-#dashboard{display:none;min-height:100vh;}
+#dashboard{display:none;min-height:100vh;background:var(--bg);}
+:root{--topbar-h:64px;--tabsbar-h:48px;--nav-h:112px;}
+body.light-mode{--topbar-h:64px;--tabsbar-h:48px;--nav-h:112px;}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:64px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
 .topbar-brand{display:flex;align-items:center;gap:12px;font-family:'Syne',sans-serif;font-weight:700;font-size:18px;}
 .topbar-logo{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;}
@@ -108,12 +110,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-logout:hover{border-color:var(--accent);color:var(--accent);}
 
 /* TABS */
-.tabs-bar{display:flex;align-items:center;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:64px;z-index:99;}
-.tab-btn{display:flex;align-items:center;gap:7px;padding:14px 18px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .2s;white-space:nowrap;}
+.tabs-bar{display:flex;align-items:center;padding:0;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:var(--topbar-h);z-index:99;height:var(--tabsbar-h);}
+.tab-btn{display:flex;align-items:center;gap:7px;padding:0 16px;height:var(--tabsbar-h);border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;flex-shrink:0;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
-.tab-content{display:none;padding:20px 28px 28px;max-width:1200px;margin:0 auto;}
-.tab-content.active{display:block;animation:fadeIn .3s ease;}
+.tab-content{display:none;padding:0;width:100%;box-sizing:border-box;}
+.tab-content.active{display:block;animation:fadeIn .3s ease;min-height:calc(100vh - var(--nav-h));}
+.tab-inner{max-width:1200px;margin:0 auto;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 /* Pas d'espace haut sur les pages — géré par padding:0 dans .tab-content */
 .page-header{margin-bottom:24px;}
@@ -528,7 +531,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 
   <!-- ACCÈS / PROFIL -->
-  <div class="tab-content" id="tab-acces">
+  <div class="tab-content" id="tab-acces" style="padding:20px 28px 28px;">
     <div id="zone-admin" style="display:none">
       <div class="sub-nav">
         <button id="acces-sub-users" class="sub-nav-btn active" onclick="showAccesSub('users',this)">Utilisateurs</button>
@@ -651,7 +654,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 
   <!-- AGENDA -->
-  <div class="tab-content" id="tab-agenda">
+  <div class="tab-content" id="tab-agenda" style="padding:20px 28px 28px;">
     <div class="sub-nav">
       <button id="agenda-sub-cal" class="sub-nav-btn active" onclick="showAgendaSub('cal',this)">Calendrier</button>
       <button id="agenda-sub-tasks" class="sub-nav-btn" onclick="showAgendaSub('tasks',this)">Taches</button>
@@ -772,7 +775,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div><!-- /tab-agenda -->
 
   <!-- COMPTE -->
-  <div class="tab-content" id="tab-compte">
+  <div class="tab-content" id="tab-compte" style="padding:20px 28px 28px;">
     <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
       <button class="btn btn-outline" onclick="downloadCompteExcel()" style="font-size:13px">Export Excel</button>
     </div>
@@ -854,7 +857,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 
   <!-- COMPTABILITÉ (admin only) -->
-  <div class="tab-content" id="tab-compta">
+  <div class="tab-content" id="tab-compta" style="padding:20px 28px 28px;">
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px">
       <button class="btn btn-outline" onclick="exportComptaExcel()" style="font-size:13px">Export Excel</button>
       <button class="btn btn-outline" onclick="exportComptaWord()" style="font-size:13px">Export Word</button>
@@ -997,7 +1000,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 
   <!-- NEWS FINANCIÈRE BLOOMBERG STYLE -->
-  <div class="tab-content" id="tab-news">
+  <div class="tab-content" id="tab-news" style="padding:20px 28px 28px;">
     <!-- Ticker barre -->
     <div class="bbg-ticker-bar">
       <span class="bbg-ticker-inner" id="bbg-ticker-text">
@@ -1041,7 +1044,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="tab-content" id="tab-email" style="padding:0;overflow:hidden;">
   <style>
     /* ── EMAIL LAYOUT ── */
-    #email-root{display:flex;height:calc(100vh - 115px);overflow:hidden;background:var(--bg);}
+    #email-root{display:flex;height:calc(100vh - var(--nav-h));overflow:hidden;background:var(--bg);}
 
     /* Sidebar */
     #email-sidebar{
@@ -1250,7 +1253,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- DIVERTISSEMENT -->
   <div class="tab-content" id="tab-divertissement" style="padding:0;overflow:hidden;">
   <style>
-    #divert-root{display:flex;flex-direction:column;height:calc(100vh - 115px);overflow:hidden;}
+    #divert-root{display:flex;flex-direction:column;height:calc(100vh - var(--nav-h));overflow:hidden;}
     #divert-subnav{
       display:flex;align-items:center;
       background:var(--surface);border-bottom:2px solid var(--border);
@@ -1266,7 +1269,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     }
     .dv-tab:hover{color:var(--text);}
     .dv-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
-    .dv-panel{display:none;flex:1;overflow:hidden;height:calc(100vh - 163px);}
+    .dv-panel{display:none;flex:1;overflow:hidden;height:calc(100vh - calc(var(--nav-h) + 48px));}
     .dv-panel.active{display:block;}
   </style>
 
@@ -1278,7 +1281,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
     <div class="dv-panel active" id="dvp-media">
   <style>
-    #media-root{display:flex;height:calc(100vh - 115px);overflow:hidden;background:var(--bg);}
+    #media-root{display:flex;height:calc(100vh - var(--nav-h));overflow:hidden;background:var(--bg);}
 
     /* ── LEFT: VIDEO PLAYER ── */
     #media-player-col{
@@ -1545,7 +1548,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     <div class="dv-panel" id="dvp-chess">
   <style>
     #chess-root{
-      display:flex;height:calc(100vh - 115px);overflow:hidden;
+      display:flex;height:calc(100vh - var(--nav-h));overflow:hidden;
       background:#262421;font-family:"DM Sans",sans-serif;
     }
 
@@ -2068,7 +2071,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- CALCULATEUR FINANCIER -->
   <div class="tab-content" id="tab-calculator" style="padding:0 0 40px">
     <style>
-      .calc-layout{display:flex;height:calc(100vh - 115px);overflow:hidden;}
+      .calc-layout{display:flex;height:calc(100vh - var(--nav-h));overflow:hidden;}
       .calc-sidebar{width:260px;min-width:220px;border-right:1px solid var(--border);overflow-y:auto;background:var(--surface);flex-shrink:0;display:flex;flex-direction:column;}
       .calc-sidebar-search{padding:12px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:2;}
       .calc-sidebar-search input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;}
@@ -6131,125 +6134,143 @@ async function fmSearch(){
   if(!res)return;
   res.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);"><div style="font-size:28px;margin-bottom:8px;">⏳</div>Recherche en cours...</div>';
 
-  // ── SOURCE 1: Archive.org audio search (full tracks, libre) ──────────────
+  // ── SOURCE 1: Archive.org — morceaux complets libres ────────────────────
   try{
-    const url='https://archive.org/advancedsearch.php?q='+encodeURIComponent(q)+'+mediatype:audio&fl[]=identifier,title,creator,description,downloads&sort[]=downloads+desc&rows=25&output=json';
+    const url='https://archive.org/advancedsearch.php?q='+encodeURIComponent(q)+'+mediatype:audio&fl[]=identifier,title,creator,downloads&sort[]=downloads+desc&rows=20&output=json';
     const r=await fetch(url,{signal:AbortSignal.timeout(8000)});
-    if(!r.ok) throw new Error('HTTP '+r.status);
+    if(!r.ok) throw new Error();
     const d=await r.json();
-    const docs=(d.response?.docs||[]);
+    const docs=(d.response?.docs||[]).slice(0,10);
     if(docs.length){
+      // Fetch metadata in parallel for top 8 docs
       const tracks=[];
-      // Fetch metadata for top 8 items to get actual audio files
-      const toFetch=docs.slice(0,8);
-      await Promise.allSettled(toFetch.map(async doc=>{
+      await Promise.allSettled(docs.slice(0,8).map(async doc=>{
         try{
-          const mr=await fetch('https://archive.org/metadata/'+doc.identifier,{signal:AbortSignal.timeout(5000)});
+          const mr=await fetch('https://archive.org/metadata/'+doc.identifier,{signal:AbortSignal.timeout(4000)});
           const md=await mr.json();
-          const files=(md.files||[]).filter(f=>
-            f.name?.match(/\.(mp3|ogg|flac|wav|opus|m4a)$/i) &&
-            f.format&&!f.name.includes('_64kb')&&!f.name.includes('_128kb')
-          );
-          // Prefer the best quality file
+          const files=(md.files||[]).filter(f=>f.name?.match(/\.(mp3|ogg|m4a|opus)$/i)&&!f.name.includes('_vbr')&&!f.name.includes('_128'));
           const best=files.find(f=>f.name?.match(/\.mp3$/i))||files[0];
           if(best){
+            const url2='https://archive.org/download/'+doc.identifier+'/'+encodeURIComponent(best.name);
             tracks.push({
-              id:doc.identifier,
-              title:doc.title||doc.identifier,
-              artist:doc.creator||'Archive.org',
-              file:best.name,
-              url:'https://archive.org/download/'+doc.identifier+'/'+encodeURIComponent(best.name),
+              id:doc.identifier,title:doc.title||doc.identifier,
+              artist:doc.creator||'—',url:url2,
               img:'https://archive.org/services/img/'+doc.identifier,
-              pageUrl:'https://archive.org/details/'+doc.identifier
+              page:'https://archive.org/details/'+doc.identifier,
+              source:'archive',duration:'Complet'
             });
           }
         }catch(_){}
       }));
       if(tracks.length){
-        res.innerHTML=`
-        <div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
-          🎵 <strong style="color:var(--success);">Musique complète & gratuite</strong> — Source: Archive.org (domaine public &amp; Creative Commons).<br>
-          ▶ Écouter directement · ⬇ Télécharger le fichier MP3 complet
-        </div>`+
-        tracks.map(t=>{
-          const safeUrl=encodeURIComponent(t.url);
-          const safeTitle=encodeURIComponent(t.title);
-          const safeArtist=encodeURIComponent(t.artist);
-          const safePage=encodeURIComponent(t.pageUrl);
-          return `<div class="fm-track">
-            <img src="${t.img}" onerror="this.src='';this.style.display='none'" style="width:44px;height:44px;border-radius:7px;object-fit:cover;flex-shrink:0;background:var(--surface2);" loading="lazy">
-            <div class="fm-track-info">
-              <div class="fm-track-title">${t.title}</div>
-              <div class="fm-track-artist">${t.artist}</div>
-            </div>
-            <div class="fm-track-btns">
-              <button class="fm-btn" onclick="fmPlay(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'))" title="Écouter le morceau complet">▶</button>
-              <button class="fm-btn dl" onclick="fmDownload(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'),decodeURIComponent('${safeArtist}'))" title="Télécharger MP3 complet">⬇</button>
-              <button class="fm-btn" onclick="window.open(decodeURIComponent('${safePage}'),'_blank')" title="Voir sur Archive.org" style="font-size:10px;">🔗</button>
-            </div>
-          </div>`;
-        }).join('');
+        res.innerHTML=_fmBanner('Archive.org','📦','domaine public & Creative Commons','rgba(52,152,219,.08)','rgba(52,152,219,.25)','#3498db')+
+          tracks.map(t=>_fmTrackCard(t)).join('');
         return;
       }
     }
   }catch(e){}
 
-  // ── SOURCE 2: Free Music Archive — full CC-licensed tracks ───────────────
+  // ── SOURCE 2: SoundCloud via oEmbed search proxy ─────────────────────────
+  // SoundCloud has free tracks; use their search via corsproxy
   try{
-    const proxies=[
-      'https://corsproxy.io/?',
-      'https://api.allorigins.win/raw?url='
-    ];
-    for(const proxy of proxies){
-      try{
-        const fmaUrl='https://freemusicarchive.org/api/get/tracks.json?api_key=60BLHNQCAOUFPIBZ&search_track='+encodeURIComponent(q)+'&limit=20';
-        const r=await fetch(proxy+encodeURIComponent(fmaUrl),{signal:AbortSignal.timeout(6000)});
-        const d=await r.json();
-        const tracks=(d.dataset||[]).filter(t=>t.track_url);
-        if(tracks.length){
-          res.innerHTML=`
-          <div style="background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:9px;padding:8px 12px;font-size:11px;color:var(--muted);margin-bottom:12px;">
-            🎵 <strong style="color:var(--success);">Musique complète & gratuite</strong> — Source: Free Music Archive (licence Creative Commons)
-          </div>`+
-          tracks.map(t=>{
-            const safeUrl=encodeURIComponent(t.track_url||'');
-            const safeTitle=encodeURIComponent(t.track_title||'');
-            const safeArtist=encodeURIComponent(t.artist_name||'');
-            const img=t.track_image_file||'';
-            return `<div class="fm-track">
-              ${img?`<img src="${img}" style="width:44px;height:44px;border-radius:7px;object-fit:cover;flex-shrink:0;background:var(--surface2);" loading="lazy">`:'<div style="width:44px;height:44px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎵</div>'}
-              <div class="fm-track-info">
-                <div class="fm-track-title">${t.track_title||'?'}</div>
-                <div class="fm-track-artist">${t.artist_name||'—'} · ${t.album_title||''}</div>
-              </div>
-              <div class="fm-track-btns">
-                <button class="fm-btn" onclick="fmPlay(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'))">▶</button>
-                <button class="fm-btn dl" onclick="fmDownload(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'),decodeURIComponent('${safeArtist}'))">⬇</button>
-              </div>
-            </div>`;
-          }).join('');
-          return;
-        }
-      }catch(_){}
+    const scUrl='https://api-v2.soundcloud.com/search/tracks?q='+encodeURIComponent(q)+'&limit=20&filter.license=no_rights_reserved,ccby,ccbysa,ccbynd,ccbync,ccbyncsa,ccbyncnd&client_id=iZIs9mchVcX5lhVRyQGGAYlNPVldzAoX';
+    const proxyUrl='https://corsproxy.io/?'+encodeURIComponent(scUrl);
+    const r=await fetch(proxyUrl,{signal:AbortSignal.timeout(7000)});
+    if(!r.ok) throw new Error();
+    const d=await r.json();
+    const items=(d.collection||[]).filter(t=>t.stream_url||t.media?.transcodings?.length);
+    if(items.length>=3){
+      const tracks=items.slice(0,12).map(t=>({
+        id:'sc_'+t.id,
+        title:t.title||'?',
+        artist:t.user?.username||'—',
+        url:t.permalink_url||'',
+        img:t.artwork_url?.replace('-large','-t300x300')||'',
+        page:t.permalink_url||'',
+        source:'soundcloud',
+        duration:t.duration?Math.round(t.duration/60000)+"min":''
+      }));
+      res.innerHTML=_fmBanner('SoundCloud','🎵','musique libre & Creative Commons','rgba(255,85,0,.07)','rgba(255,85,0,.25)','#ff5500')+
+        tracks.map(t=>_fmTrackCard(t)).join('');
+      return;
     }
   }catch(e){}
 
-  // ── SOURCE 3: Fallback avec liens directs ────────────────────────────────
-  res.innerHTML=`<div style="text-align:center;padding:20px;">
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;">Aucun résultat direct trouvé pour <strong style="color:var(--text);">"${q}"</strong></div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <a href="https://archive.org/search?query=${encodeURIComponent(q)}&mediatype=audio" target="_blank"
-        style="display:block;padding:11px 14px;background:rgba(52,152,219,.1);border:1px solid rgba(52,152,219,.3);border-radius:9px;color:#3498db;font-size:13px;text-decoration:none;font-weight:600;">
-        📦 Archive.org — millions de morceaux libres ↗
-      </a>
-      <a href="https://freemusicarchive.org/search/?adv=1&quicksearch=${encodeURIComponent(q)}" target="_blank"
-        style="display:block;padding:11px 14px;background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:9px;color:var(--success);font-size:13px;text-decoration:none;font-weight:600;">
-        🎶 Free Music Archive — Creative Commons ↗
-      </a>
-      <a href="https://www.jamendo.com/search?q=${encodeURIComponent(q)}" target="_blank"
-        style="display:block;padding:11px 14px;background:rgba(244,162,97,.07);border:1px solid rgba(244,162,97,.2);border-radius:9px;color:var(--gold);font-size:13px;text-decoration:none;font-weight:600;">
-        🎵 Jamendo — licence CC gratuite ↗
-      </a>
+  // ── SOURCE 3: Free Music Archive via proxy ───────────────────────────────
+  for(const proxy of ['https://corsproxy.io/?','https://api.allorigins.win/raw?url=']){
+    try{
+      const fmaUrl='https://freemusicarchive.org/api/get/tracks.json?api_key=60BLHNQCAOUFPIBZ&search_track='+encodeURIComponent(q)+'&limit=20';
+      const r=await fetch(proxy+encodeURIComponent(fmaUrl),{signal:AbortSignal.timeout(6000)});
+      const d=await r.json();
+      const items=(d.dataset||[]).filter(t=>t.track_url);
+      if(items.length){
+        const tracks=items.slice(0,12).map(t=>({
+          id:'fma_'+t.track_id,title:t.track_title||'?',
+          artist:t.artist_name||'—',url:t.track_url||'',
+          img:t.track_image_file||'',page:t.track_url||'',
+          source:'fma',duration:'Complet'
+        }));
+        res.innerHTML=_fmBanner('Free Music Archive','🎶','licence Creative Commons — morceaux complets','rgba(46,204,113,.07)','rgba(46,204,113,.2)','var(--success)')+
+          tracks.map(t=>_fmTrackCard(t)).join('');
+        return;
+      }
+    }catch(e){}
+  }
+
+  // ── SOURCE 4: Fallback — liens externes + SoundCloud embed ───────────────
+  const scEmbed=`https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks&search=${encodeURIComponent(q)}&color=%23e63946&auto_play=false&show_artwork=true`;
+  res.innerHTML=`
+  <div style="background:rgba(244,162,97,.07);border:1px solid rgba(244,162,97,.2);border-radius:10px;padding:14px;margin-bottom:14px;">
+    <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px;">🔍 Aucun résultat direct pour "${q.replace(/</g,'&lt;')}"</div>
+    <div style="font-size:12px;color:var(--muted);">Essayez une recherche en anglais ou un titre plus court. Accès direct :</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <a href="https://archive.org/search?query=${encodeURIComponent(q)}&mediatype=audio" target="_blank"
+      style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.25);border-radius:10px;color:#3498db;font-size:13px;text-decoration:none;font-weight:600;">
+      📦 Archive.org — Millions de morceaux libres ↗
+    </a>
+    <a href="https://soundcloud.com/search/sounds?q=${encodeURIComponent(q)}&filter.license=no_rights_reserved" target="_blank"
+      style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(255,85,0,.07);border:1px solid rgba(255,85,0,.2);border-radius:10px;color:#ff5500;font-size:13px;text-decoration:none;font-weight:600;">
+      🎵 SoundCloud — Morceaux CC gratuits ↗
+    </a>
+    <a href="https://freemusicarchive.org/search?adv=1&quicksearch=${encodeURIComponent(q)}" target="_blank"
+      style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(46,204,113,.06);border:1px solid rgba(46,204,113,.2);border-radius:10px;color:var(--success);font-size:13px;text-decoration:none;font-weight:600;">
+      🎶 Free Music Archive — Creative Commons ↗
+    </a>
+    <a href="https://www.jamendo.com/search?q=${encodeURIComponent(q)}" target="_blank"
+      style="display:flex;align-items:center;gap:10px;padding:12px 16px;background:rgba(244,162,97,.06);border:1px solid rgba(244,162,97,.2);border-radius:10px;color:var(--gold);font-size:13px;text-decoration:none;font-weight:600;">
+      🎵 Jamendo — Licence CC ↗
+    </a>
+  </div>`;
+}
+
+function _fmBanner(source,icon,desc,bg,border,color){
+  return `<div style="background:${bg};border:1px solid ${border};border-radius:9px;padding:9px 13px;font-size:11px;color:var(--muted);margin-bottom:12px;line-height:1.5;">
+    ${icon} <strong style="color:${color};">Morceaux complets — ${source}</strong> — ${desc}. ▶ Écouter · ⬇ Télécharger
+  </div>`;
+}
+
+function _fmTrackCard(t){
+  const safeUrl=encodeURIComponent(t.url||'');
+  const safeTitle=encodeURIComponent(t.title||'');
+  const safeArtist=encodeURIComponent(t.artist||'');
+  const safePage=encodeURIComponent(t.page||t.url||'');
+  const srcBadge={archive:'📦',soundcloud:'☁️',fma:'🎶'}[t.source]||'🎵';
+  const srcColor={archive:'#3498db',soundcloud:'#ff5500',fma:'var(--success)'}[t.source]||'var(--muted)';
+  return `<div class="fm-track">
+    ${t.img?`<img src="${t.img}" onerror="this.style.display='none'" style="width:44px;height:44px;border-radius:7px;object-fit:cover;flex-shrink:0;background:var(--surface2);" loading="lazy">`
+      :'<div style="width:44px;height:44px;border-radius:7px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎵</div>'}
+    <div class="fm-track-info">
+      <div class="fm-track-title">${t.title}</div>
+      <div class="fm-track-artist">${t.artist}${t.duration?' · '+t.duration:''} <span style="color:${srcColor};font-size:10px;font-weight:700;">${srcBadge}</span></div>
+    </div>
+    <div class="fm-track-btns">
+      ${t.source==='soundcloud'
+        ? `<button class="fm-btn" onclick="fmOpenExternal(decodeURIComponent('${safePage}'),decodeURIComponent('${safeTitle}'))" title="Ouvrir SoundCloud">▶</button>`
+        : `<button class="fm-btn" onclick="fmPlay(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'))" title="Écouter complet">▶</button>`
+      }
+      ${t.source!=='soundcloud'?`<button class="fm-btn dl" onclick="fmDownload(decodeURIComponent('${safeUrl}'),decodeURIComponent('${safeTitle}'),decodeURIComponent('${safeArtist}'))" title="Télécharger">⬇</button>`:''}
+      <button class="fm-btn" onclick="window.open(decodeURIComponent('${safePage}'),'_blank')" title="Voir la source" style="font-size:10px;">🔗</button>
     </div>
   </div>`;
 }
@@ -6257,13 +6278,36 @@ async function fmSearch(){
 
 function fmPlay(audioUrl, title){
   if(!audioUrl){ toast('Lien audio indisponible','error'); return; }
-  // Add to playlist as a streaming track
   const existing=mediaPlaylist.findIndex(t=>t.url===audioUrl);
   if(existing>=0){ mediaPlayIdx(existing); return; }
-  mediaPlaylist.push({ name: title+' (Jamendo)', url: audioUrl, type: 'audio', size: 0 });
+  mediaPlaylist.push({ name: title, url: audioUrl, type: 'audio', size: 0 });
   renderPlaylist();
   mediaPlayIdx(mediaPlaylist.length-1);
   toast('▶ Lecture : '+title,'success');
+}
+
+function fmOpenExternal(url, title){
+  // For SoundCloud tracks: open in new tab and also try to embed
+  if(!url){toast('Lien indisponible','error');return;}
+  // Try to open a SoundCloud embed in the player area
+  const scEmbed=document.getElementById('sc-embed-wrap');
+  if(!scEmbed){
+    const wrap=document.createElement('div');
+    wrap.id='sc-embed-wrap';
+    wrap.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:999;background:var(--surface);border-top:1px solid var(--border);padding:0;';
+    wrap.innerHTML=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 16px;background:var(--surface2);">
+      <span style="font-size:12px;color:var(--muted);">🎵 ${title}</span>
+      <button onclick="document.getElementById('sc-embed-wrap').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;">✕</button>
+    </div>
+    <iframe width="100%" height="120" scrolling="no" frameborder="no" allow="autoplay"
+      src="https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23e63946&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false">
+    </iframe>`;
+    document.body.appendChild(wrap);
+  } else {
+    scEmbed.querySelector('iframe').src='https://w.soundcloud.com/player/?url='+encodeURIComponent(url)+'&color=%23e63946&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false';
+    scEmbed.querySelector('span').textContent='🎵 '+title;
+  }
+  toast('▶ Lecture SoundCloud : '+title,'success');
 }
 
 function fmDownload(url, title, artist){
@@ -7391,6 +7435,19 @@ window.runDCF = function(){
   if(st) _buildSensTable(st, fcf0, years, gTerm, debt, shares, ke, kd, we, tax);
 
   toast('✅ Valorisation DCF calculée pour ' + ticker, 'success');
+  // Show export button
+  let exportBtn = document.getElementById('dcf-export-btn');
+  if(!exportBtn){
+    exportBtn = document.createElement('button');
+    exportBtn.id = 'dcf-export-btn';
+    exportBtn.className = 'btn btn-outline';
+    exportBtn.style.cssText = 'font-size:13px;margin-top:12px;width:100%;';
+    exportBtn.innerHTML = '📋 Copier rapport DCF';
+    exportBtn.onclick = ()=>_exportDCF(ticker, price, wacc, ev, pvSum, pvTV, fcfs);
+    const card = document.getElementById('dcf-metrics-card');
+    if(card) card.appendChild(exportBtn);
+  }
+
 };
 
 function _buildSensTable(el, fcf0, years, gTerm, debt, shares, ke, kd, we, tax){
@@ -7428,6 +7485,24 @@ function _buildSensTable(el, fcf0, years, gTerm, debt, shares, ke, kd, we, tax){
 }
 
 function _fmtM(n){ if(Math.abs(n)>=1e6)return (n/1e6).toFixed(1)+'B'; if(Math.abs(n)>=1e3)return (n/1e3).toFixed(0)+'K'; return Math.round(n).toLocaleString(); }
+
+function _exportDCF(ticker, price, wacc, ev, pvFcf, pvTV, fcfs){
+  const txt = `=== RAPPORT DCF — ${ticker} ===
+Date : ${new Date().toLocaleDateString('fr-FR')}
+
+RÉSULTATS CLÉS
+Valeur intrinsèque / action : ${price.toFixed(2)} €
+Valeur d'entreprise (EV)    : ${_fmtM(ev)} M€
+WACC calculé                : ${(wacc*100).toFixed(2)}%
+PV des FCF (${fcfs.length} ans)        : ${_fmtM(pvFcf)} M€ (${(pvFcf/ev*100).toFixed(1)}%)
+Valeur terminale (PV)       : ${_fmtM(pvTV)} M€ (${(pvTV/ev*100).toFixed(1)}%)
+
+FLUX DE TRÉSORERIE PROJETÉS
+${fcfs.map((f,i)=>`  Année ${i+1} : ${_fmtM(f)} M€`).join('\n')}
+
+Rapport généré par votre simulateur DCF`;
+  navigator.clipboard.writeText(txt).then(()=>toast('📋 Rapport copié !','success')).catch(()=>toast('Erreur copie','error'));
+}
 
 
 // ============================================================
@@ -7646,7 +7721,39 @@ window.runMarkowitz = function(){
   }
 
   toast('✅ Optimisation Markowitz terminée (' + n + ' actifs, ' + NUM_PORTFOLIOS + ' simulations)','success');
+  // Add export button
+  let mkExportBtn = document.getElementById('mk-export-btn');
+  if(!mkExportBtn){
+    mkExportBtn = document.createElement('div');
+    mkExportBtn.id = 'mk-export-btn';
+    mkExportBtn.style.cssText = 'display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;';
+    mkExportBtn.innerHTML = `
+      <button class="btn btn-outline" onclick="_exportMarkowitz(${JSON.stringify(mkTickers)},${optimal.ret.toFixed(4)},${optimal.vol.toFixed(4)},${optimal.sharpe.toFixed(4)},${var95.toFixed(4)},${JSON.stringify(optimal.w.map(w=>Math.round(w*1000)/10))})" style="font-size:12px;">📋 Copier rapport</button>
+      <button class="btn btn-outline" onclick="runMarkowitz()" style="font-size:12px;">🔄 Recalculer</button>`;
+    const resDiv = document.getElementById('mk-results');
+    if(resDiv) resDiv.appendChild(mkExportBtn);
+  }
+
 };
+
+function _exportMarkowitz(tickers, ret, vol, sharpe, var95, weights){
+  const lines = tickers.map((t,i)=>`  ${t.padEnd(8)} : ${weights[i].toFixed(1)}%`).join('\n');
+  const txt = `=== RAPPORT MARKOWITZ ===
+Date : ${new Date().toLocaleDateString('fr-FR')}
+Actifs : ${tickers.join(', ')}
+
+PORTEFEUILLE OPTIMAL (Sharpe max)
+Rendement attendu : ${(ret*100).toFixed(1)}%
+Volatilité        : ${(vol*100).toFixed(1)}%
+Ratio de Sharpe   : ${sharpe.toFixed(2)}
+VaR 95% (1 jour)  : ${(var95).toFixed(2)}%
+
+ALLOCATION OPTIMALE
+${lines}
+
+Rapport généré par votre optimiseur Markowitz`;
+  navigator.clipboard.writeText(txt).then(()=>toast('📋 Rapport copié !','success')).catch(()=>toast('Erreur','error'));
+}
 
 function _randWeights(n){
   const w = Array.from({length:n},()=>-Math.log(Math.random()));
@@ -7772,7 +7879,28 @@ window.runNLP = function(){
 
   document.getElementById('nlp-results').style.display='block';
   toast('✅ Analyse NLP terminée pour ' + co1 + ' vs ' + co2, 'success');
+  // Store in history
+  if(!window._nlpHistory) window._nlpHistory = [];
+  window._nlpHistory.unshift({co1, co2, score1:r1.sentScore, score2:r2.sentScore, date:new Date().toLocaleDateString('fr-FR')});
+  _renderNLPHistory();
+
 };
+
+function _renderNLPHistory(){
+  const hist = window._nlpHistory || [];
+  const el = document.getElementById('nlp-history-list');
+  if(!el || !hist.length) return;
+  el.innerHTML = hist.slice(0,5).map(h=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);margin-bottom:6px;font-size:12px;">
+      <span style="flex:1;color:var(--text);">${h.co1} vs ${h.co2}</span>
+      <span style="color:${h.score1>60?'var(--success)':h.score1>40?'var(--gold)':'var(--accent2)'};">${h.score1}/100</span>
+      <span style="color:var(--muted);">vs</span>
+      <span style="color:${h.score2>60?'var(--success)':h.score2>40?'var(--gold)':'var(--accent2)'};">${h.score2}/100</span>
+      <span style="color:var(--muted);">${h.date}</span>
+    </div>`).join('');
+  const histSection = document.getElementById('nlp-history-section');
+  if(histSection) histSection.style.display = 'block';
+}
 
 function _renderSentiment(elId, r){
   const el = document.getElementById(elId); if(!el) return;
