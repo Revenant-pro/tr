@@ -2051,6 +2051,21 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
     <!-- ─── SOUS-PAGE CV ─── -->
     <div id="career-panel-cv">
+      <!-- Sélecteur de modèles -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;">🎨 Choisir un modèle de CV</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="cv-tpl-btn active" data-tpl="hans" onclick="loadCvTemplate('hans')" style="display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;border:2px solid var(--accent);background:rgba(230,57,70,.1);color:var(--accent);font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;">📄 Hans (Finance)</button>
+          <button class="cv-tpl-btn" data-tpl="classique" onclick="loadCvTemplate('classique')" style="display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;">🎯 Classique moderne</button>
+          <button class="cv-tpl-btn" data-tpl="minimaliste" onclick="loadCvTemplate('minimaliste')" style="display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;">✏️ Minimaliste bicolore</button>
+          <button class="cv-tpl-btn" data-tpl="executive" onclick="loadCvTemplate('executive')" style="display:flex;align-items:center;gap:7px;padding:8px 14px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;cursor:pointer;transition:all .2s;">💼 Executive premium</button>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">Le modèle "Hans (Finance)" est pré-rempli avec le CV de Hans-Kilian COFFI — modifiez les champs ou collez votre propre description de poste.</div>
+      </div>
+      <style>
+        .cv-tpl-btn:hover{border-color:var(--accent)!important;color:var(--accent)!important;}
+        .cv-tpl-btn.active{border-color:var(--accent)!important;background:rgba(230,57,70,.1)!important;color:var(--accent)!important;font-weight:700!important;}
+      </style>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
         <div>
           <div class="card" style="margin-bottom:14px">
@@ -2109,6 +2124,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           </div>
         </div>
       </div>
+      </div><!-- /grid -->
     </div>
 
     <!-- ─── SOUS-PAGE LETTRE DE MOTIVATION ─── -->
@@ -4361,164 +4377,361 @@ function collectCvEdus(){
   return edus;
 }
 
-// ─── GENERATION CV ───
-async function generateCV(){
-  const prenom=document.getElementById('cv-prenom').value.trim();
-  const nom=document.getElementById('cv-nom').value.trim();
-  const titre=document.getElementById('cv-titre').value.trim();
-  const posteDesc=document.getElementById('cv-poste-desc').value.trim();
-  if(!prenom||!nom||!titre||!posteDesc){
-    const s=document.getElementById('cv-gen-status');
-    s.textContent='Veuillez remplir au minimum : Prénom, Nom, Titre du poste et la description du poste.';
-    s.style.display='block';return;
-  }
-  const statusEl=document.getElementById('cv-gen-status');
-  const btn=document.getElementById('btn-gen-cv');
-  statusEl.textContent='Génération en cours... L\'IA adapte votre CV au poste ciblé.';
-  statusEl.style.background='rgba(244,162,97,.1)';statusEl.style.borderColor='rgba(244,162,97,.3)';statusEl.style.color='var(--gold)';statusEl.style.display='block';
-  btn.disabled=true;btn.textContent='En cours...';
-  const exps=collectCvExps();const edus=collectCvEdus();
-  const email=document.getElementById('cv-email').value.trim();
-  const tel=document.getElementById('cv-tel').value.trim();
-  const ville=document.getElementById('cv-ville').value.trim();
-  const linkedin=document.getElementById('cv-linkedin').value.trim();
-  const site=document.getElementById('cv-site').value.trim();
-  const skills=document.getElementById('cv-skills').value.trim();
-  const certs=document.getElementById('cv-certs').value.trim();
-  const interests=document.getElementById('cv-interests').value.trim();
+// ─── Render template exps/edus into DOM ───
+window._cvExps = [];
+window._cvEdus = [];
 
-  const prompt=`Tu es un expert en rédaction de CV professionnel. Génère un CV complet, professionnel et percutant pour le candidat suivant, en l'adaptant précisément au poste décrit.
-
-PROFIL DU CANDIDAT :
-- Nom complet : ${prenom} ${nom}
-- Titre visé : ${titre}
-- Contact : ${email||'N/A'} | ${tel||'N/A'} | ${ville||'N/A'}
-${linkedin?`- LinkedIn : ${linkedin}`:''}${site?`\n- Site : ${site}`:''}
-
-EXPÉRIENCES :
-${exps.length?exps.map(e=>`• ${e.poste} chez ${e.entreprise} (${e.periode}) - ${e.lieu}\n  ${e.missions}`).join('\n'):'Aucune expérience renseignée'}
-
-FORMATIONS :
-${edus.length?edus.map(e=>`• ${e.diplome} - ${e.ecole} (${e.periode}) ${e.mention?'| '+e.mention:''}`).join('\n'):'Aucune formation renseignée'}
-
-COMPÉTENCES : ${skills||'Non renseignées'}
-CERTIFICATIONS : ${certs||'Non renseignées'}
-CENTRES D'INTÉRÊT : ${interests||'Non renseignés'}
-
-DESCRIPTION DU POSTE CIBLÉ :
-${posteDesc}
-
-INSTRUCTIONS IMPORTANTES :
-- Adapte chaque section au poste ciblé en mettant en avant les compétences pertinentes
-- Utilise un style naturel et varié (évite les formulations répétitives ou trop IA)
-- Pour le résumé professionnel, écris en première personne de façon authentique et engagée
-- Les bullet points d'expérience doivent utiliser des verbes d'action variés et concrets
-- Inclus un résumé professionnel percutant de 3-4 phrases adapté au poste
-- Format de réponse : retourne UNIQUEMENT du HTML structuré pour un CV (pas de markdown), avec des balises <h1>, <h2>, <p>, <ul>, <li>, <strong> etc.
-- Utilise le style suivant pour le HTML : fond blanc, police Arial, couleur principale #e63946 pour les titres de sections, texte noir #111
-- Structure : Entête (nom, titre, contact), Résumé, Expériences, Formations, Compétences, Certifications, Centres d'intérêt`;
-
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:4000,
-        system:'Tu es un expert RH spécialisé en rédaction de CV professionnels qui passent les filtres ATS et les détecteurs d\'IA. Tu génères du contenu authentique, naturel et percutant.',
-        messages:[{role:'user',content:prompt}]
-      })
-    });
-    const data=await resp.json();
-    const html=data.content?.[0]?.text||'';
-    // Nettoyer les balises markdown si présentes
-    const cleanHtml=html.replace(/```html/gi,'').replace(/```/g,'').trim();
-    const preview=document.getElementById('cv-preview-inner');
-    preview.innerHTML=cleanHtml;
-    cvData={html:cleanHtml,prenom,nom,titre,exps,edus,skills,certs,interests,email,tel,ville,linkedin,site};
-    document.getElementById('btn-dl-cv').style.display='inline-flex';
-    statusEl.textContent='CV généré avec succès ! Vous pouvez le télécharger.';
-    statusEl.style.background='rgba(46,204,113,.1)';statusEl.style.borderColor='rgba(46,204,113,.3)';statusEl.style.color='var(--success)';
-  }catch(e){
-    statusEl.textContent='Erreur de génération. Vérifiez votre connexion et réessayez.';
-    statusEl.style.background='rgba(230,57,70,.1)';statusEl.style.borderColor='rgba(230,57,70,.3)';statusEl.style.color='var(--accent2)';
-  }
-  btn.disabled=false;btn.textContent='✨ Générer le CV adapté au poste';
+function _renderCvExps(){
+  const container = document.getElementById('cv-exp-list');
+  if(!container) return;
+  container.innerHTML = '';
+  cvExpCount = 0;
+  window._cvExps.forEach(exp => {
+    cvExpCount++;
+    const id = 'cvexp' + cvExpCount;
+    const div = document.createElement('div');
+    div.id = id;
+    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;position:relative';
+    div.innerHTML = `<button onclick="document.getElementById('${id}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>
+      <div class="profile-grid">
+        <div class="profile-field"><label>Poste</label><input type="text" id="${id}-poste" value="${exp.poste||''}" placeholder="Analyste Financier" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+        <div class="profile-field"><label>Entreprise</label><input type="text" id="${id}-entreprise" value="${exp.entreprise||''}" placeholder="BNP Paribas" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+        <div class="profile-field"><label>Période</label><input type="text" id="${id}-periode" value="${exp.periode||''}" placeholder="Jan 2023 – Juin 2024" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+        <div class="profile-field"><label>Lieu</label><input type="text" id="${id}-lieu" value="${exp.lieu||''}" placeholder="Paris, France" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      </div>
+      <div class="profile-field" style="margin-top:6px"><label>Missions</label><textarea id="${id}-missions" style="width:100%;min-height:60px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none;resize:vertical">${exp.missions||''}</textarea></div>`;
+    container.appendChild(div);
+  });
 }
 
-// ─── GENERATION LM ───
-async function generateLM(){
-  const nomLM=document.getElementById('lm-nom').value.trim();
-  const entreprise=document.getElementById('lm-entreprise').value.trim();
-  const poste=document.getElementById('lm-poste').value.trim();
-  const profil=document.getElementById('lm-profil').value.trim();
-  const posteDesc=document.getElementById('lm-poste-desc').value.trim();
-  if(!nomLM||!entreprise||!poste||!profil||!posteDesc){
-    const s=document.getElementById('lm-gen-status');
-    s.textContent='Veuillez remplir au minimum : Votre nom, l\'entreprise, le poste, votre profil et la description du poste.';
-    s.style.display='block';return;
+function _renderCvEdus(){
+  const container = document.getElementById('cv-edu-list');
+  if(!container) return;
+  container.innerHTML = '';
+  cvEduCount = 0;
+  window._cvEdus.forEach(edu => {
+    cvEduCount++;
+    const id = 'cvedu' + cvEduCount;
+    const div = document.createElement('div');
+    div.id = id;
+    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;position:relative';
+    div.innerHTML = `<button onclick="document.getElementById('${id}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>
+      <div class="profile-grid">
+        <div class="profile-field"><label>Diplôme</label><input type="text" id="${id}-diplome" value="${edu.diplome||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+        <div class="profile-field"><label>École</label><input type="text" id="${id}-ecole" value="${edu.ecole||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+        <div class="profile-field"><label>Période</label><input type="text" id="${id}-periode" value="${edu.periode||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+        <div class="profile-field"><label>Mention / Lieu</label><input type="text" id="${id}-mention" value="${edu.mention||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+// Auto-charger le modèle Hans au premier affichage de la page Carrière
+let _careerInited = false;
+const _origShowCareerTab = typeof showCareerTab === 'function' ? showCareerTab : null;
+
+// Hook into showTab for careertools
+const _origShowTab = showTab;
+window.showTab = function(id, btn){
+  _origShowTab(id, btn);
+  if(id === 'careertools' && !_careerInited){
+    _careerInited = true;
+    setTimeout(() => loadCvTemplate('hans'), 100);
   }
-  const statusEl=document.getElementById('lm-gen-status');
-  const btn=document.getElementById('btn-gen-lm');
-  statusEl.textContent='Génération en cours... L\'IA rédige votre lettre personnalisée.';
-  statusEl.style.background='rgba(244,162,97,.1)';statusEl.style.borderColor='rgba(244,162,97,.3)';statusEl.style.color='var(--gold)';statusEl.style.display='block';
-  btn.disabled=true;btn.textContent='En cours...';
-  const email=document.getElementById('lm-email').value.trim();
-  const tel=document.getElementById('lm-tel').value.trim();
-  const ville=document.getElementById('lm-ville').value.trim();
-  const secteur=document.getElementById('lm-secteur').value.trim();
-  const recruteur=document.getElementById('lm-recruteur').value.trim();
-  const skillsLM=document.getElementById('lm-skills').value.trim();
-  const motivations=document.getElementById('lm-motivations').value.trim();
-  const today=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+};
 
-  const prompt=`Tu es un expert en rédaction de lettres de motivation professionnelles percutantes.
+// ─── GENERATION CV ───
+// ═══════════════════════════════════════════════════════
+// CAREER TOOLS — CV + LM  (version corrigée v8)
+// ═══════════════════════════════════════════════════════
 
-Rédige une lettre de motivation complète pour :
-- Candidat : ${nomLM}${ville?', '+ville:''}
-- Entreprise cible : ${entreprise}${secteur?' ('+secteur+')':''}
-- Poste visé : ${poste}
-- Destinataire : ${recruteur||'Madame, Monsieur'}
-- Profil du candidat : ${profil}
-- Compétences : ${skillsLM||'Non précisées'}
-- Motivations spécifiques : ${motivations||'Non précisées'}
+// ── Modèles de CV ────────────────────────────────────────
+const CV_TEMPLATES = {
+  hans: {
+    label: '📄 Modèle Hans (Finance)',
+    prenom: 'Hans-Kilian', nom: 'COFFI',
+    titre: 'Étudiant Master Finance de Marché — Trading',
+    email: 'coffihanskilianmoaye@gmail.com', tel: '+33 6 32 93 49 78',
+    ville: 'Paris, France', linkedin: 'HANS-KILIAN COFFI | LinkedIn',
+    skills: 'Analyse financière | Diagnostic financier | Gestion budgétaire | Analyse des écarts | Contrôle de gestion | Reporting financier\nComptabilité générale et immobilière | Normes IFRS/OHADA | Consolidation des comptes | Audit financier | Fiscalité\nExcel avancé (TCD, VBA, modèles financiers) | Tableau Desktop | Python (bases) | Power BI (bases) | Suite Microsoft Office\nFrançais (natif) | Anglais',
+    certs: 'Excel au quotidien (Parties 1 & 2) – Coursera\nTableau croisé dynamique (TCD) | Tableau Desktop | VBA\nPython : Programmation pour tous – Coursera\nFinance d\'entreprise | Flux de trésorerie | Fondamentaux de la finance | Analyse des coûts et marges – Udemy/Cursa',
+    interests: 'Marchés financiers | Investissement | Finance quantitative | Développement web',
+    exps: [
+      { poste:'Stagiaire Financier', entreprise:'Décimal SARL', periode:'Mai 2025 – Août 2025', lieu:'Casablanca, Maroc', missions:'Mise à jour des tableaux de bord financiers en intégrant les transactions quotidiennes pour assurer la fiabilité des données comptables.\nCréation de rapports d\'analyse des coûts (variables et fixes) afin d\'identifier les leviers de réduction des charges et d\'optimisation de la marge.\nEnregistrement et suivi des comptes fournisseurs et clients avec contrôle des échéances de paiement.' },
+      { poste:'Assistant Financier', entreprise:'Horizon Nouvel SARL', periode:'Mai 2024 – Août 2024', lieu:'Abidjan, Côte d\'Ivoire', missions:'Contribution à l\'élaboration et au suivi des budgets annuels en alignant les prévisions financières sur les objectifs stratégiques.\nAnalyse des performances par département afin d\'identifier les écarts budgétaires et proposer des mesures correctives ciblées.\nPréparation, structuration et présentation des rapports financiers mensuels incluant analyse des écarts et projection des flux de trésorerie.' },
+      { poste:'Assistant Acquisition Clients', entreprise:'Jumia Food', periode:'Mai 2023 – Septembre 2023', lieu:'Abidjan, Côte d\'Ivoire', missions:'Soutien à la croissance des revenus d\'abonnement via des campagnes d\'acquisition directe, contribuant aux objectifs financiers mensuels.\nCollecte et analyse des retours clients afin d\'identifier les freins à l\'abonnement et améliorer l\'attractivité commerciale du service.\nCollaboration avec les équipes commerciales et financières pour aligner les stratégies d\'acquisition sur les objectifs de revenus.' }
+    ],
+    edus: [
+      { diplome:'Master 2 Finance de Marché – Trading', ecole:'ESLSCA Business School', periode:'Novembre 2025 – Novembre 2026', mention:'Paris, France' },
+      { diplome:'Master 1 Finance d\'Entreprise', ecole:'ESLSCA Business School', periode:'Octobre 2024 – Juin 2025', mention:'Rabat, Maroc' },
+      { diplome:'Licence Sciences Comptables et Financières', ecole:'Institut Université d\'Abidjan', periode:'Octobre 2021 – Juillet 2024', mention:'Abidjan, Côte d\'Ivoire' }
+    ]
+  },
+  classique: {
+    label: '🎯 Classique moderne', prenom: '', nom: '', titre: '',
+    skills: '', certs: '', interests: '', exps: [], edus: []
+  },
+  minimaliste: {
+    label: '✏️ Minimaliste bicolore', prenom: '', nom: '', titre: '',
+    skills: '', certs: '', interests: '', exps: [], edus: []
+  },
+  executive: {
+    label: '💼 Executive premium', prenom: '', nom: '', titre: '',
+    skills: '', certs: '', interests: '', exps: [], edus: []
+  }
+};
 
-Description du poste :
+// Styles HTML par modèle
+const CV_STYLES = {
+  hans: `body{font-family:Arial,sans-serif;font-size:11pt;color:#111;line-height:1.5;margin:0;padding:0;}
+.cv-header{background:#e63946;color:#fff;padding:28px 32px 20px;}
+.cv-header h1{margin:0;font-size:22pt;font-weight:900;letter-spacing:-0.5px;}
+.cv-header .subtitle{font-size:12pt;opacity:.9;margin-top:4px;}
+.cv-header .contact{margin-top:10px;font-size:9.5pt;opacity:.85;display:flex;gap:16px;flex-wrap:wrap;}
+.cv-body{padding:20px 32px;}
+h2{font-size:12pt;font-weight:800;color:#e63946;text-transform:uppercase;letter-spacing:1px;border-bottom:2px solid #e63946;padding-bottom:4px;margin:20px 0 10px;}
+.exp-block{margin-bottom:12px;} .exp-title{font-weight:700;font-size:11pt;} .exp-meta{font-size:9.5pt;color:#555;margin:2px 0 5px;}
+ul{margin:4px 0 0 16px;padding:0;} li{margin:3px 0;font-size:10.5pt;}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;}
+.skill-line{font-size:10.5pt;padding:2px 0;}
+.two-col{display:grid;grid-template-columns:2fr 1fr;gap:20px;}`,
+
+  classique: `body{font-family:'Segoe UI',Arial,sans-serif;font-size:11pt;color:#222;line-height:1.6;margin:0;padding:0;}
+.cv-header{padding:30px 36px 22px;border-bottom:4px solid #2c3e50;}
+.cv-header h1{margin:0;font-size:24pt;font-weight:900;color:#2c3e50;}
+.cv-header .subtitle{font-size:13pt;color:#7f8c8d;margin-top:2px;font-style:italic;}
+.cv-header .contact{margin-top:10px;font-size:10pt;color:#555;display:flex;gap:18px;flex-wrap:wrap;}
+.cv-body{padding:22px 36px;}
+h2{font-size:11.5pt;font-weight:800;color:#2c3e50;text-transform:uppercase;letter-spacing:1.2px;margin:22px 0 10px;display:flex;align-items:center;gap:8px;}
+h2::before{content:'';display:inline-block;width:4px;height:16px;background:#e63946;border-radius:2px;}
+.exp-block{margin-bottom:14px;padding-left:12px;border-left:2px solid #ecf0f1;}
+.exp-title{font-weight:700;font-size:11pt;color:#2c3e50;}
+.exp-meta{font-size:9.5pt;color:#7f8c8d;margin:2px 0 5px;}
+ul{margin:4px 0 0 16px;padding:0;} li{margin:3px 0;}
+.skills-wrap{display:flex;flex-wrap:wrap;gap:6px;} .skill-tag{background:#f0f3f4;border-radius:4px;padding:3px 10px;font-size:10pt;color:#2c3e50;}`,
+
+  minimaliste: `body{font-family:'Helvetica Neue',Arial,sans-serif;font-size:10.5pt;color:#333;line-height:1.6;margin:0;padding:0;}
+.cv-header{display:flex;align-items:flex-end;justify-content:space-between;padding:28px 36px 16px;border-bottom:1px solid #ddd;}
+.cv-header-left h1{margin:0;font-size:26pt;font-weight:300;letter-spacing:-1px;color:#111;}
+.cv-header-left .subtitle{font-size:12pt;color:#999;margin-top:2px;}
+.cv-header-right{text-align:right;font-size:9.5pt;color:#777;line-height:1.8;}
+.cv-body{padding:20px 36px;}
+h2{font-size:9pt;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:2px;margin:22px 0 8px;border:none;}
+.exp-title{font-weight:600;font-size:11pt;color:#111;} .exp-meta{font-size:9.5pt;color:#aaa;margin:1px 0 4px;}
+ul{margin:4px 0 0 14px;padding:0;list-style:none;} li::before{content:'—  ';color:#ccc;} li{margin:3px 0;}
+.skills-wrap{display:flex;flex-wrap:wrap;gap:4px 14px;} .skill-item{font-size:10.5pt;color:#555;}`,
+
+  executive: `body{font-family:Georgia,'Times New Roman',serif;font-size:11pt;color:#1a1a1a;line-height:1.6;margin:0;padding:0;}
+.cv-header{background:#1a2332;color:#fff;padding:32px 40px 24px;}
+.cv-header h1{margin:0;font-size:24pt;font-weight:700;letter-spacing:0.5px;}
+.cv-header .subtitle{font-size:12pt;color:#f4a261;margin-top:4px;font-style:italic;}
+.cv-header .contact{margin-top:12px;font-size:9.5pt;color:rgba(255,255,255,.75);display:flex;gap:20px;flex-wrap:wrap;}
+.cv-body{padding:24px 40px;}
+h2{font-size:11pt;font-weight:700;color:#1a2332;text-transform:uppercase;letter-spacing:2px;margin:24px 0 10px;}
+h2::after{content:'';display:block;width:40px;height:2px;background:#f4a261;margin-top:4px;}
+.exp-block{margin-bottom:14px;} .exp-title{font-weight:700;font-size:11pt;} .exp-meta{font-size:9.5pt;color:#666;font-style:italic;margin:2px 0 5px;}
+ul{margin:5px 0 0 18px;padding:0;} li{margin:3px 0;}
+.skills-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px;} .skill-item{font-size:10.5pt;}`
+};
+
+function loadCvTemplate(key) {
+  const t = CV_TEMPLATES[key];
+  if (!t) return;
+  // Infos perso
+  if (t.prenom !== undefined) { const el = document.getElementById('cv-prenom'); if (el) el.value = t.prenom; }
+  if (t.nom !== undefined) { const el = document.getElementById('cv-nom'); if (el) el.value = t.nom; }
+  if (t.titre !== undefined) { const el = document.getElementById('cv-titre'); if (el) el.value = t.titre; }
+  if (t.email !== undefined) { const el = document.getElementById('cv-email'); if (el) el.value = t.email; }
+  if (t.tel !== undefined) { const el = document.getElementById('cv-tel'); if (el) el.value = t.tel; }
+  if (t.ville !== undefined) { const el = document.getElementById('cv-ville'); if (el) el.value = t.ville; }
+  if (t.linkedin !== undefined) { const el = document.getElementById('cv-linkedin'); if (el) el.value = t.linkedin; }
+  if (t.skills !== undefined) { const el = document.getElementById('cv-skills'); if (el) el.value = t.skills; }
+  if (t.certs !== undefined) { const el = document.getElementById('cv-certs'); if (el) el.value = t.certs; }
+  if (t.interests !== undefined) { const el = document.getElementById('cv-interests'); if (el) el.value = t.interests; }
+  // Expériences
+  if (t.exps && t.exps.length) {
+    window._cvExps = t.exps.map(e => ({...e}));
+    _renderCvExps();
+  }
+  // Formations
+  if (t.edus && t.edus.length) {
+    window._cvEdus = t.edus.map(e => ({...e}));
+    _renderCvEdus();
+  }
+  // Mettre à jour le sélecteur visuel
+  document.querySelectorAll('.cv-tpl-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.cv-tpl-btn[data-tpl="${key}"]`);
+  if (btn) btn.classList.add('active');
+  // Stocker le modèle actif
+  window._activeCvTemplate = key;
+  toast('Modèle "' + t.label + '" chargé ✅', 'success');
+}
+
+async function generateCV(){
+  const prenom = document.getElementById('cv-prenom').value.trim();
+  const nom = document.getElementById('cv-nom').value.trim();
+  const titre = document.getElementById('cv-titre').value.trim();
+  const posteDesc = document.getElementById('cv-poste-desc').value.trim();
+  const statusEl = document.getElementById('cv-gen-status');
+  const btn = document.getElementById('btn-gen-cv');
+
+  if (!prenom || !nom || !titre || !posteDesc) {
+    statusEl.textContent = 'Veuillez remplir au minimum : Prénom, Nom, Titre du poste et la description du poste.';
+    statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:9px;font-size:13px;color:var(--accent2);margin-bottom:12px;';
+    return;
+  }
+
+  const exps = collectCvExps();
+  const edus = collectCvEdus();
+  const email = document.getElementById('cv-email').value.trim();
+  const tel = document.getElementById('cv-tel').value.trim();
+  const ville = document.getElementById('cv-ville').value.trim();
+  const linkedin = document.getElementById('cv-linkedin').value.trim();
+  const site = document.getElementById('cv-site').value.trim();
+  const skills = document.getElementById('cv-skills').value.trim();
+  const certs = document.getElementById('cv-certs').value.trim();
+  const interests = document.getElementById('cv-interests').value.trim();
+  const tplKey = window._activeCvTemplate || 'hans';
+  const cssStyle = CV_STYLES[tplKey] || CV_STYLES.hans;
+
+  statusEl.textContent = '⏳ Génération en cours… L\'IA adapte votre CV au poste ciblé.';
+  statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(244,162,97,.1);border:1px solid rgba(244,162,97,.3);border-radius:9px;font-size:13px;color:var(--gold);margin-bottom:12px;';
+  btn.disabled = true; btn.textContent = '⏳ En cours…';
+
+  const prompt = `Tu es un expert en rédaction de CV professionnel ATS-friendly. Génère un CV complet pour ce candidat, adapté précisément au poste décrit.
+
+PROFIL :
+- Nom : ${prenom} ${nom}
+- Titre visé : ${titre}
+- Contact : ${email || 'N/A'} | ${tel || 'N/A'} | ${ville || 'N/A'}${linkedin ? '\n- LinkedIn : ' + linkedin : ''}${site ? '\n- Site : ' + site : ''}
+
+EXPÉRIENCES :
+${exps.length ? exps.map(e => `• ${e.poste} chez ${e.entreprise} (${e.periode}) — ${e.lieu}\n${e.missions}`).join('\n\n') : 'Aucune expérience renseignée'}
+
+FORMATIONS :
+${edus.length ? edus.map(e => `• ${e.diplome} — ${e.ecole} (${e.periode}) ${e.mention ? '| ' + e.mention : ''}`).join('\n') : 'Aucune formation renseignée'}
+
+COMPÉTENCES : ${skills || 'Non renseignées'}
+CERTIFICATIONS : ${certs || 'Non renseignées'}
+CENTRES D'INTÉRÊT : ${interests || 'Non renseignés'}
+
+POSTE CIBLÉ :
 ${posteDesc}
 
 INSTRUCTIONS :
-- Lettre formelle française, 3 à 4 paragraphes bien structurés (accroche, profil/compétences, valeur apportée, conclusion/appel à l'action)
-- Adapte la lettre précisément aux mots-clés et exigences du poste
-- Ton professionnel mais humain et authentique, évite les formulations robotiques ou trop IA
-- Personnalise réellement en fonction de l'entreprise et du poste
-- Retourne UNIQUEMENT du HTML formaté (pas de markdown), avec en-tête candidat/date, coordonnées entreprise, corps de la lettre, formule de politesse
-- Style HTML : fond blanc, police Arial, texte noir #111, en-tête structuré avec coordonnées`;
+- Adapte chaque section au poste ciblé
+- Résumé professionnel percutant de 3-4 phrases en première personne
+- Verbes d'action variés et concrets dans les bullet points
+- Retourne UNIQUEMENT du HTML valide (sans markdown ni balises \`\`\`)
+- Utilise EXACTEMENT ce CSS dans une balise <style> au début : ${cssStyle}
+- Structure HTML : div.cv-header (nom h1, titre .subtitle, contacts .contact), div.cv-body (sections h2, expériences .exp-block, formations, compétences)`;
 
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:3000,
-        system:'Tu es un expert RH en rédaction de lettres de motivation percutantes et authentiques qui passent les filtres ATS et les détecteurs d\'IA.',
-        messages:[{role:'user',content:prompt}]
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        system: 'Tu es un expert RH en rédaction de CV. Génère uniquement du HTML propre et valide, sans markdown, sans balises ``` . Le HTML doit utiliser exactement le CSS fourni.',
+        messages: [{ role: 'user', content: prompt }]
       })
     });
-    const data=await resp.json();
-    const html=data.content?.[0]?.text||'';
-    const cleanHtml=html.replace(/```html/gi,'').replace(/```/g,'').trim();
-    const preview=document.getElementById('lm-preview-inner');
-    preview.innerHTML=cleanHtml;
-    lmData={html:cleanHtml,nom:nomLM,entreprise,poste};
-    document.getElementById('btn-dl-lm').style.display='inline-flex';
-    statusEl.textContent='Lettre générée avec succès ! Vous pouvez la télécharger.';
-    statusEl.style.background='rgba(46,204,113,.1)';statusEl.style.borderColor='rgba(46,204,113,.3)';statusEl.style.color='var(--success)';
-  }catch(e){
-    statusEl.textContent='Erreur de génération. Vérifiez votre connexion et réessayez.';
-    statusEl.style.background='rgba(230,57,70,.1)';statusEl.style.borderColor='rgba(230,57,70,.3)';statusEl.style.color='var(--accent2)';
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    let html = data.content?.[0]?.text || '';
+    html = html.replace(/```html\s*/gi, '').replace(/```\s*/g, '').trim();
+    // S'assurer que le CSS du modèle est inclus
+    if (!html.includes('<style>')) {
+      html = `<style>${cssStyle}</style>` + html;
+    }
+    document.getElementById('cv-preview-inner').innerHTML = html;
+    cvData = { html, prenom, nom, titre, exps, edus, skills, certs, interests, email, tel, ville, linkedin, site };
+    document.getElementById('btn-dl-cv').style.display = 'inline-flex';
+    statusEl.textContent = '✅ CV généré avec succès ! Cliquez sur Télécharger.';
+    statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:9px;font-size:13px;color:var(--success);margin-bottom:12px;';
+  } catch(e) {
+    console.error('CV gen error:', e);
+    statusEl.textContent = '❌ Erreur : ' + (e.message || 'Vérifiez votre connexion et réessayez.');
+    statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:9px;font-size:13px;color:var(--accent2);margin-bottom:12px;';
   }
-  btn.disabled=false;btn.textContent='✨ Générer la lettre de motivation';
+  btn.disabled = false; btn.textContent = '✨ Générer le CV adapté au poste';
+}
+
+// ─── GENERATION LM (corrigée) ───
+async function generateLM(){
+  const nomLM = document.getElementById('lm-nom').value.trim();
+  const entreprise = document.getElementById('lm-entreprise').value.trim();
+  const poste = document.getElementById('lm-poste').value.trim();
+  const profil = document.getElementById('lm-profil').value.trim();
+  const posteDesc = document.getElementById('lm-poste-desc').value.trim();
+  const statusEl = document.getElementById('lm-gen-status');
+  const btn = document.getElementById('btn-gen-lm');
+
+  if (!nomLM || !entreprise || !poste || !profil || !posteDesc) {
+    statusEl.textContent = 'Veuillez remplir : Votre nom, l\'entreprise, le poste, votre profil et la description.';
+    statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:9px;font-size:13px;color:var(--accent2);margin-bottom:12px;';
+    return;
+  }
+
+  const email = document.getElementById('lm-email').value.trim();
+  const tel = document.getElementById('lm-tel').value.trim();
+  const ville = document.getElementById('lm-ville').value.trim();
+  const secteur = document.getElementById('lm-secteur').value.trim();
+  const recruteur = document.getElementById('lm-recruteur').value.trim();
+  const skillsLM = document.getElementById('lm-skills').value.trim();
+  const motivations = document.getElementById('lm-motivations').value.trim();
+  const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  statusEl.textContent = '⏳ Génération en cours… L\'IA rédige votre lettre personnalisée.';
+  statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(244,162,97,.1);border:1px solid rgba(244,162,97,.3);border-radius:9px;font-size:13px;color:var(--gold);margin-bottom:12px;';
+  btn.disabled = true; btn.textContent = '⏳ En cours…';
+
+  const prompt = `Rédige une lettre de motivation professionnelle complète pour :
+- Candidat : ${nomLM}${ville ? ', ' + ville : ''} — ${email || ''} — ${tel || ''}
+- Entreprise : ${entreprise}${secteur ? ' (' + secteur + ')' : ''}
+- Poste visé : ${poste}
+- Destinataire : ${recruteur || 'Madame, Monsieur'}
+- Profil : ${profil}
+- Compétences : ${skillsLM || 'Non précisées'}
+- Motivations : ${motivations || 'Non précisées'}
+- Date : ${today}
+
+Poste ciblé :
+${posteDesc}
+
+INSTRUCTIONS :
+- Lettre formelle française, 3-4 paragraphes (accroche percutante, valeur apportée, motivation spécifique, conclusion/appel à l'action)
+- Ton professionnel et authentique
+- Retourne UNIQUEMENT du HTML valide (sans markdown ni balises \`\`\`)
+- Style : <style>body{font-family:Arial,sans-serif;font-size:11pt;color:#111;line-height:1.7;padding:0;margin:0;} .lm-wrap{padding:32px 40px;max-width:680px;} .lm-header{display:flex;justify-content:space-between;margin-bottom:24px;font-size:10pt;color:#555;} .lm-dest{margin-bottom:20px;font-size:10.5pt;} .lm-objet{font-weight:bold;margin-bottom:22px;font-size:11pt;} p{margin:0 0 14px;text-align:justify;} .lm-sign{margin-top:32px;}</style>`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 3000,
+        system: 'Tu es un expert RH en rédaction de lettres de motivation. Génère uniquement du HTML propre et valide, sans markdown, sans balises ```.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    let html = data.content?.[0]?.text || '';
+    html = html.replace(/```html\s*/gi, '').replace(/```\s*/g, '').trim();
+    document.getElementById('lm-preview-inner').innerHTML = html;
+    lmData = { html, nom: nomLM, entreprise, poste };
+    document.getElementById('btn-dl-lm').style.display = 'inline-flex';
+    statusEl.textContent = '✅ Lettre générée avec succès !';
+    statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:9px;font-size:13px;color:var(--success);margin-bottom:12px;';
+  } catch(e) {
+    console.error('LM gen error:', e);
+    statusEl.textContent = '❌ Erreur : ' + (e.message || 'Vérifiez votre connexion et réessayez.');
+    statusEl.style.cssText = 'display:block;padding:12px 16px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:9px;font-size:13px;color:var(--accent2);margin-bottom:12px;';
+  }
+  btn.disabled = false; btn.textContent = '✨ Générer la lettre de motivation';
 }
 
 // ─── DOWNLOAD DOCX (via HTML to Word blob) ───
