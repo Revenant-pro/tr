@@ -656,9 +656,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- AGENDA -->
   <div class="tab-content" id="tab-agenda" style="padding:20px 28px 28px;">
     <div class="sub-nav">
-      <button id="agenda-sub-cal" class="sub-nav-btn active" onclick="showAgendaSub('cal',this)">Calendrier</button>
-      <button id="agenda-sub-tasks" class="sub-nav-btn" onclick="showAgendaSub('tasks',this)">Taches</button>
-      <button id="agenda-sub-rappels" class="sub-nav-btn" onclick="showAgendaSub('rappels',this)">Rappels</button>
+      <button id="agenda-sub-cal" class="sub-nav-btn active" onclick="showAgendaSub('cal',this)">📅 Calendrier</button>
+      <button id="agenda-sub-tasks" class="sub-nav-btn" onclick="showAgendaSub('tasks',this)">✅ Tâches</button>
+      <button id="agenda-sub-rappels" class="sub-nav-btn" onclick="showAgendaSub('rappels',this)">⏰ Rappels</button>
+      <button id="agenda-sub-pomodoro" class="sub-nav-btn" onclick="showAgendaSub('pomodoro',this)">🍅 Pomodoro</button>
     </div>
     <!-- Panel Calendrier -->
     <div id="agenda-panel-cal">
@@ -772,12 +773,49 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <div class="empty-state"><div class="empty-icon">⏰</div><p>Aucun rappel configuré.</p></div>
       </div>
     </div>
+
+    <!-- Panel Pomodoro (NOUVEAU) -->
+    <div id="agenda-panel-pomodoro" style="display:none;">
+      <div class="card" style="max-width:480px;margin:0 auto;text-align:center;">
+        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px;">🍅 Minuteur Pomodoro</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:22px;">Travaillez 25 min, reposez 5 min — boostez votre productivité.</div>
+        <div id="pomo-mode-btns" style="display:flex;gap:8px;justify-content:center;margin-bottom:18px;">
+          <button onclick="setPomoMode('work')" id="pomo-btn-work" style="padding:7px 18px;border-radius:8px;border:1px solid var(--accent);background:rgba(230,57,70,.12);color:var(--accent);font-weight:700;cursor:pointer;font-size:13px;transition:all .2s;">🧠 Travail</button>
+          <button onclick="setPomoMode('short')" id="pomo-btn-short" style="padding:7px 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-size:13px;transition:all .2s;">☕ Pause courte</button>
+          <button onclick="setPomoMode('long')" id="pomo-btn-long" style="padding:7px 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;font-size:13px;transition:all .2s;">🌙 Pause longue</button>
+        </div>
+        <!-- Circular Timer -->
+        <div style="position:relative;width:200px;height:200px;margin:0 auto 22px;">
+          <svg viewBox="0 0 200 200" style="transform:rotate(-90deg);width:200px;height:200px;position:absolute;top:0;left:0;">
+            <circle cx="100" cy="100" r="88" fill="none" stroke="var(--border)" stroke-width="10"/>
+            <circle id="pomo-ring" cx="100" cy="100" r="88" fill="none" stroke="var(--accent)" stroke-width="10"
+              stroke-dasharray="553" stroke-dashoffset="0" stroke-linecap="round" style="transition:stroke-dashoffset .9s ease,stroke .3s;"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <div id="pomo-time" style="font-family:'Syne',sans-serif;font-size:42px;font-weight:800;letter-spacing:-1px;">25:00</div>
+            <div id="pomo-label" style="font-size:12px;color:var(--muted);margin-top:2px;">Travail</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-bottom:18px;">
+          <button id="pomo-start-btn" onclick="togglePomodoro()" style="background:linear-gradient(135deg,var(--accent),#b01020);border:none;border-radius:10px;padding:11px 28px;color:#fff;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">▶ Démarrer</button>
+          <button onclick="resetPomodoro()" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 18px;color:var(--muted);cursor:pointer;font-size:13px;">↺ Réinitialiser</button>
+        </div>
+        <div style="display:flex;justify-content:center;gap:20px;font-size:12px;color:var(--muted);">
+          <span>🍅 Sessions : <strong id="pomo-sessions" style="color:var(--accent);">0</strong></span>
+          <span>⏱ Temps total : <strong id="pomo-total" style="color:var(--gold);">0 min</strong></span>
+        </div>
+        <div id="pomo-task-row" style="margin-top:16px;display:flex;gap:8px;align-items:center;">
+          <input type="text" id="pomo-task-inp" placeholder="Sur quoi travaillez-vous ?" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:13px;outline:none;">
+        </div>
+      </div>
+    </div>
   </div><!-- /tab-agenda -->
 
   <!-- COMPTE -->
   <div class="tab-content" id="tab-compte" style="padding:20px 28px 28px;">
-    <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-      <button class="btn btn-outline" onclick="downloadCompteExcel()" style="font-size:13px">Export Excel</button>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+      <button class="btn btn-outline" onclick="openBudgetGoals()" style="font-size:13px;">🎯 Objectifs budget</button>
+      <button class="btn btn-outline" onclick="downloadCompteExcel()" style="font-size:13px;">📥 Export Excel</button>
     </div>
     <div class="grid-3" style="margin-bottom:18px">
       <div class="stat-card"><div class="stat-label">Solde actuel</div><div class="stat-value" id="stat-solde" style="color:var(--success)">0,00 €</div></div>
@@ -937,12 +975,13 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="tab-content" id="tab-finance">
     <!-- Sous-onglets Finance -->
     <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px;align-items:center;justify-content:space-between;">
-      <div style="display:flex">
+      <div style="display:flex;overflow-x:auto;">
         <button class="tab-btn active" id="fin-sub-marches" onclick="showFinSub('marches',this)" style="font-size:13px;padding:10px 18px">📊 Marchés</button>
         <button class="tab-btn" id="fin-sub-watchlist" onclick="showFinSub('watchlist',this)" style="font-size:13px;padding:10px 18px">⭐ Watchlist</button>
         <button class="tab-btn" id="fin-sub-alertes" onclick="showFinSub('alertes',this)" style="font-size:13px;padding:10px 18px">🔔 Alertes prix</button>
+        <button class="tab-btn" id="fin-sub-compare" onclick="showFinSub('compare',this)" style="font-size:13px;padding:10px 18px">⚖️ Comparateur</button>
       </div>
-      <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px;margin-right:4px">Actualiser</button>
+      <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px;margin-right:4px">⟳ Actualiser</button>
     </div>
     <!-- Panel Marchés -->
     <div id="fin-panel-marches">
@@ -997,6 +1036,29 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <div class="empty-state"><div class="empty-icon">🔔</div><p>Aucune alerte configurée.</p></div>
       </div>
     </div>
+
+    <!-- Panel Comparateur d'actifs (NOUVEAU) -->
+    <div id="fin-panel-compare" style="display:none;padding:4px 0 0;">
+      <div style="margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;">⚖️ Comparateur d'actifs</div>
+        <div style="font-size:13px;color:var(--muted);">Comparez jusqu'à 4 actifs côte à côte selon leurs métriques clés.</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;">
+        <input type="text" id="cmp-ticker-inp" placeholder="Ex: AAPL, BTC, LVMH…" style="flex:1;min-width:160px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')addCmpTicker()">
+        <button class="btn btn-outline" onclick="addCmpTicker()" style="font-size:13px;">+ Ajouter</button>
+        <button class="btn btn-primary" onclick="runComparator()" style="font-size:13px;">⚖️ Comparer</button>
+        <button class="btn btn-outline" onclick="clearComparator()" style="font-size:13px;color:var(--muted);">🗑 Vider</button>
+      </div>
+      <div id="cmp-tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;min-height:28px;"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
+        <span style="font-size:11px;color:var(--muted);align-self:center;">Exemples rapides :</span>
+        <button class="btn btn-outline" onclick="setCmpPreset(['AAPL','MSFT','GOOGL','AMZN'])" style="font-size:11px;padding:4px 10px;">📱 GAFAM</button>
+        <button class="btn btn-outline" onclick="setCmpPreset(['BTC','ETH','SOL','BNB'])" style="font-size:11px;padding:4px 10px;">₿ Top Crypto</button>
+        <button class="btn btn-outline" onclick="setCmpPreset(['LVMH','OR','AIR','SAN'])" style="font-size:11px;padding:4px 10px;">🇫🇷 CAC 40</button>
+        <button class="btn btn-outline" onclick="setCmpPreset(['XOM','CVX','TTE','BP'])" style="font-size:11px;padding:4px 10px;">🛢️ Énergie</button>
+      </div>
+      <div id="cmp-result" style="overflow-x:auto;"></div>
+    </div>
   </div>
 
   <!-- NEWS FINANCIÈRE BLOOMBERG STYLE -->
@@ -1044,13 +1106,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="tab-content" id="tab-email" style="padding:0;overflow:hidden;">
   <style>
     /* ── EMAIL LAYOUT ── */
-    #email-root{display:flex;height:calc(100vh - var(--nav-h));overflow:hidden;background:var(--bg);}
+    #email-root{display:flex;height:calc(100vh - var(--nav-h));max-height:calc(100vh - var(--nav-h));overflow:hidden;background:var(--bg);}
 
     /* Sidebar */
     #email-sidebar{
       width:220px;min-width:180px;flex-shrink:0;
       background:var(--surface);border-right:1px solid var(--border);
       display:flex;flex-direction:column;
+      height:100%;overflow:hidden;
     }
     #email-sidebar-top{padding:14px 12px;border-bottom:1px solid var(--border);}
     .em-folder{
@@ -1076,6 +1139,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       border-right:1px solid var(--border);
       background:var(--surface2);overflow-y:auto;
       display:flex;flex-direction:column;
+      height:100%;
     }
     #email-list-search{padding:10px 12px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface2);z-index:2;}
     #email-list-search input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 11px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;}
@@ -1253,7 +1317,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <!-- DIVERTISSEMENT -->
   <div class="tab-content" id="tab-divertissement" style="padding:0;overflow:hidden;">
   <style>
-    #divert-root{display:flex;flex-direction:column;height:calc(100vh - var(--nav-h));overflow:hidden;}
+    #divert-root{display:flex;flex-direction:column;height:calc(100vh - var(--nav-h));max-height:calc(100vh - var(--nav-h));overflow:hidden;}
     #divert-subnav{
       display:flex;align-items:center;
       background:var(--surface);border-bottom:2px solid var(--border);
@@ -1548,7 +1612,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     <div class="dv-panel" id="dvp-chess">
   <style>
     #chess-root{
-      display:flex;height:calc(100vh - var(--nav-h));overflow:hidden;
+      display:flex;height:calc(100vh - var(--nav-h));max-height:calc(100vh - var(--nav-h));overflow:hidden;
       background:#262421;font-family:"DM Sans",sans-serif;
     }
 
@@ -1556,7 +1620,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     #chess-center{
       flex:1;min-width:0;display:flex;flex-direction:column;
       align-items:center;justify-content:center;
-      background:#262421;padding:10px 8px;overflow:hidden;gap:0;
+      background:#262421;padding:10px 8px;overflow:auto;gap:0;
     }
 
     /* Player bars */
@@ -2506,6 +2570,14 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <button onclick="mk_addPreset(['LVMH','TTE','BNP','SAN','AIR'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">🇫🇷 CAC 40</button>
         <button onclick="mk_addPreset(['BTC','ETH','BNB','SOL','XRP'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">₿ Crypto</button>
         <button onclick="mk_addPreset(['XOM','JNJ','JPM','PG','KO'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">💼 Diversifié</button>
+        <button onclick="mk_addPreset(['TSLA','RIVN','NIO','LCID','F'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">⚡ Véhicules élec.</button>
+        <button onclick="mk_addPreset(['GLD','SLV','XOM','CVX','COP'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">🛢️ Matières 1ères</button>
+        <button onclick="mk_addPreset(['DAI','BMW','VOW','SIE','ALV'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">🇩🇪 DAX</button>
+        <button onclick="mk_addPreset(['BABA','TCEHY','PDD','JD','BIDU'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">🇨🇳 Tech Chine</button>
+        <button onclick="mk_addPreset(['ATW','IAM','CIH','BCP','LHM'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">🇲🇦 Maroc</button>
+        <button onclick="mk_addPreset(['NFLX','DIS','SPOT','WMG','RBLX'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">🎬 Médias</button>
+        <button onclick="mk_addPreset(['UNH','PFE','MRNA','LLY','ABT'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;">💊 Santé</button>
+        <button onclick="mk_addPreset(['AAPL','MSFT','GOOGL','BTC','ETH','XOM','GLD','JPM'])" class="btn btn-outline" style="font-size:11px;padding:5px 11px;border-color:var(--gold);color:var(--gold);">⭐ Super Diversifié</button>
       </div>
     </div>
     <div id="mk-results" style="display:none;">
@@ -2534,6 +2606,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div class="mk-card">
         <h3>🔗 Matrice de Corrélation</h3>
         <div style="overflow-x:auto;"><table class="mk-corr-tbl" id="mk-corr-table"></table></div>
+      </div>
+      <!-- NOUVEAU : Stress Test -->
+      <div class="mk-card">
+        <h3>🔥 Stress Test — Scénarios de crise</h3>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Impact simulé sur votre portefeuille optimal selon des crises historiques.</div>
+        <div id="mk-stress-results" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;"></div>
       </div>
     </div>
   </div>
@@ -2573,31 +2651,64 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     </div>
     <div class="nlp-2col">
       <div class="nlp-card">
-        <h3>📄 Rapport A — Année N (actuel)</h3>
+        <h3>📄 Rapport A</h3>
         <div style="margin-bottom:8px;">
           <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Entreprise</label>
           <input type="text" id="nlp-co1" class="nlp-inp" value="Apple Inc." style="margin-top:4px;">
+        </div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Année</label>
+          <select id="nlp-year1" class="nlp-inp" style="margin-top:4px;">
+            <option value="N">N (actuel)</option>
+            <option value="N-1">N-1</option>
+            <option value="N-2">N-2</option>
+            <option value="N-3">N-3</option>
+            <option value="N-4">N-4</option>
+          </select>
         </div>
         <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Extrait du rapport (CEO Letter, Outlook...)</label>
         <textarea id="nlp-text1" class="nlp-ta" style="margin-top:4px;">We delivered exceptional results this year, with record revenue growth driven by strong customer demand across all our product lines. Our innovation pipeline remains robust, and we are confident in our ability to capture significant market opportunities in emerging technologies. We continue to invest strategically in research and development, positioning ourselves for sustainable long-term growth and value creation for our shareholders.</textarea>
       </div>
       <div class="nlp-card">
-        <h3>📄 Rapport B — Année N-1 / Concurrent</h3>
+        <h3>📄 Rapport B</h3>
         <div style="margin-bottom:8px;">
-          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Entreprise / Période</label>
+          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Entreprise / Concurrent</label>
           <input type="text" id="nlp-co2" class="nlp-inp" value="Microsoft Corp." style="margin-top:4px;">
+        </div>
+        <div style="margin-bottom:8px;">
+          <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Année</label>
+          <select id="nlp-year2" class="nlp-inp" style="margin-top:4px;">
+            <option value="N">N (actuel)</option>
+            <option value="N-1" selected>N-1</option>
+            <option value="N-2">N-2</option>
+            <option value="N-3">N-3</option>
+            <option value="N-4">N-4</option>
+          </select>
         </div>
         <label style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;">Extrait du rapport à comparer</label>
         <textarea id="nlp-text2" class="nlp-ta" style="margin-top:4px;">Despite challenging macroeconomic conditions and increased competitive pressure, we maintained resilient operational performance. While we face headwinds from rising costs and regulatory uncertainty, we remain cautiously optimistic about our strategic initiatives. We have implemented cost restructuring measures and are closely monitoring risk factors including supply chain disruptions and potential market volatility.</textarea>
       </div>
     </div>
-    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
       <button class="btn btn-primary" onclick="runNLP()" style="font-size:14px;padding:12px 28px;">🤖 Analyser</button>
-      <button class="btn btn-outline" onclick="nlpLoadExample('tech')" style="font-size:13px;">📱 Exemple Tech</button>
-      <button class="btn btn-outline" onclick="nlpLoadExample('bank')" style="font-size:13px;">🏦 Exemple Banque</button>
-      <button class="btn btn-outline" onclick="nlpLoadExample('energy')" style="font-size:13px;">⚡ Exemple Énergie</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:11px;color:var(--muted);">Exemples :</span>
+        <button class="btn btn-outline" onclick="nlpLoadExample('tech')" style="font-size:12px;padding:6px 12px;">📱 Apple</button>
+        <button class="btn btn-outline" onclick="nlpLoadExample('bank')" style="font-size:12px;padding:6px 12px;">🏦 JP Morgan</button>
+        <button class="btn btn-outline" onclick="nlpLoadExample('energy')" style="font-size:12px;padding:6px 12px;">⚡ TotalEnergies</button>
+        <button class="btn btn-outline" onclick="nlpLoadExample('luxury')" style="font-size:12px;padding:6px 12px;">👜 LVMH</button>
+        <button class="btn btn-outline" onclick="nlpLoadExample('pharma')" style="font-size:12px;padding:6px 12px;">💊 Pfizer</button>
+        <button class="btn btn-outline" onclick="nlpLoadExample('auto')" style="font-size:12px;padding:6px 12px;">🚗 Tesla</button>
+        <button class="btn btn-outline" onclick="nlpLoadExample('retail')" style="font-size:12px;padding:6px 12px;">🛒 Amazon</button>
+        <button class="btn btn-outline" onclick="nlpLoadExample('africa')" style="font-size:12px;padding:6px 12px;">🌍 Attijariwafa</button>
+      </div>
     </div>
     <div id="nlp-results" style="display:none;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;gap:8px;">
+        <button class="btn btn-outline" onclick="saveNLPToHistory()" style="font-size:12px;">💾 Sauvegarder analyse</button>
+        <button class="btn btn-outline" onclick="toggleNLPHistory()" style="font-size:12px;">📋 Historique</button>
+      </div>
+      <div id="nlp-history-panel" style="display:none;margin-bottom:18px;"></div>
       <div class="nlp-2col">
         <div class="nlp-card">
           <h3>😊 Sentiment — <span id="nlp-co1-label">A</span></h3>
@@ -2947,20 +3058,55 @@ function buildTabsBar(isRefresh=false){
     agenda:'📅 Agenda',compte:'💰 Compte',compta:'📒 Comptabilité',
     finance:'📈 Finance',careertools:'💼 Carrière',calculator:'🧮 Calculateur',
     goals:'🎯 Objectifs',veille:'🔍 Veille',email:'✉️ Email',
-    about:'👤 À propos',divertissement:'🎮 Divertissement',dcf:'📊 DCF Valorisation',markowitz:'📈 Portefeuille',nlp:'🤖 NLP Rapports',
+    about:'👤 À propos',divertissement:'🎮 Divertissement',dcf:'📊 DCF',markowitz:'📈 Portefeuille',nlp:'🤖 NLP',
   };
 
-  bar.innerHTML=allowed.map(id=>`<button class="tab-btn" onclick="showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`).join('');
+  // Show first N tabs directly, rest in dropdown
+  const MAX_VISIBLE = 8;
+  const visibleIds = allowed.slice(0, MAX_VISIBLE);
+  const hiddenIds = allowed.slice(MAX_VISIBLE);
+
+  let html = visibleIds.map(id =>
+    `<button class="tab-btn" data-tabid="${id}" onclick="showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`
+  ).join('');
+
+  if(hiddenIds.length > 0){
+    html += `<div class="autre-wrap" id="autre-wrap">
+      <button class="autre-btn" id="autre-btn" onclick="toggleAutreDropdown(event)">
+        ≡ Plus <span id="autre-arrow">▾</span>
+      </button>
+      <div class="autre-dropdown" id="autre-dropdown">
+        ${hiddenIds.map(id=>`<button class="autre-dropdown-item" data-tabid="${id}" onclick="showTab('${id}',document.querySelector('[data-tabid=\\'${id}\\']'))">${PAGE_LABELS[id]||id}</button>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  bar.innerHTML = html;
 
   // Default tab: first allowed
   const defaultTab=savedTab&&allowed.includes(savedTab)?savedTab:(allowed[0]||'fichiers');
   document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
   const tc=document.getElementById('tab-'+defaultTab);
   if(tc)tc.classList.add('active');
-  bar.querySelectorAll('.tab-btn').forEach(b=>{
-    const t=b.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+  bar.querySelectorAll('.tab-btn, .autre-dropdown-item').forEach(b=>{
+    const t=b.dataset.tabid;
     if(t===defaultTab)b.classList.add('active');
   });
+  // If default tab is in hidden, mark "Autre" btn as active
+  if(hiddenIds.includes(defaultTab)){
+    const ab=document.getElementById('autre-btn');
+    if(ab)ab.classList.add('has-active');
+  }
+}
+
+function toggleAutreDropdown(e){
+  e.stopPropagation();
+  const dd=document.getElementById('autre-dropdown');
+  const ar=document.getElementById('autre-arrow');
+  if(!dd)return;
+  const isOpen=dd.style.display==='flex';
+  closeAllDropdowns();
+  if(!isOpen){dd.style.display='flex';if(ar)ar.textContent='▴';}
 }
 
 async function loadAboutFromFirebase(){
@@ -2998,6 +3144,78 @@ async function initDashboard(isRefresh=false){
     if(activeTab==='finance')loadFinanceData();
     if(activeTab==='news')loadNewsData();
   }
+  // Start auto-refresh system
+  _startAutoRefresh();
+}
+
+// ── Auto-refresh system ──────────────────────────────────────
+let _autoRefreshInterval = null;
+let _lastRefresh = Date.now();
+const AUTO_REFRESH_MS = 30000; // 30 secondes
+
+function _startAutoRefresh(){
+  if(_autoRefreshInterval) clearInterval(_autoRefreshInterval);
+  // Firebase real-time listeners for messages and users
+  _setupFirebaseListeners();
+  // Periodic polling for data that doesn't have listeners
+  _autoRefreshInterval = setInterval(_periodicRefresh, AUTO_REFRESH_MS);
+  // Show refresh indicator
+  _updateRefreshIndicator();
+  setInterval(_updateRefreshIndicator, 1000);
+}
+
+function _setupFirebaseListeners(){
+  if(!window.firebaseDB || !currentUser) return;
+  try {
+    // Listen to messages in real-time
+    window.firebaseDB.collection('messages').onSnapshot(snap => {
+      messages = snap.docs.map(d=>({...d.data(), _fbid:d.id}));
+      updateMsgBadge();
+      renderMsgPreview();
+      const activeTab = loadActiveTab();
+      // Refresh email inbox if active
+      if(activeTab === 'email') _emLoadInbox();
+    });
+    // Listen to inbox emails
+    window.firebaseDB.collection('emails_inbox').onSnapshot(snap => {
+      emailInboxList = snap.docs.map(d=>({...d.data(),_fbid:d.id}));
+      const activeTab = loadActiveTab();
+      if(activeTab === 'email') emailRenderList();
+    });
+  } catch(e) { console.warn('Firebase listeners error:', e); }
+}
+
+async function _periodicRefresh(){
+  if(!currentUser) return;
+  _lastRefresh = Date.now();
+  try {
+    const activeTab = loadActiveTab();
+    // Always refresh transactions & users
+    const [fbTx, fbUsers] = await Promise.all([
+      fbGetAll('transactions'), fbGetAll('users')
+    ]);
+    transactions = fbTx.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if(fbUsers.length>0) users = fbUsers.map(u=>({...u,created:u.created?new Date(u.created):new Date()}));
+    // Refresh active tab content
+    if(activeTab==='compte'){renderTx();updateStats();drawEvolutionChart();}
+    if(activeTab==='finance'){loadFinanceData();}
+    if(activeTab==='news'){loadNewsData();}
+    if(activeTab==='acces'&&currentUser.role==='admin'){renderUsersTable();renderConnLog();}
+    _updateRefreshIndicator();
+  } catch(e) { console.warn('Auto-refresh error:', e); }
+}
+
+function _updateRefreshIndicator(){
+  let ind = document.getElementById('refresh-indicator');
+  if(!ind){
+    ind = document.createElement('div');
+    ind.id = 'refresh-indicator';
+    ind.style.cssText = 'position:fixed;bottom:80px;left:24px;font-size:10px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 8px;z-index:799;display:flex;align-items:center;gap:5px;opacity:.7;';
+    document.body.appendChild(ind);
+  }
+  const secsAgo = Math.round((Date.now()-_lastRefresh)/1000);
+  const next = Math.max(0, Math.round((AUTO_REFRESH_MS-(Date.now()-_lastRefresh))/1000));
+  ind.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite;"></span> Sync: ${next>0?`dans ${next}s`:'en cours...'}`;
 }
 
 // ============ AGENDA CLOCK ============
@@ -3033,10 +3251,19 @@ setInterval(updateAgendaClock,1000);
 function showTab(id,btn){
   closeAllDropdowns();
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('#tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#tabs-bar .tab-btn, #tabs-bar .autre-dropdown-item').forEach(b=>b.classList.remove('active'));
+  // Remove "has-active" from autre btn
+  const auBtn=document.getElementById('autre-btn');
+  if(auBtn)auBtn.classList.remove('has-active');
   const tc=document.getElementById('tab-'+id);
   if(tc)tc.classList.add('active');
-  btn.classList.add('active');
+  if(btn){
+    btn.classList.add('active');
+    // If it's inside the dropdown, mark the autre btn as has-active
+    if(btn.closest('#autre-dropdown')){
+      if(auBtn)auBtn.classList.add('has-active');
+    }
+  }
   saveActiveTab(id);
   if(id==='acces')showAccessOrProfile();
   if(id==='agenda'){initAgendaUserSelect();renderCalendar();}
@@ -4284,8 +4511,10 @@ function downloadLM(){
 function closeAllDropdowns(){
   const bd=document.getElementById('brand-dropdown');
   const ad=document.getElementById('autre-dropdown');
+  const ar=document.getElementById('autre-arrow');
   if(bd)bd.style.display='none';
   if(ad)ad.style.display='none';
+  if(ar)ar.textContent='▾';
 }
 
 // Toggle menu Bienvenue — contenu dynamique selon le rôle
@@ -4344,12 +4573,8 @@ document.addEventListener('click',function(e){
 
 function quickNav(tabId){
   closeAllDropdowns();
-  const btn=Array.from(document.querySelectorAll('#tabs-bar .tab-btn')).find(b=>b.getAttribute('onclick')?.includes("'"+tabId+"'"));
+  const btn=document.querySelector(`#tabs-bar [data-tabid="${tabId}"]`);
   if(btn){showTab(tabId,btn);}
-  else{
-    const extraBtn=Array.from(document.querySelectorAll('.autre-dropdown-item')).find(b=>b.getAttribute('onclick')?.includes("'"+tabId+"'"));
-    if(extraBtn)showTabExtra(tabId,extraBtn);
-  }
 }
 
 function showTabExtra(id,btn){
@@ -5524,7 +5749,7 @@ function sendChatMsg(){}
 // ============ SOUS-PAGES FINANCE ============
 let watchlist=[];let priceAlerts=[];
 function showFinSub(sub,btn){
-  ['marches','watchlist','alertes'].forEach(s=>{
+  ['marches','watchlist','alertes','compare'].forEach(s=>{
     const p=document.getElementById('fin-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
   });
   document.querySelectorAll('[id^="fin-sub-"]').forEach(b=>b.classList.remove('active'));
@@ -5532,6 +5757,62 @@ function showFinSub(sub,btn){
   if(sub==='watchlist')renderWatchlist();
   if(sub==='alertes')renderAlerts();
 }
+
+// ── Comparateur d'actifs (NOUVEAU) ──────────────────────────
+let cmpTickers = [];
+window.addCmpTicker = function(){
+  const inp=document.getElementById('cmp-ticker-inp');
+  const val=(inp?.value||'').toUpperCase().replace(/[^A-Z0-9.]/g,'').trim();
+  if(!val)return;
+  if(cmpTickers.length>=4){toast('Maximum 4 actifs','error');return;}
+  if(!cmpTickers.includes(val))cmpTickers.push(val);
+  if(inp)inp.value='';
+  _renderCmpTags();
+};
+window.setCmpPreset=function(tickers){cmpTickers=[...tickers];_renderCmpTags();};
+window.clearComparator=function(){cmpTickers=[];_renderCmpTags();document.getElementById('cmp-result').innerHTML='';};
+function _renderCmpTags(){
+  const el=document.getElementById('cmp-tags');if(!el)return;
+  el.innerHTML=cmpTickers.map((t,i)=>
+    `<span style="display:inline-flex;align-items:center;gap:5px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.25);border-radius:20px;padding:4px 11px;font-size:12px;font-weight:600;color:var(--accent2);">${t}<button onclick="cmpTickers.splice(${i},1);_renderCmpTags()" style="background:none;border:none;color:var(--accent2);cursor:pointer;font-size:13px;">✕</button></span>`
+  ).join('');
+}
+window.runComparator = function(){
+  if(cmpTickers.length<2){toast('Ajoutez au moins 2 actifs','error');return;}
+  const METRICS=['Rendement annuel','Volatilité','Ratio Sharpe','VaR 95% (1j)','Corrélation BTC','Secteur'];
+  const COLORS=['#e63946','#f4a261','#27ae60','#3498db'];
+  const el=document.getElementById('cmp-result');if(!el)return;
+  const assets=cmpTickers.map((t,ci)=>{
+    const p=ASSET_PARAMS[t]||[0.10+Math.random()*0.15,0.20+Math.random()*0.15,'other'];
+    const ret=p[0],vol=p[1],grp=p[2];
+    const sharpe=((ret-0.04)/vol).toFixed(2);
+    const var95=(ret-1.645*vol/Math.sqrt(252)).toFixed(4);
+    const corrBtc=grp==='crypto'?0.85:grp==='tech'?0.35:grp==='eu'?0.20:0.15;
+    return{t,ret,vol,sharpe,var95,corrBtc,grp,color:COLORS[ci%COLORS.length]};
+  });
+  const headers='<tr style="background:var(--surface2);"><th style="padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;border:1px solid var(--border);">Métrique</th>'+
+    assets.map(a=>`<th style="padding:10px 14px;text-align:center;font-size:13px;font-weight:800;color:${a.color};border:1px solid var(--border);">${a.t}</th>`).join('')+'</tr>';
+  const rows=[
+    ['📈 Rendement annuel', assets.map(a=>`${(a.ret*100).toFixed(1)}%`)],
+    ['📉 Volatilité', assets.map(a=>`${(a.vol*100).toFixed(1)}%`)],
+    ['⚡ Ratio de Sharpe', assets.map(a=>a.sharpe)],
+    ['🛡️ VaR 95% (1j)', assets.map(a=>`${(a.var95*100).toFixed(2)}%`)],
+    ['₿ Corr. BTC', assets.map(a=>`${(a.corrBtc*100).toFixed(0)}%`)],
+    ['🏷️ Secteur', assets.map(a=>a.grp)],
+  ].map(([label,vals],ri)=>`<tr style="${ri%2===0?'':'background:var(--surface2);'}">
+    <td style="padding:9px 14px;font-size:12px;font-weight:600;color:var(--muted);border:1px solid var(--border);">${label}</td>
+    ${vals.map((v,vi)=>`<td style="padding:9px 14px;text-align:center;font-size:13px;font-weight:700;border:1px solid var(--border);color:${assets[vi].color};">${v}</td>`).join('')}
+  </tr>`).join('');
+  // Best performer highlight
+  const bestRet=assets.reduce((a,b)=>a.ret>b.ret?a:b);
+  const bestSharpe=assets.reduce((a,b)=>parseFloat(a.sharpe)>parseFloat(b.sharpe)?a:b);
+  el.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:13px;">${headers}${rows}</table>
+  <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+    <div style="background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);border-radius:8px;padding:9px 14px;font-size:12px;">🏆 Meilleur rendement : <strong style="color:var(--success);">${bestRet.t}</strong> (${(bestRet.ret*100).toFixed(1)}%)</div>
+    <div style="background:rgba(52,152,219,.08);border:1px solid rgba(52,152,219,.2);border-radius:8px;padding:9px 14px;font-size:12px;">⭐ Meilleur Sharpe : <strong style="color:#3498db;">${bestSharpe.t}</strong> (${bestSharpe.sharpe})</div>
+  </div>`;
+  toast('Comparaison effectuée ✅','success');
+};
 function toggleWatchlist(ticker){
   const idx=watchlist.indexOf(ticker);
   if(idx>=0)watchlist.splice(idx,1);else watchlist.push(ticker);
@@ -5612,13 +5893,188 @@ function checkPriceAlerts(){
 // ============ SOUS-PAGES AGENDA : TÂCHES ============
 let tasksList=[];
 function showAgendaSub(sub,btn){
-  ['cal','tasks','rappels'].forEach(s=>{
+  ['cal','tasks','rappels','pomodoro'].forEach(s=>{
     const p=document.getElementById('agenda-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
   });
   document.querySelectorAll('[id^="agenda-sub-"]').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   if(sub==='tasks')renderTasks();
   if(sub==='rappels')renderRappels();
+  if(sub==='pomodoro')initPomodoro();
+}
+
+// ── POMODORO TIMER (NOUVEAU) ────────────────────────────────
+const POMO_MODES={work:{label:'Travail',secs:25*60,color:'#e63946'},short:{label:'Pause courte',secs:5*60,color:'#27ae60'},long:{label:'Pause longue',secs:15*60,color:'#3498db'}};
+let _pomoMode='work', _pomoRunning=false, _pomoInterval=null, _pomoSecsLeft=25*60, _pomoSessions=0, _pomoTotalMins=0;
+function initPomodoro(){ _pomoSecsLeft=POMO_MODES[_pomoMode].secs; _updatePomoDisplay(); }
+function setPomoMode(mode){
+  _pomoMode=mode; clearInterval(_pomoInterval); _pomoRunning=false;
+  _pomoSecsLeft=POMO_MODES[mode].secs;
+  document.getElementById('pomo-start-btn').textContent='▶ Démarrer';
+  ['work','short','long'].forEach(m=>{
+    const b=document.getElementById('pomo-btn-'+m);if(!b)return;
+    const active=m===mode;
+    b.style.border=`1px solid ${active?POMO_MODES[m].color:'var(--border)'}`;
+    b.style.background=active?`rgba(${m==='work'?'230,57,70':'m'==='short'?'39,174,96':'52,152,219'},.12)`:'var(--surface2)';
+    b.style.color=active?POMO_MODES[m].color:'var(--muted)';
+    b.style.fontWeight=active?'700':'400';
+  });
+  _updatePomoDisplay();
+}
+function togglePomodoro(){
+  if(_pomoRunning){
+    clearInterval(_pomoInterval); _pomoRunning=false;
+    document.getElementById('pomo-start-btn').textContent='▶ Reprendre';
+  } else {
+    _pomoRunning=true;
+    document.getElementById('pomo-start-btn').textContent='⏸ Pause';
+    _pomoInterval=setInterval(()=>{
+      _pomoSecsLeft--;
+      _updatePomoDisplay();
+      if(_pomoSecsLeft<=0){
+        clearInterval(_pomoInterval); _pomoRunning=false;
+        if(_pomoMode==='work'){_pomoSessions++;_pomoTotalMins+=25;}
+        document.getElementById('pomo-sessions').textContent=_pomoSessions;
+        document.getElementById('pomo-total').textContent=_pomoTotalMins+' min';
+        const nextMode=_pomoMode==='work'?(_pomoSessions%4===0?'long':'short'):'work';
+        toast(`🍅 ${POMO_MODES[_pomoMode].label} terminée ! Prochain : ${POMO_MODES[nextMode].label}`,'success');
+        // Auto-notify if supported
+        if(Notification.permission==='granted'){new Notification('⏱ Pomodoro',{body:`${POMO_MODES[_pomoMode].label} terminée !`});}
+        setPomoMode(nextMode);
+      }
+    },1000);
+    if(Notification.permission==='default')Notification.requestPermission();
+  }
+}
+function resetPomodoro(){
+  clearInterval(_pomoInterval); _pomoRunning=false;
+  _pomoSecsLeft=POMO_MODES[_pomoMode].secs;
+  document.getElementById('pomo-start-btn').textContent='▶ Démarrer';
+  _updatePomoDisplay();
+}
+function _updatePomoDisplay(){
+  const total=POMO_MODES[_pomoMode].secs;
+  const m=Math.floor(_pomoSecsLeft/60), s=_pomoSecsLeft%60;
+  const el=document.getElementById('pomo-time');if(el)el.textContent=`${m}:${String(s).padStart(2,'0')}`;
+  const lbl=document.getElementById('pomo-label');if(lbl)lbl.textContent=POMO_MODES[_pomoMode].label;
+  const ring=document.getElementById('pomo-ring');
+  if(ring){
+    const pct=_pomoSecsLeft/total;
+    const circ=2*Math.PI*88;
+    ring.style.strokeDashoffset=circ*(1-pct);
+    ring.style.stroke=POMO_MODES[_pomoMode].color;
+  }
+}
+
+// ── BUDGET GOALS (NOUVEAU dans Compte) ────────────────────
+function openBudgetGoals(){
+  let modal=document.getElementById('budget-goals-modal');
+  if(!modal){modal=document.createElement('div');modal.id='budget-goals-modal';modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';document.body.appendChild(modal);}
+  let goals=[];try{goals=JSON.parse(localStorage.getItem('budget_goals')||'[]');}catch(_){}
+  const goalsHtml=goals.length?goals.map((g,i)=>{
+    const pct=Math.min(100,Math.round((g.current||0)/g.target*100));
+    const color=pct>=100?'var(--success)':pct>=60?'var(--gold)':'var(--accent)';
+    return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:13px;font-weight:600;">${g.icon||'🎯'} ${g.name}</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:12px;color:${color};font-weight:700;">${pct}%</span>
+          <button onclick="deleteGoal(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;">✕</button>
+        </div>
+      </div>
+      <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px;">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:4px;transition:width .8s ease;"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);">€${(g.current||0).toLocaleString('fr-FR')} / €${g.target.toLocaleString('fr-FR')} — ${g.deadline||'—'}</div>
+    </div>`;
+  }).join(''):`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">Aucun objectif défini.</div>`;
+  modal.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;">
+    <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:4px;">🎯 Objectifs de budget</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:18px;">Définissez vos objectifs d'épargne et suivez leur avancement.</div>
+    ${goalsHtml}
+    <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px;">
+      <div style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px;">Ajouter un objectif</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+        <input id="bg-name" placeholder="Nom (ex: Vacances)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;">
+        <input id="bg-icon" placeholder="Icône (🏖️)" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;">
+        <input id="bg-target" type="number" placeholder="Objectif €" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;">
+        <input id="bg-current" type="number" placeholder="Épargné € actuellement" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;">
+        <input id="bg-deadline" type="date" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:13px;outline:none;">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end;">
+      <button onclick="document.getElementById('budget-goals-modal').style.display='none'" style="background:transparent;border:1px solid var(--border);border-radius:9px;padding:9px 16px;color:var(--muted);cursor:pointer;font-size:13px;">Fermer</button>
+      <button onclick="addBudgetGoal()" style="background:linear-gradient(135deg,var(--accent),#b01020);border:none;border-radius:9px;padding:9px 18px;color:#fff;cursor:pointer;font-size:13px;font-weight:600;">+ Ajouter</button>
+    </div>
+  </div>`;
+  modal.style.display='flex';
+}
+window.deleteGoal=function(i){let g=[];try{g=JSON.parse(localStorage.getItem('budget_goals')||'[]');}catch(_){}g.splice(i,1);localStorage.setItem('budget_goals',JSON.stringify(g));openBudgetGoals();}
+function addBudgetGoal(){
+  const name=(document.getElementById('bg-name')?.value||'').trim();
+  const icon=(document.getElementById('bg-icon')?.value||'🎯').trim();
+  const target=parseFloat(document.getElementById('bg-target')?.value||0);
+  const current=parseFloat(document.getElementById('bg-current')?.value||0);
+  const deadline=document.getElementById('bg-deadline')?.value||'';
+  if(!name||!target){toast('Nom et objectif requis','error');return;}
+  let goals=[];try{goals=JSON.parse(localStorage.getItem('budget_goals')||'[]');}catch(_){}
+  goals.push({name,icon,target,current,deadline});
+  localStorage.setItem('budget_goals',JSON.stringify(goals));
+  toast('Objectif ajouté ✅','success');openBudgetGoals();
+}
+
+// ── NLP History (NOUVEAU) ────────────────────────────────
+let _nlpHistory=[];
+window.saveNLPToHistory=function(){
+  const co1=document.getElementById('nlp-co1')?.value||'A';
+  const co2=document.getElementById('nlp-co2')?.value||'B';
+  const y1=document.getElementById('nlp-year1')?.value||'N';
+  const y2=document.getElementById('nlp-year2')?.value||'N-1';
+  _nlpHistory.unshift({id:Date.now(),co1,co2,y1,y2,date:new Date().toLocaleDateString('fr-FR')});
+  if(_nlpHistory.length>10)_nlpHistory.pop();
+  toast('Analyse sauvegardée dans l\'historique ✅','success');
+  _renderNLPHistory();
+};
+window.toggleNLPHistory=function(){
+  const p=document.getElementById('nlp-history-panel');if(!p)return;
+  p.style.display=p.style.display==='none'?'block':'none';
+  _renderNLPHistory();
+};
+function _renderNLPHistory(){
+  const p=document.getElementById('nlp-history-panel');if(!p)return;
+  if(!_nlpHistory.length){p.innerHTML='<div style="text-align:center;padding:14px;color:var(--muted);font-size:13px;">Aucune analyse sauvegardée.</div>';return;}
+  p.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;">
+    <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;">📋 Historique des analyses</div>
+    ${_nlpHistory.map(h=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(42,42,58,.3);font-size:12px;">
+      <span><strong>${h.co1}</strong> (${h.y1}) vs <strong>${h.co2}</strong> (${h.y2})</span>
+      <span style="color:var(--muted);">${h.date}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── Markowitz Stress Test (NOUVEAU) ─────────────────────────
+function _runStressTest(optimal, assets){
+  const scenarios=[
+    {name:'🦠 COVID-19 (2020)',shocks:{crypto:-0.50,tech:-0.35,eu:-0.40,fin:-0.45,energy:-0.55,def:-0.15,other:-0.30}},
+    {name:'📉 Crise 2008',shocks:{crypto:-0.30,tech:-0.50,eu:-0.55,fin:-0.70,energy:-0.45,def:-0.20,other:-0.40}},
+    {name:'💥 Krach Tech 2000',shocks:{crypto:-0.20,tech:-0.78,eu:-0.40,fin:-0.35,energy:-0.20,def:-0.05,other:-0.30}},
+    {name:'🔥 Inflation 2022',shocks:{crypto:-0.65,tech:-0.40,eu:-0.20,fin:-0.10,energy:+0.35,def:-0.05,other:-0.20}},
+    {name:'⚡ Choc pétrolier',shocks:{crypto:-0.20,tech:-0.15,eu:-0.25,fin:-0.20,energy:+0.60,def:+0.05,other:-0.15}},
+  ];
+  const el=document.getElementById('mk-stress-results');if(!el)return;
+  el.innerHTML=scenarios.map(sc=>{
+    const portfolioImpact=optimal.w.reduce((sum,w,i)=>{
+      const grp=assets[i].group;
+      const shock=sc.shocks[grp]||sc.shocks.other||(-0.30);
+      return sum+w*shock;
+    },0);
+    const color=portfolioImpact>=0?'var(--success)':portfolioImpact>-0.20?'var(--gold)':'var(--accent2)';
+    return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;">
+      <div style="font-size:12px;font-weight:600;margin-bottom:8px;">${sc.name}</div>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:${color};">${portfolioImpact>=0?'+':''}${(portfolioImpact*100).toFixed(1)}%</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px;">Impact portefeuille</div>
+    </div>`;
+  }).join('');
 }
 
 // ============ SOUS-PAGES ACCÈS ============
@@ -7511,15 +7967,51 @@ Rapport généré par votre simulateur DCF`;
 // ============================================================
 const ASSET_PARAMS = {
   // [annualReturn, annualVol, correlation_group]
+  // Tech US
   AAPL:[0.22,0.28,'tech'], MSFT:[0.20,0.25,'tech'], GOOGL:[0.18,0.27,'tech'],
   AMZN:[0.19,0.30,'tech'], NVDA:[0.35,0.45,'tech'], META:[0.25,0.32,'tech'],
-  TSLA:[0.28,0.55,'tech'], NFLX:[0.15,0.35,'tech'],
+  TSLA:[0.28,0.55,'tech'], NFLX:[0.15,0.35,'tech'], AMD:[0.30,0.48,'tech'],
+  INTC:[0.08,0.28,'tech'], ORCL:[0.14,0.22,'tech'], ADBE:[0.16,0.30,'tech'],
+  CRM:[0.18,0.32,'tech'],  PYPL:[0.10,0.38,'tech'], UBER:[0.20,0.40,'tech'],
+  SHOP:[0.22,0.48,'tech'], SNOW:[0.18,0.55,'tech'], COIN:[0.35,0.70,'tech'],
+  // EV / Auto
+  RIVN:[0.15,0.75,'ev'],  NIO:[0.20,0.70,'ev'],  LCID:[0.10,0.80,'ev'],
+  F:[0.08,0.30,'ev'],    GM:[0.09,0.28,'ev'],
+  // CAC 40 / Europe
   LVMH:[0.14,0.22,'eu'],  TTE:[0.10,0.20,'eu'],  BNP:[0.08,0.24,'eu'],
-  SAN:[0.07,0.22,'eu'],   AIR:[0.12,0.25,'eu'],
-  JPM:[0.12,0.22,'fin'],  JNJ:[0.08,0.16,'def'], PG:[0.07,0.14,'def'],
-  KO:[0.06,0.13,'def'],   XOM:[0.10,0.22,'energy'],
+  SAN:[0.07,0.22,'eu'],   AIR:[0.12,0.25,'eu'],   OR:[0.11,0.20,'eu'],
+  SAP:[0.13,0.22,'eu'],   ASML:[0.20,0.28,'eu'],  SIE:[0.11,0.23,'eu'],
+  ALV:[0.09,0.18,'eu'],   DAI:[0.09,0.26,'eu'],   BMW:[0.10,0.25,'eu'],
+  VOW:[0.08,0.28,'eu'],
+  // Finance
+  JPM:[0.12,0.22,'fin'],  BAC:[0.10,0.24,'fin'],  GS:[0.14,0.26,'fin'],
+  MS:[0.12,0.25,'fin'],   BLK:[0.13,0.22,'fin'],  V:[0.15,0.20,'fin'],
+  MA:[0.16,0.22,'fin'],   AXP:[0.13,0.24,'fin'],
+  // Défensif / Dividendes
+  JNJ:[0.08,0.16,'def'],  PG:[0.07,0.14,'def'],   KO:[0.06,0.13,'def'],
+  PEP:[0.07,0.14,'def'],  MCD:[0.09,0.17,'def'],  WMT:[0.08,0.15,'def'],
+  COST:[0.12,0.19,'def'], HD:[0.11,0.20,'def'],   UNH:[0.14,0.18,'def'],
+  // Santé / Pharma
+  PFE:[0.08,0.22,'health'], MRNA:[0.25,0.55,'health'], LLY:[0.22,0.28,'health'],
+  ABT:[0.10,0.18,'health'], BMY:[0.07,0.20,'health'], AZN:[0.11,0.20,'health'],
+  // Énergie
+  XOM:[0.10,0.22,'energy'], CVX:[0.09,0.21,'energy'], COP:[0.12,0.25,'energy'],
+  SLB:[0.11,0.28,'energy'], BP:[0.08,0.22,'energy'],
+  // Matières premières (ETF)
+  GLD:[0.06,0.15,'commodity'], SLV:[0.05,0.22,'commodity'], USO:[0.08,0.30,'commodity'],
+  // Médias / Divertissement
+  DIS:[0.10,0.28,'media'],  SPOT:[0.18,0.42,'media'], WMG:[0.12,0.25,'media'],
+  RBLX:[0.15,0.55,'media'],
+  // Chine
+  BABA:[0.12,0.40,'cn'], TCEHY:[0.10,0.35,'cn'], PDD:[0.25,0.50,'cn'],
+  JD:[0.08,0.38,'cn'],   BIDU:[0.06,0.42,'cn'],
+  // Maroc
+  ATW:[0.09,0.18,'ma'],  IAM:[0.07,0.16,'ma'],  CIH:[0.08,0.19,'ma'],
+  BCP:[0.08,0.17,'ma'],  LHM:[0.06,0.15,'ma'],
+  // Crypto
   BTC:[0.60,0.80,'crypto'], ETH:[0.50,0.85,'crypto'], BNB:[0.40,0.70,'crypto'],
-  SOL:[0.70,0.90,'crypto'], XRP:[0.35,0.75,'crypto'],
+  SOL:[0.70,0.90,'crypto'], XRP:[0.35,0.75,'crypto'],  ADA:[0.30,0.80,'crypto'],
+  AVAX:[0.55,0.88,'crypto'], DOT:[0.40,0.82,'crypto'], MATIC:[0.45,0.85,'crypto'],
 };
 const COLORS_MK=['#e63946','#f4a261','#27ae60','#3498db','#9b59b6','#e67e22','#1abc9c','#f39c12','#e91e63','#00bcd4','#ff6b6b','#4ecdc4'];
 
@@ -7721,6 +8213,8 @@ window.runMarkowitz = function(){
   }
 
   toast('✅ Optimisation Markowitz terminée (' + n + ' actifs, ' + NUM_PORTFOLIOS + ' simulations)','success');
+  // Run stress test
+  _runStressTest(optimal, assets);
   // Add export button
   let mkExportBtn = document.getElementById('mk-export-btn');
   if(!mkExportBtn){
@@ -7733,7 +8227,6 @@ window.runMarkowitz = function(){
     const resDiv = document.getElementById('mk-results');
     if(resDiv) resDiv.appendChild(mkExportBtn);
   }
-
 };
 
 function _exportMarkowitz(tickers, ret, vol, sharpe, var95, weights){
@@ -7780,8 +8273,12 @@ const NLP_NEG_FR = ['difficile','risque','incertitude','déclin','perte','pressi
 window.runNLP = function(){
   const t1 = (document.getElementById('nlp-text1')?.value||'').toLowerCase();
   const t2 = (document.getElementById('nlp-text2')?.value||'').toLowerCase();
-  const co1 = document.getElementById('nlp-co1')?.value||'Rapport A';
-  const co2 = document.getElementById('nlp-co2')?.value||'Rapport B';
+  const co1raw = document.getElementById('nlp-co1')?.value||'Rapport A';
+  const co2raw = document.getElementById('nlp-co2')?.value||'Rapport B';
+  const y1 = document.getElementById('nlp-year1')?.value||'N';
+  const y2 = document.getElementById('nlp-year2')?.value||'N-1';
+  const co1 = `${co1raw} (${y1})`;
+  const co2 = `${co2raw} (${y2})`;
 
   if(t1.length<20||t2.length<20){ toast('Textes trop courts pour analyse','error'); return; }
 
@@ -7931,24 +8428,55 @@ function _countOcc(text, word){
 }
 
 window.nlpLoadExample = function(type){
+  const yr = new Date().getFullYear();
   const examples = {
     tech:{
-      co1:'Apple Inc. (2023)',
+      co1:'Apple Inc.', y1:'N',
       t1:'We achieved record revenue of $394 billion this fiscal year, driven by exceptional iPhone performance and strong services growth. Our innovation pipeline has never been more robust, with breakthrough technologies in spatial computing and artificial intelligence creating tremendous opportunities for long-term value creation. We are confident in our strategic position and our ability to continue delivering outstanding results for our shareholders.',
-      co2:'Apple Inc. (2022)',
+      co2:'Apple Inc.', y2:'N-4',
       t2:'Macroeconomic headwinds including foreign exchange challenges and supply chain disruptions impacted our results. Despite these difficult conditions, we maintained resilient performance and continued to invest strategically. We remain cautiously optimistic but acknowledge increased uncertainty in global markets and potential risks to consumer spending.'
     },
     bank:{
-      co1:'JPMorgan Chase (2023)',
+      co1:'JPMorgan Chase', y1:'N',
       t1:'We delivered exceptional performance with record earnings per share, demonstrating the strength of our diversified business model. Our fortress balance sheet enables us to navigate uncertain environments and capitalize on growth opportunities. We increased our dividend and returned significant capital to shareholders, reflecting our confidence in sustained profitability.',
-      co2:'Credit Suisse (2022)',
+      co2:'Credit Suisse', y2:'N-1',
       t2:'We faced significant challenges this year including substantial litigation costs and strategic restructuring charges. The bank experienced elevated operational risks and reputational concerns that led to client outflows. We are undertaking a comprehensive transformation to address weaknesses, while managing liquidity risks and regulatory compliance requirements carefully.'
     },
     energy:{
-      co1:'TotalEnergies (2023)',
+      co1:'TotalEnergies', y1:'N',
       t1:'Strong oil and gas prices drove record cash generation, enabling accelerated investment in our multi-energy strategy. Our renewable energy portfolio expanded significantly, with solar and wind capacity growing substantially. We maintain our commitment to disciplined capital allocation and increasing shareholder returns while funding the energy transition.',
-      co2:'TotalEnergies (2020)',
+      co2:'TotalEnergies', y2:'N-4',
       t2:'The COVID-19 pandemic created unprecedented challenges with severe demand destruction and volatile commodity prices. We implemented rigorous cost reduction measures and reduced capital expenditure to preserve cash flow. Despite the difficult environment, we maintained our commitment to our strategic transformation, though near-term uncertainty remains elevated and impairment charges were significant.'
+    },
+    luxury:{
+      co1:'LVMH Moët Hennessy', y1:'N',
+      t1:'Our Maisons achieved remarkable revenue growth across all business groups, driven by strong demand from high net worth clients globally. The leather goods and fashion division reached historic sales levels. Our selective retail network and e-commerce expansion continue to deliver outstanding results. The portfolio of iconic brands provides exceptional resilience and pricing power in any market environment.',
+      co2:'Kering Group', y2:'N-1',
+      t2:'Gucci faced headwinds in key Asian markets while other houses showed more resilient performance. We accelerated our creative refresh strategy and launched targeted digital initiatives to reconnect with younger affluent consumers. Despite softening demand in some geographies, we remain focused on brand exclusivity and long-term desirability over short-term volume growth.'
+    },
+    pharma:{
+      co1:'Pfizer Inc.', y1:'N',
+      t1:'We successfully diversified our revenue base following the peak of COVID vaccine revenues, with strong oncology and rare disease pipelines showing promising Phase III results. Our acquisition strategy has strengthened our late-stage pipeline significantly. We are guiding for solid organic growth as new product launches offset the anticipated LOE headwinds over the next planning horizon.',
+      co2:'Pfizer Inc.', y2:'N-3',
+      t2:'The COVID-19 vaccine and Paxlovid revenues exceeded all expectations, generating unprecedented cash flows. We accelerated R&D investment and deployed capital through strategic M&A to sustain long-term growth beyond the pandemic cycle. While we recognize the extraordinary nature of these revenues, we believe our pipeline investments will deliver sustainable value for shareholders.'
+    },
+    auto:{
+      co1:'Tesla Inc.', y1:'N',
+      t1:'We achieved record deliveries and continued to improve operating margins through manufacturing efficiency gains. Our energy generation and storage business showed accelerating growth momentum. Full Self-Driving technology advancement remains our top priority, with significant software improvements driving monetization potential. We continue to invest in next-generation vehicles and AI compute capabilities.',
+      co2:'Tesla Inc.', y2:'N-2',
+      t2:'Supply chain constraints and production ramp challenges at new factories impacted our delivery targets. We demonstrated pricing flexibility to manage demand while protecting volume growth. Despite short-term margin pressure from elevated raw material costs, we remain confident in our long-term trajectory as the global EV market leader.'
+    },
+    retail:{
+      co1:'Amazon.com Inc.', y1:'N',
+      t1:'AWS revenue acceleration and advertising growth drove significant margin expansion across the business. Prime membership continues to show strong retention and engagement metrics globally. Our logistics network investments are now generating positive returns on invested capital. We remain focused on cost structure optimization and profitable growth across all segments.',
+      co2:'Alibaba Group', y2:'N-1',
+      t2:'We navigated a complex regulatory environment in China while maintaining strong core commerce fundamentals. Cloud computing growth moderated as we prioritized profitability over market share. International commerce expansion in Southeast Asia showed promising traction. We remain committed to our shareholder return programs while investing selectively in strategic growth initiatives.'
+    },
+    africa:{
+      co1:'Attijariwafa Bank', y1:'N',
+      t1:"Notre groupe bancaire a réalisé une performance solide avec une progression du produit net bancaire portée par la dynamique commerciale en Afrique subsaharienne. Le portefeuille de crédits a crû de manière sélective, privilégiant les secteurs porteurs. Notre stratégie de transformation digitale accélère l'acquisition de nouveaux clients et améliore l'efficacité opérationnelle. Nous confirmons notre position de leader panafricain.",
+      co2:'Maroc Telecom', y2:'N-1',
+      t2:"Malgré la pression concurrentielle sur les prix en données mobiles, nous avons maintenu notre leadership de marché au Maroc. La croissance en Afrique subsaharienne compense partiellement le ralentissement domestique. Nous investissons dans l'infrastructure fibre et 5G pour préparer l'avenir numérique du continent. La rentabilité reste robuste grâce à la diversification géographique de nos activités."
     }
   };
   const ex = examples[type];
@@ -7957,7 +8485,11 @@ window.nlpLoadExample = function(type){
   document.getElementById('nlp-text1').value=ex.t1;
   document.getElementById('nlp-co2').value=ex.co2;
   document.getElementById('nlp-text2').value=ex.t2;
-  toast('Exemple ' + type + ' chargé — cliquez Analyser','success');
+  const y1sel=document.getElementById('nlp-year1');
+  const y2sel=document.getElementById('nlp-year2');
+  if(y1sel)y1sel.value=ex.y1||'N';
+  if(y2sel)y2sel.value=ex.y2||'N-1';
+  toast('Exemple ' + type + ' chargé — cliquez Analyser ✅','success');
 };
 
 
