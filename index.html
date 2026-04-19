@@ -399,20 +399,49 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 .brand-dropdown-sep{height:1px;background:var(--border);margin:4px 0;}
 
 /* BOUTON AUTRE DROPDOWN */
-.autre-wrap{position:relative;}
-.autre-btn{display:flex;align-items:center;gap:7px;padding:14px 16px;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;white-space:nowrap;transition:color .2s;border-bottom:2px solid transparent;margin-bottom:-1px;}
-.autre-btn:hover{color:var(--accent);}
+.autre-wrap{position:static;}
+.autre-btn{display:flex;align-items:center;gap:7px;padding:0 16px;height:var(--tabsbar-h);border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:color .2s;border-bottom:2px solid transparent;flex-shrink:0;}
+.autre-btn:hover{color:var(--text);}
 .autre-btn.has-active{color:var(--accent);border-bottom-color:var(--accent);}
-.autre-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;min-width:220px;box-shadow:0 20px 60px rgba(0,0,0,.5);z-index:9999;display:none;flex-direction:column;overflow:hidden;animation:fadeIn .2s ease;}
-/* autre dropdown géré par JS clic */
-.autre-dropdown-item{display:flex;align-items:center;gap:10px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;color:var(--text);cursor:pointer;transition:background .15s;border:none;background:transparent;width:100%;text-align:left;}
+/* Dropdown affiché SOUS la tabs-bar en position fixed pour couvrir le contenu */
+.autre-dropdown{
+  position:fixed;
+  top:var(--nav-h); /* juste sous topbar+tabsbar */
+  right:0;
+  left:0;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+  box-shadow:0 12px 40px rgba(0,0,0,.45);
+  z-index:9998;
+  display:none;
+  flex-wrap:wrap;
+  gap:0;
+  padding:10px 16px;
+  animation:fadeIn .18s ease;
+}
+.autre-dropdown-item{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  color:var(--text);cursor:pointer;transition:background .15s,color .15s;
+  border:none;background:transparent;
+  border-radius:9px;
+  white-space:nowrap;
+  flex:0 0 calc(20% - 4px); /* 5 par ligne */
+  min-width:140px;
+}
 .autre-dropdown-item:hover{background:var(--surface2);color:var(--accent);}
-.autre-dropdown-item.active-page{color:var(--accent);font-weight:600;}
+.autre-dropdown-item.active-page,.autre-dropdown-item.active{color:var(--accent);font-weight:600;background:rgba(230,57,70,.06);}
+@media(max-width:900px){.autre-dropdown-item{flex:0 0 calc(33.33% - 4px);}}
+/* Backdrop pour menu Plus */
+#autre-backdrop{position:fixed;inset:0;top:var(--nav-h);background:rgba(0,0,0,.3);z-index:9997;display:none;}
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
+<div id="autre-backdrop" onclick="closeAllDropdowns()"></div>
 <div id="login-page" style="display:none">
   <video id="login-video-bg" autoplay muted loop playsinline>
     <source src="https://motionbgs.com/media/7006/edge-of-the-event-horizon.960x540.mp4" type="video/mp4">
@@ -484,6 +513,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <div id="gsearch-results" style="position:absolute;top:calc(100% + 6px);right:0;width:300px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.5);z-index:9999;display:none;max-height:320px;overflow-y:auto"></div>
       </div>
       <button onclick="toggleDarkMode()" id="dark-toggle" title="Changer le thème" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);cursor:pointer;font-size:14px;transition:all .2s">🌙</button>
+      <button id="ai-btn" onclick="toggleAI()">✦ IA</button>
       <button class="btn-logout" onclick="doLogout()">Déconnexion</button>
     </div>
   </div>
@@ -2400,9 +2430,9 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 
 <!-- ASSISTANT IA -->
 <style>
-#ai-btn{position:fixed;bottom:24px;left:24px;width:50px;height:50px;background:linear-gradient(135deg,#6c47ff,#e63946);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 4px 20px rgba(108,71,255,.5);z-index:800;border:none;transition:transform .2s;}
-#ai-btn:hover{transform:scale(1.1);}
-#ai-panel{position:fixed;bottom:86px;left:24px;width:360px;max-height:520px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);z-index:800;display:none;flex-direction:column;overflow:hidden;}
+#ai-btn{background:linear-gradient(135deg,#6c47ff,#e63946);border-radius:8px;display:none;align-items:center;justify-content:center;gap:6px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(108,71,255,.35);border:none;transition:all .2s;padding:7px 13px;color:#fff;font-family:'DM Sans',sans-serif;letter-spacing:.2px;}
+#ai-btn:hover{transform:scale(1.04);box-shadow:0 4px 18px rgba(108,71,255,.5);}
+#ai-panel{position:fixed;top:calc(var(--topbar-h) + 8px);right:16px;width:360px;max-height:520px;background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);z-index:800;display:none;flex-direction:column;overflow:hidden;}
 #ai-panel.open{display:flex;}
 .ai-hd{padding:13px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(108,71,255,.1),rgba(230,57,70,.07));}
 .ai-hd-l{display:flex;align-items:center;gap:9px;}
@@ -2421,7 +2451,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 .ai-inp input:focus{border-color:#6c47ff;}
 .ai-inp button{background:linear-gradient(135deg,#6c47ff,var(--accent));border:none;border-radius:9px;padding:8px 14px;color:#fff;cursor:pointer;font-size:14px;}
 </style>
-<button id="ai-btn" onclick="toggleAI()">✦</button>
 <div id="ai-panel">
   <div class="ai-hd">
     <div class="ai-hd-l"><h4>Assistant IA</h4><span>Actif</span></div>
@@ -3103,10 +3132,15 @@ function toggleAutreDropdown(e){
   e.stopPropagation();
   const dd=document.getElementById('autre-dropdown');
   const ar=document.getElementById('autre-arrow');
+  const bd=document.getElementById('autre-backdrop');
   if(!dd)return;
   const isOpen=dd.style.display==='flex';
   closeAllDropdowns();
-  if(!isOpen){dd.style.display='flex';if(ar)ar.textContent='▴';}
+  if(!isOpen){
+    dd.style.display='flex';
+    if(ar)ar.textContent='▴';
+    if(bd)bd.style.display='block';
+  }
 }
 
 async function loadAboutFromFirebase(){
@@ -3122,6 +3156,7 @@ async function loadAboutFromFirebase(){
 }
 
 async function initDashboard(isRefresh=false){
+  // Charger les données critiques en parallèle
   const [fbUsers,fbFiles,fbEvents,fbTx,fbLogs]=await Promise.all([
     fbGetAll('users'),fbGetAll('files'),fbGetAll('events'),fbGetAll('transactions'),fbGetAll('connlog')
   ]);
@@ -3131,19 +3166,22 @@ async function initDashboard(isRefresh=false){
   connLog=fbLogs.map(l=>({...l,loginTime:new Date(l.loginTime),logoutTime:l.logoutTime?new Date(l.logoutTime):null,_logId:l.id||l._fbid})).sort((a,b)=>b.loginTime-a.loginTime);
   agendas={};
   fbEvents.forEach(e=>{if(!agendas[e.owner])agendas[e.owner]=[];agendas[e.owner].push(e);});
+  // Renders critiques immédiats
   renderFiles();
-  if(currentUser.role==='admin'){renderUsersTable();renderDiagram();renderConnLog();renderActivityChart();}
-  initAgendaUserSelect();initCalendar();
-  renderTx();updateStats();drawEvolutionChart();renderPostes();
+  renderTx();updateStats();
   loadMyProfileForm();loadMessages();
   initAgendaClock();
-  if(currentUser.role==='viewer'||currentUser.role==='admin'){renderCompta();}
-  // Load active tab content on refresh
-  const activeTab=loadActiveTab();
-  if(activeTab==='finance'||activeTab==='news'){
+  // Renders secondaires différés (ne bloquent pas l'affichage)
+  setTimeout(()=>{
+    initAgendaUserSelect();initCalendar();
+    drawEvolutionChart();renderPostes();
+    if(currentUser.role==='viewer'||currentUser.role==='admin'){renderCompta();}
+    if(currentUser.role==='admin'){renderUsersTable();renderDiagram();renderConnLog();renderActivityChart();}
+    // Charger le contenu de l'onglet actif si finance/news
+    const activeTab=loadActiveTab();
     if(activeTab==='finance')loadFinanceData();
-    if(activeTab==='news')loadNewsData();
-  }
+    else if(activeTab==='news')loadNewsData();
+  }, 80);
   // Start auto-refresh system
   _startAutoRefresh();
 }
@@ -3151,17 +3189,19 @@ async function initDashboard(isRefresh=false){
 // ── Auto-refresh system ──────────────────────────────────────
 let _autoRefreshInterval = null;
 let _lastRefresh = Date.now();
-const AUTO_REFRESH_MS = 30000; // 30 secondes
+const AUTO_REFRESH_MS = 60000; // 60 secondes (allégé vs 30s)
+let _refreshIndicatorInterval = null;
 
 function _startAutoRefresh(){
   if(_autoRefreshInterval) clearInterval(_autoRefreshInterval);
-  // Firebase real-time listeners for messages and users
+  if(_refreshIndicatorInterval) clearInterval(_refreshIndicatorInterval);
+  // Firebase real-time listeners for messages and emails_inbox only
   _setupFirebaseListeners();
-  // Periodic polling for data that doesn't have listeners
+  // Periodic polling — léger, uniquement données critiques
   _autoRefreshInterval = setInterval(_periodicRefresh, AUTO_REFRESH_MS);
-  // Show refresh indicator
+  // Indicateur — toutes les 5s seulement (pas chaque seconde)
   _updateRefreshIndicator();
-  setInterval(_updateRefreshIndicator, 1000);
+  _refreshIndicatorInterval = setInterval(_updateRefreshIndicator, 5000);
 }
 
 function _setupFirebaseListeners(){
@@ -3171,16 +3211,14 @@ function _setupFirebaseListeners(){
     window.firebaseDB.collection('messages').onSnapshot(snap => {
       messages = snap.docs.map(d=>({...d.data(), _fbid:d.id}));
       updateMsgBadge();
-      renderMsgPreview();
-      const activeTab = loadActiveTab();
-      // Refresh email inbox if active
-      if(activeTab === 'email') _emLoadInbox();
+      // Ne re-render preview que si le panel est ouvert
+      const panel = document.getElementById('msg-panel');
+      if(panel?.classList.contains('open')) renderMsgPreview();
     });
-    // Listen to inbox emails
+    // Listen to inbox emails — uniquement si l'onglet email est actif
     window.firebaseDB.collection('emails_inbox').onSnapshot(snap => {
       emailInboxList = snap.docs.map(d=>({...d.data(),_fbid:d.id}));
-      const activeTab = loadActiveTab();
-      if(activeTab === 'email') emailRenderList();
+      if(loadActiveTab() === 'email') emailRenderList();
     });
   } catch(e) { console.warn('Firebase listeners error:', e); }
 }
@@ -3188,19 +3226,28 @@ function _setupFirebaseListeners(){
 async function _periodicRefresh(){
   if(!currentUser) return;
   _lastRefresh = Date.now();
+  const activeTab = loadActiveTab();
   try {
-    const activeTab = loadActiveTab();
-    // Always refresh transactions & users
-    const [fbTx, fbUsers] = await Promise.all([
-      fbGetAll('transactions'), fbGetAll('users')
-    ]);
-    transactions = fbTx.sort((a,b)=>new Date(b.date)-new Date(a.date));
-    if(fbUsers.length>0) users = fbUsers.map(u=>({...u,created:u.created?new Date(u.created):new Date()}));
-    // Refresh active tab content
-    if(activeTab==='compte'){renderTx();updateStats();drawEvolutionChart();}
-    if(activeTab==='finance'){loadFinanceData();}
-    if(activeTab==='news'){loadNewsData();}
-    if(activeTab==='acces'&&currentUser.role==='admin'){renderUsersTable();renderConnLog();}
+    // Refresh transactions seulement si onglet compte actif
+    if(activeTab === 'compte'){
+      const fbTx = await fbGetAll('transactions');
+      transactions = fbTx.sort((a,b)=>new Date(b.date)-new Date(a.date));
+      renderTx(); updateStats(); drawEvolutionChart();
+    }
+    // Refresh admin views seulement si onglet accès actif
+    if(activeTab === 'acces' && currentUser.role === 'admin'){
+      const [fbUsers, fbLogs] = await Promise.all([fbGetAll('users'), fbGetAll('connlog')]);
+      if(fbUsers.length>0) users = fbUsers.map(u=>({...u,created:u.created?new Date(u.created):new Date()}));
+      connLog = fbLogs.map(l=>({...l,loginTime:new Date(l.loginTime),logoutTime:l.logoutTime?new Date(l.logoutTime):null,_logId:l.id||l._fbid})).sort((a,b)=>b.loginTime-a.loginTime);
+      renderUsersTable(); renderConnLog();
+    }
+    // Finance et News : uniquement si l'onglet est actif ET que les données ont + de 5 min
+    if(activeTab === 'finance' && (Date.now() - (_financeLastLoad||0) > 300000)){
+      loadFinanceData();
+    }
+    if(activeTab === 'news' && (Date.now() - (_newsLastLoad||0) > 300000)){
+      loadNewsData();
+    }
     _updateRefreshIndicator();
   } catch(e) { console.warn('Auto-refresh error:', e); }
 }
@@ -3210,12 +3257,11 @@ function _updateRefreshIndicator(){
   if(!ind){
     ind = document.createElement('div');
     ind.id = 'refresh-indicator';
-    ind.style.cssText = 'position:fixed;bottom:80px;left:24px;font-size:10px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 8px;z-index:799;display:flex;align-items:center;gap:5px;opacity:.7;';
+    ind.style.cssText = 'position:fixed;bottom:16px;right:16px;font-size:10px;color:var(--muted);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:3px 8px;z-index:799;display:flex;align-items:center;gap:5px;opacity:.6;pointer-events:none;';
     document.body.appendChild(ind);
   }
-  const secsAgo = Math.round((Date.now()-_lastRefresh)/1000);
   const next = Math.max(0, Math.round((AUTO_REFRESH_MS-(Date.now()-_lastRefresh))/1000));
-  ind.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;animation:pulse 2s infinite;"></span> Sync: ${next>0?`dans ${next}s`:'en cours...'}`;
+  ind.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:var(--success);display:inline-block;"></span> sync ${next}s`;
 }
 
 // ============ AGENDA CLOCK ============
@@ -3988,8 +4034,11 @@ const COMMODITIES=[
 ];
 
 let financeData={stocks:[],crypto:{},commodities:[]};
+let _financeLastLoad = 0;
+let _newsLastLoad = 0;
 
 async function loadFinanceData(){
+  _financeLastLoad = Date.now();
   document.getElementById('finance-loading').style.display='block';
   document.getElementById('finance-content').style.display='none';
   try{
@@ -4087,6 +4136,7 @@ const NEWS_IMAGES=[
 const NEWS_CATS=['Marchés','Crypto','Technologie','Énergie','Économie','Entreprises','Finance'];
 
 async function loadNewsData(){
+  _newsLastLoad = Date.now();
   document.getElementById('news-loading').style.display='block';
   document.getElementById('news-grid-container').style.display='none';
   updateBbgMarketStrip();
@@ -4512,9 +4562,11 @@ function closeAllDropdowns(){
   const bd=document.getElementById('brand-dropdown');
   const ad=document.getElementById('autre-dropdown');
   const ar=document.getElementById('autre-arrow');
+  const bk=document.getElementById('autre-backdrop');
   if(bd)bd.style.display='none';
   if(ad)ad.style.display='none';
   if(ar)ar.textContent='▾';
+  if(bk)bk.style.display='none';
 }
 
 // Toggle menu Bienvenue — contenu dynamique selon le rôle
@@ -4566,8 +4618,16 @@ function toggleAutreMenu(e){
 
 // Fermer au clic en dehors
 document.addEventListener('click',function(e){
-  if(!e.target.closest('#topbar-brand-wrap')&&!e.target.closest('.autre-wrap')){
-    closeAllDropdowns();
+  const dd = document.getElementById('autre-dropdown');
+  if(dd && dd.style.display === 'flex') {
+    // Close if click is outside tabs-bar entirely
+    if(!e.target.closest('#tabs-bar') && !e.target.closest('#autre-dropdown')) {
+      closeAllDropdowns();
+    }
+  }
+  if(!e.target.closest('#topbar-brand-wrap')) {
+    const bd = document.getElementById('brand-dropdown');
+    if(bd) bd.style.display = 'none';
   }
 });
 
