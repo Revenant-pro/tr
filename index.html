@@ -3650,7 +3650,7 @@ function buildTabsBar(isRefresh=false){
         ≡ Plus <span id="autre-arrow">▾</span>
       </button>
       <div class="autre-dropdown" id="autre-dropdown">
-        ${hiddenIds.map(id=>`<button class="autre-dropdown-item" data-tabid="${id}" onclick="showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`).join('')}
+        ${hiddenIds.map(id=>`<button class="autre-dropdown-item" data-tabid="${id}" onclick="event.stopPropagation();showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`).join('')}
       </div>
     </div>`;
   }
@@ -3840,6 +3840,9 @@ setInterval(updateAgendaClock,1000);
 
 // ============ TABS ============
 function showTab(id,btn){
+  // Mémoriser si le bouton vient du dropdown AVANT de fermer (closeAllDropdowns retire le dropdown du DOM visible)
+  const fromDropdown = btn && (btn.closest('#autre-dropdown') !== null || btn.dataset?.tabid);
+  const isInAutreDropdown = btn && btn.classList.contains('autre-dropdown-item');
   closeAllDropdowns();
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('#tabs-bar .tab-btn, #tabs-bar .autre-dropdown-item').forEach(b=>b.classList.remove('active'));
@@ -3849,7 +3852,7 @@ function showTab(id,btn){
   if(tc)tc.classList.add('active');
   if(btn){
     btn.classList.add('active');
-    if(btn.closest('#autre-dropdown')){
+    if(isInAutreDropdown){
       if(auBtn)auBtn.classList.add('has-active');
     }
   }
@@ -3879,13 +3882,52 @@ function showAccessOrProfile(){
   if(isAdmin){
     showAccesSub('users',document.getElementById('acces-sub-users'));
     renderUsersTable();renderActivityChart();renderPromoteSelect();
-    // Initialize page checkboxes if not yet done
     if(!document.querySelector('#new-user-pages input'))renderPageCheckboxes('new-user-pages',null);
   } else {loadMyProfileForm();}
 }
+
 function goToProfile(){
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  // Naviguer vers l'onglet acces
   const btn=document.querySelector('#tabs-bar [data-tabid="acces"]');
-  if(btn)showTab('acces',btn);
+  if(btn){
+    // Activer l'onglet sans déclencher showAccessOrProfile automatiquement
+    closeAllDropdowns();
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('#tabs-bar .tab-btn, #tabs-bar .autre-dropdown-item').forEach(b=>b.classList.remove('active'));
+    const tc=document.getElementById('tab-acces');
+    if(tc)tc.classList.add('active');
+    btn.classList.add('active');
+    saveActiveTab('acces');
+  }
+  if(isAdmin){
+    // Pour l'admin : afficher son profil avec bouton retour
+    document.getElementById('zone-admin').style.display='none';
+    document.getElementById('zone-profil').style.display='block';
+    loadMyProfileForm();
+    // Ajouter bouton retour vers gestion si pas déjà là
+    let backBtn=document.getElementById('profile-back-to-admin');
+    if(!backBtn){
+      backBtn=document.createElement('button');
+      backBtn.id='profile-back-to-admin';
+      backBtn.className='btn btn-outline';
+      backBtn.style.cssText='font-size:13px;margin-bottom:18px;';
+      backBtn.innerHTML='← Retour à la gestion des accès';
+      backBtn.onclick=()=>{
+        document.getElementById('zone-admin').style.display='block';
+        document.getElementById('zone-profil').style.display='none';
+        showAccesSub('users',document.getElementById('acces-sub-users'));
+        renderUsersTable();renderActivityChart();renderPromoteSelect();
+        if(!document.querySelector('#new-user-pages input'))renderPageCheckboxes('new-user-pages',null);
+      };
+      const zoneP=document.getElementById('zone-profil');
+      if(zoneP)zoneP.insertBefore(backBtn,zoneP.firstChild);
+    }
+  } else {
+    document.getElementById('zone-admin').style.display='none';
+    document.getElementById('zone-profil').style.display='block';
+    loadMyProfileForm();
+  }
 }
 
 // ============ MESSAGE BELL ============
@@ -4125,9 +4167,14 @@ function renderUsersTable(){
     const av=p.avatar?`<img src="${p.avatar}" alt="" style="width:24px;height:24px;border-radius:5px;object-fit:cover">`:`<span>${(u.fullname||u.username).charAt(0).toUpperCase()}</span>`;
     const isPrincipal=currentUser&&currentUser.username==='hans';
     const canDeleteThisUser=u.username!=='hans'&&isAdmin&&(u.role!=='admin'||isPrincipal);
+    const showPagesBtn=u.username!=='hans'&&isAdmin&&u.role!=='admin';
     const actionCell=u.username==='hans'
       ?'<span style="color:var(--muted);font-size:11px">Principal</span>'
-      :(canDeleteThisUser?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button><button class="btn btn-outline" style="padding:4px 10px;font-size:12px;margin-left:4px" onclick="openEditUserPages('${u.id}')">Pages</button>`:(isAdmin&&u.role==='admin'?'<span style="color:var(--muted);font-size:11px">Admin</span>':'—'));
+      :`<div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+          ${showPagesBtn?`<button class="btn btn-outline" style="padding:4px 10px;font-size:12px;" onclick="openEditUserPages('${u.id}')">Pages</button>`:''}
+          ${canDeleteThisUser?`<button class="btn btn-danger" style="padding:4px 10px;font-size:12px" onclick="confirmDelete('user','${u.id}')">Supprimer</button>`:''}
+          ${!showPagesBtn&&!canDeleteThisUser?'<span style="color:var(--muted);font-size:11px">Admin</span>':''}
+        </div>`;
     const isPrincipalView=currentUser&&currentUser.username==='hans';
     const pwCell=isPrincipalView?`<td id="pw-col-cell-${u.id}" style="font-family:monospace;font-size:11px;color:var(--muted);max-width:140px;word-break:break-all">${u.pass||'—'}</td>`:'';
     if(isPrincipalView)document.getElementById('pw-col-header')?.style&&(document.getElementById('pw-col-header').style.display='');
@@ -5591,8 +5638,8 @@ function toggleAutreMenu(e){
 document.addEventListener('click',function(e){
   const dd = document.getElementById('autre-dropdown');
   if(dd && dd.style.display === 'flex') {
-    // Close if click is outside tabs-bar entirely
-    if(!e.target.closest('#tabs-bar') && !e.target.closest('#autre-dropdown')) {
+    // Ne pas fermer si le clic est dans le dropdown lui-même ou sur le bouton "Plus"
+    if(!e.target.closest('#autre-dropdown') && !e.target.closest('#autre-btn') && !e.target.closest('#autre-wrap')) {
       closeAllDropdowns();
     }
   }
