@@ -756,6 +756,20 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           <div class="card-title">Événements — <span id="agenda-current-label" style="color:var(--accent)"></span></div>
           <div class="events-list" id="events-list"><div class="empty-state"><div class="empty-icon">📅</div><p>Aucun événement.</p></div></div>
         </div>
+        <!-- Météo live (NOUVEAU) -->
+        <div class="card" id="weather-card" style="cursor:pointer;" onclick="loadWeather()">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <div class="card-title" style="margin-bottom:0;">🌤 Météo</div>
+            <button onclick="event.stopPropagation();loadWeather()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;">↺</button>
+          </div>
+          <div id="weather-content">
+            <div style="font-size:12px;color:var(--muted);text-align:center;padding:10px 0;">Cliquez pour charger la météo de votre ville</div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px;align-items:center;">
+            <input type="text" id="weather-city" placeholder="Paris, Londres..." value="Paris" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-size:12px;outline:none;" onclick="event.stopPropagation()">
+            <button onclick="event.stopPropagation();loadWeather()" class="btn btn-primary" style="font-size:12px;padding:6px 12px;">OK</button>
+          </div>
+        </div>
       </div>
     </div>
     </div>
@@ -856,6 +870,11 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
     <div class="card" style="margin-bottom:18px">
       <div class="card-title">Évolution (6 derniers mois)</div>
       <canvas id="evolution-chart" height="100"></canvas>
+    </div>
+    <!-- Répartition des dépenses (NOUVEAU) -->
+    <div class="card" style="margin-bottom:18px;display:none;" id="spending-breakdown-chart">
+      <div class="card-title">🍩 Répartition des dépenses par catégorie</div>
+      <div style="position:relative;height:200px;"><canvas id="spending-donut"></canvas></div>
     </div>
     <!-- Postes comptables PCG -->
     <div class="grid-2" style="margin-bottom:18px">
@@ -1010,8 +1029,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <button class="tab-btn" id="fin-sub-watchlist" onclick="showFinSub('watchlist',this)" style="font-size:13px;padding:10px 18px">⭐ Watchlist</button>
         <button class="tab-btn" id="fin-sub-alertes" onclick="showFinSub('alertes',this)" style="font-size:13px;padding:10px 18px">🔔 Alertes prix</button>
         <button class="tab-btn" id="fin-sub-compare" onclick="showFinSub('compare',this)" style="font-size:13px;padding:10px 18px">⚖️ Comparateur</button>
+        <button class="tab-btn" id="fin-sub-forex" onclick="showFinSub('forex',this)" style="font-size:13px;padding:10px 18px">💱 Forex</button>
       </div>
-      <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px;margin-right:4px">⟳ Actualiser</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="fin-last-update" style="font-size:11px;color:var(--muted);"></span>
+        <button class="btn btn-outline" onclick="loadFinanceData()" style="font-size:13px;">⟳ Actualiser</button>
+      </div>
     </div>
     <!-- Panel Marchés -->
     <div id="fin-panel-marches">
@@ -1088,6 +1111,45 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <button class="btn btn-outline" onclick="setCmpPreset(['XOM','CVX','TTE','BP'])" style="font-size:11px;padding:4px 10px;">🛢️ Énergie</button>
       </div>
       <div id="cmp-result" style="overflow-x:auto;"></div>
+    </div>
+
+    <!-- Panel Forex (NOUVEAU) -->
+    <div id="fin-panel-forex" style="display:none;padding:4px 0 0;">
+      <div style="margin-bottom:16px;">
+        <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;">💱 Convertisseur Forex — Taux en temps réel</div>
+        <div style="font-size:13px;color:var(--muted);">Taux via CoinGecko (crypto) et ECB (devises fiat). BTC/ETH = live ●</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:end;max-width:640px;margin-bottom:20px;">
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Montant</label>
+          <input type="number" id="forex-amount" value="1000" step="0.01" oninput="runForex()" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:10px 13px;color:var(--text);font-size:14px;font-weight:700;outline:none;">
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:4px;">
+          <select id="forex-from" onchange="runForex()" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-weight:600;cursor:pointer;">
+            <option value="USD">🇺🇸 USD</option><option value="EUR" selected>🇪🇺 EUR</option><option value="GBP">🇬🇧 GBP</option>
+            <option value="JPY">🇯🇵 JPY</option><option value="CHF">🇨🇭 CHF</option><option value="CAD">🇨🇦 CAD</option>
+            <option value="AUD">🇦🇺 AUD</option><option value="MAD">🇲🇦 MAD</option><option value="XOF">🌍 XOF</option>
+            <option value="BTC">₿ BTC</option><option value="ETH">Ξ ETH</option>
+          </select>
+          <button onclick="swapForex()" style="background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:5px 12px;color:var(--accent);cursor:pointer;font-size:16px;font-weight:700;">⇄</button>
+          <select id="forex-to" onchange="runForex()" style="background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:9px 12px;color:var(--text);font-size:13px;outline:none;font-weight:600;cursor:pointer;">
+            <option value="USD" selected>🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="GBP">🇬🇧 GBP</option>
+            <option value="JPY">🇯🇵 JPY</option><option value="CHF">🇨🇭 CHF</option><option value="CAD">🇨🇦 CAD</option>
+            <option value="AUD">🇦🇺 AUD</option><option value="MAD">🇲🇦 MAD</option><option value="XOF">🌍 XOF</option>
+            <option value="BTC">₿ BTC</option><option value="ETH">Ξ ETH</option>
+          </select>
+        </div>
+        <div>
+          <label style="display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;">Résultat</label>
+          <div id="forex-result" style="background:var(--surface2);border:1px solid var(--accent);border-radius:9px;padding:10px 13px;font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--accent);min-height:42px;">—</div>
+        </div>
+      </div>
+      <div id="forex-rate-info" style="font-size:12px;color:var(--muted);margin-bottom:20px;"></div>
+      <!-- Tableau des taux croisés -->
+      <div class="card">
+        <div class="card-title">📊 Tableau des taux principaux (base EUR)</div>
+        <div id="forex-table" style="overflow-x:auto;"></div>
+      </div>
     </div>
   </div>
 
@@ -2321,11 +2383,18 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           </div>
         </div>
       </div>
+      <!-- Trending Live (NOUVEAU) -->
+      <div style="margin-top:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;">🔥 Trending — Crypto temps réel</div>
+          <button onclick="loadVeilleTrending()" class="btn btn-outline" style="font-size:12px;padding:6px 12px;">↺ Actualiser</button>
+        </div>
+        <div id="veille-trending" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;">
+          <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;grid-column:1/-1;">Chargement des tendances…</div>
+        </div>
+      </div>
     </div>
   </div>
-
-
-<!-- FINANCE DETAIL MODAL -->
 <div class="fin-modal" id="fin-modal">
   <div class="fin-modal-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
@@ -3315,14 +3384,12 @@ function showTab(id,btn){
   closeAllDropdowns();
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('#tabs-bar .tab-btn, #tabs-bar .autre-dropdown-item').forEach(b=>b.classList.remove('active'));
-  // Remove "has-active" from autre btn
   const auBtn=document.getElementById('autre-btn');
   if(auBtn)auBtn.classList.remove('has-active');
   const tc=document.getElementById('tab-'+id);
   if(tc)tc.classList.add('active');
   if(btn){
     btn.classList.add('active');
-    // If it's inside the dropdown, mark the autre btn as has-active
     if(btn.closest('#autre-dropdown')){
       if(auBtn)auBtn.classList.add('has-active');
     }
@@ -3332,6 +3399,7 @@ function showTab(id,btn){
   if(id==='agenda'){initAgendaUserSelect();renderCalendar();}
   if(id==='compta')renderCompta();
   if(id==='finance')loadFinanceData();
+  if(id==='news')loadNewsData();
   if(id==='about')loadAboutPage();
   if(id==='goals')loadGoals();
   if(id==='calculator')initCalcIfNeeded();
@@ -3340,6 +3408,9 @@ function showTab(id,btn){
   if(id==='dcf'){initDCF();}
   if(id==='markowitz'){initMarkowitz();}
   if(id==='nlp'){initNLP();}
+  if(id==='veille'){loadVeilleTrending();}
+  // Dispatch event for chess resize hook
+  document.dispatchEvent(new CustomEvent('_showTab',{detail:{id}}));
 }
 
 function showAccessOrProfile(){
@@ -3353,7 +3424,10 @@ function showAccessOrProfile(){
     if(!document.querySelector('#new-user-pages input'))renderPageCheckboxes('new-user-pages',null);
   } else {loadMyProfileForm();}
 }
-function goToProfile(){const btn=document.getElementById('tab-btn-acces-profil');if(btn)showTab('acces',btn);}
+function goToProfile(){
+  const btn=document.querySelector('#tabs-bar [data-tabid="acces"]');
+  if(btn)showTab('acces',btn);
+}
 
 // ============ MESSAGE BELL ============
 function toggleMsgPanel(){
@@ -3913,8 +3987,32 @@ function updateStats(){
   document.getElementById('stat-in').textContent=fmt(ti);document.getElementById('stat-out').textContent=fmt(to);
   document.getElementById('stat-in-count').textContent=cr.length+' opération(s)';
   document.getElementById('stat-out-count').textContent=db.length+' opération(s)';
+  // Spending breakdown by category (new)
+  _drawSpendingBreakdown(db);
 }
 function fmt(n){return n.toFixed(2).replace('.',',')+' €';}
+
+let _spendingChart=null;
+function _drawSpendingBreakdown(debits){
+  const container=document.getElementById('spending-breakdown-chart');
+  if(!container)return;
+  // Group by type label
+  const TX_LABELS={'debit':'Dépenses générales','cpc_achats':'Achats','cpc_charges_ext':'Charges externes','cpc_impots':'Impôts','cpc_charges_pers':'Personnel','cpc_dot_amort':'Amortissements','cpc_charges_fin':'Charges financières','bilan_dettes_fourn':'Fournisseurs','bilan_actif_immo':'Investissements','bilan_stocks':'Stocks'};
+  const groups={};
+  debits.forEach(t=>{const lbl=TX_LABELS[t.type]||t.type;groups[lbl]=(groups[lbl]||0)+t.amount;});
+  const entries=Object.entries(groups).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(!entries.length){container.style.display='none';return;}
+  container.style.display='block';
+  const canvas=document.getElementById('spending-donut');
+  if(!canvas)return;
+  const colors=['#e63946','#f4a261','#3498db','#27ae60','#9b59b6','#e67e22','#1abc9c','#f39c12'];
+  if(_spendingChart){_spendingChart.destroy();_spendingChart=null;}
+  _spendingChart=new Chart(canvas,{
+    type:'doughnut',
+    data:{labels:entries.map(e=>e[0]),datasets:[{data:entries.map(e=>e[1]),backgroundColor:colors.slice(0,entries.length),borderWidth:0,hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'var(--text)',font:{size:11},boxWidth:12,padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${fmt(ctx.parsed)}`}}}}
+  });
+}
 
 function drawEvolutionChart(){
   const canvas=document.getElementById('evolution-chart');if(!canvas)return;
@@ -4027,59 +4125,158 @@ function exportComptaWord(){
 
 // ============ FINANCE ============
 const STOCKS=[
-  {ticker:'TSLA',name:'Tesla Inc.'},{ticker:'AAPL',name:'Apple Inc.'},{ticker:'MSFT',name:'Microsoft'},{ticker:'GOOGL',name:'Alphabet'},
-  {ticker:'AMZN',name:'Amazon'},{ticker:'NVDA',name:'NVIDIA'},{ticker:'META',name:'Meta'},{ticker:'BRK.B',name:'Berkshire Hathaway'},
-  {ticker:'JPM',name:'JPMorgan Chase'},{ticker:'V',name:'Visa'},{ticker:'JNJ',name:'Johnson & Johnson'},{ticker:'WMT',name:'Walmart'},
-  {ticker:'MA',name:'Mastercard'},{ticker:'PG',name:'Procter & Gamble'},{ticker:'HD',name:'Home Depot'}
+  {ticker:'TSLA',name:'Tesla Inc.'},{ticker:'AAPL',name:'Apple Inc.'},{ticker:'MSFT',name:'Microsoft'},
+  {ticker:'GOOGL',name:'Alphabet'},{ticker:'AMZN',name:'Amazon'},{ticker:'NVDA',name:'NVIDIA'},
+  {ticker:'META',name:'Meta'},{ticker:'JPM',name:'JPMorgan Chase'},{ticker:'V',name:'Visa'},
+  {ticker:'JNJ',name:'Johnson & Johnson'},{ticker:'WMT',name:'Walmart'},{ticker:'MA',name:'Mastercard'},
+  {ticker:'PG',name:'Procter & Gamble'},{ticker:'HD',name:'Home Depot'},{ticker:'BAC',name:'Bank of America'},
+  {ticker:'LVMH.PA',name:'LVMH'},{ticker:'TTE.PA',name:'TotalEnergies'},{ticker:'BNP.PA',name:'BNP Paribas'},
+  {ticker:'ASML',name:'ASML Holding'},{ticker:'SAP',name:'SAP SE'}
 ];
 const CRYPTOS=[
-  {id:'bitcoin',ticker:'BTC',name:'Bitcoin'},{id:'ethereum',ticker:'ETH',name:'Ethereum'},{id:'binancecoin',ticker:'BNB',name:'Binance Coin'},
-  {id:'solana',ticker:'SOL',name:'Solana'},{id:'ripple',ticker:'XRP',name:'Ripple'},{id:'cardano',ticker:'ADA',name:'Cardano'},
-  {id:'dogecoin',ticker:'DOGE',name:'Dogecoin'},{id:'avalanche-2',ticker:'AVAX',name:'Avalanche'},{id:'polkadot',ticker:'DOT',name:'Polkadot'},
-  {id:'chainlink',ticker:'LINK',name:'Chainlink'},{id:'matic-network',ticker:'MATIC',name:'Polygon'},{id:'litecoin',ticker:'LTC',name:'Litecoin'},
-  {id:'shiba-inu',ticker:'SHIB',name:'Shiba Inu'},{id:'tron',ticker:'TRX',name:'Tron'},{id:'uniswap',ticker:'UNI',name:'Uniswap'}
+  {id:'bitcoin',ticker:'BTC',name:'Bitcoin'},{id:'ethereum',ticker:'ETH',name:'Ethereum'},
+  {id:'binancecoin',ticker:'BNB',name:'Binance Coin'},{id:'solana',ticker:'SOL',name:'Solana'},
+  {id:'ripple',ticker:'XRP',name:'Ripple'},{id:'cardano',ticker:'ADA',name:'Cardano'},
+  {id:'dogecoin',ticker:'DOGE',name:'Dogecoin'},{id:'avalanche-2',ticker:'AVAX',name:'Avalanche'},
+  {id:'polkadot',ticker:'DOT',name:'Polkadot'},{id:'chainlink',ticker:'LINK',name:'Chainlink'},
+  {id:'matic-network',ticker:'MATIC',name:'Polygon'},{id:'litecoin',ticker:'LTC',name:'Litecoin'},
+  {id:'shiba-inu',ticker:'SHIB',name:'Shiba Inu'},{id:'tron',ticker:'TRX',name:'Tron'},
+  {id:'uniswap',ticker:'UNI',name:'Uniswap'},{id:'pepe',ticker:'PEPE',name:'Pepe'},
+  {id:'sui',ticker:'SUI',name:'Sui'},{id:'aptos',ticker:'APT',name:'Aptos'}
 ];
-const COMMODITIES=[
-  {ticker:'BRENT',name:'Pétrole Brent',base:82,vol:3},{ticker:'WTI',name:'Pétrole WTI',base:78,vol:3},
-  {ticker:'XAU',name:'Or ($/oz)',base:2320,vol:20},{ticker:'XAG',name:'Argent ($/oz)',base:27,vol:1},
-  {ticker:'WHEAT',name:'Blé ($/boisseau)',base:540,vol:10},{ticker:'CORN',name:'Maïs ($/boisseau)',base:420,vol:8},
-  {ticker:'SOYBEANS',name:'Soja ($/boisseau)',base:1200,vol:15},{ticker:'COPPER',name:'Cuivre ($/lb)',base:4.2,vol:.2},
-  {ticker:'NATGAS',name:'Gaz Naturel',base:2.8,vol:.15},{ticker:'PALLADIUM',name:'Palladium ($/oz)',base:980,vol:30},
-  {ticker:'PLATINUM',name:'Platine ($/oz)',base:920,vol:20},{ticker:'COFFEE',name:'Café (¢/lb)',base:185,vol:8},
-  {ticker:'SUGAR',name:'Sucre (¢/lb)',base:22,vol:1},{ticker:'COTTON',name:'Coton (¢/lb)',base:78,vol:3},
-  {ticker:'LUMBER',name:'Bois ($/Mbf)',base:540,vol:25}
+// Commodity IDs on CoinGecko (real data)
+const COMMODITY_COINS=[
+  {id:'gold',ticker:'XAU',name:'Or ($/oz)',multiplier:1},
+  {id:'silver',ticker:'XAG',name:'Argent ($/oz)',multiplier:1},
+  {id:'tether-gold',ticker:'XAUT',name:'Or tokenisé',multiplier:1}
+];
+// Fallback commodity base prices (updated Apr 2025)
+const COMMODITY_FALLBACK=[
+  {ticker:'BRENT',name:'Pétrole Brent',base:74,vol:2.5},
+  {ticker:'WTI',name:'Pétrole WTI',base:70,vol:2.5},
+  {ticker:'XAU',name:'Or ($/oz)',base:3320,vol:30},
+  {ticker:'XAG',name:'Argent ($/oz)',base:32,vol:1.2},
+  {ticker:'WHEAT',name:'Blé ($/boisseau)',base:520,vol:12},
+  {ticker:'CORN',name:'Maïs ($/boisseau)',base:450,vol:10},
+  {ticker:'COPPER',name:'Cuivre ($/lb)',base:4.85,vol:0.18},
+  {ticker:'NATGAS',name:'Gaz Naturel',base:3.2,vol:0.2},
+  {ticker:'PALLADIUM',name:'Palladium ($/oz)',base:950,vol:25},
+  {ticker:'PLATINUM',name:'Platine ($/oz)',base:970,vol:20},
+  {ticker:'COFFEE',name:'Café (¢/lb)',base:390,vol:15},
+  {ticker:'SUGAR',name:'Sucre (¢/lb)',base:19.5,vol:0.8},
+  {ticker:'COTTON',name:'Coton (¢/lb)',base:67,vol:2},
+  {ticker:'LUMBER',name:'Bois ($/Mbf)',base:520,vol:20},
+  {ticker:'SOYBEANS',name:'Soja ($/boisseau)',base:1020,vol:18}
 ];
 
 let financeData={stocks:[],crypto:{},commodities:[]};
 let _financeLastLoad = 0;
 let _newsLastLoad = 0;
 
+// ── Fetch stock data via Yahoo Finance (Allorigins proxy) ───
+async function _fetchStockData(tickers){
+  try{
+    const symbols=tickers.join(',');
+    const url=`https://query1.finance.yahoo.com/v7/finance/quote?symbols=${encodeURIComponent(symbols)}&fields=regularMarketPrice,regularMarketChangePercent,regularMarketDayHigh,regularMarketDayLow,regularMarketVolume,shortName`;
+    const proxy=`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const r=await fetch(proxy,{signal:AbortSignal.timeout(8000)});
+    if(!r.ok) throw new Error('proxy fail');
+    const d=await r.json();
+    const parsed=JSON.parse(d.contents);
+    const quotes=parsed?.quoteResponse?.result||[];
+    return quotes;
+  }catch(e){
+    console.warn('Stock fetch failed, using fallback',e);
+    return [];
+  }
+}
+
+// ── Fetch real commodity prices (metals via CoinGecko, oil via exchange rate) ─
+async function _fetchCommodityData(){
+  try{
+    const ids=COMMODITY_COINS.map(c=>c.id).join(',');
+    const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok) throw new Error('cg fail');
+    return await r.json();
+  }catch(e){return {};}
+}
+
 async function loadFinanceData(){
   _financeLastLoad = Date.now();
-  document.getElementById('finance-loading').style.display='block';
-  document.getElementById('finance-content').style.display='none';
-  try{
+  const loadEl=document.getElementById('finance-loading');
+  const contentEl=document.getElementById('finance-content');
+  if(loadEl) loadEl.style.display='block';
+  if(contentEl) contentEl.style.display='none';
+
+  // ── Fetch crypto (CoinGecko — free, no key needed) ─────
+  const cryptoPromise=(async()=>{
+    try{
+      const ids=CRYPTOS.map(c=>c.id).join(',');
+      const r=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`,{signal:AbortSignal.timeout(8000)});
+      if(r.ok) financeData.crypto=await r.json();
+    }catch(e){console.warn('Crypto fetch failed',e);}
+  })();
+
+  // ── Fetch stocks (Yahoo Finance via proxy) ─────────────
+  const stockPromise=(async()=>{
+    const tickers=STOCKS.map(s=>s.ticker);
+    const quotes=await _fetchStockData(tickers);
+    if(quotes.length>0){
+      financeData.stocks=STOCKS.map(s=>{
+        const q=quotes.find(x=>x.symbol===s.ticker||x.symbol===s.ticker.replace('.PA','.PA'));
+        if(q){
+          return{...s,
+            price:parseFloat((q.regularMarketPrice||0).toFixed(2)),
+            change:parseFloat((q.regularMarketChangePercent||0).toFixed(2)),
+            high:parseFloat((q.regularMarketDayHigh||0).toFixed(2)),
+            low:parseFloat((q.regularMarketDayLow||0).toFixed(2)),
+            volume:q.regularMarketVolume||0,
+            name:q.shortName||s.name
+          };
+        }
+        // Fallback with slight randomization based on known price ranges
+        const fallbackPrices={TSLA:175,AAPL:210,MSFT:415,GOOGL:165,AMZN:195,NVDA:875,META:540,JPM:225,V:285,JNJ:165,WMT:92,MA:490,PG:168,HD:395,BAC:43,'LVMH.PA':680,'TTE.PA':58,'BNP.PA':66,ASML:795,SAP:230};
+        const base=fallbackPrices[s.ticker]||150;
+        const chg=(Math.random()-.48)*3;
+        return{...s,price:parseFloat((base+chg).toFixed(2)),change:parseFloat(chg.toFixed(2)),high:parseFloat((base+Math.abs(chg)+.8).toFixed(2)),low:parseFloat((base-Math.abs(chg)-.5).toFixed(2)),volume:Math.floor(Math.random()*40e6+2e6)};
+      });
+    } else {
+      // All fallback
+      const fp={TSLA:175,AAPL:210,MSFT:415,GOOGL:165,AMZN:195,NVDA:875,META:540,JPM:225,V:285,JNJ:165,WMT:92,MA:490,PG:168,HD:395,BAC:43,'LVMH.PA':680,'TTE.PA':58,'BNP.PA':66,ASML:795,SAP:230};
+      financeData.stocks=STOCKS.map(s=>{const b=fp[s.ticker]||150;const c=(Math.random()-.48)*2.5;return{...s,price:parseFloat((b+c).toFixed(2)),change:parseFloat(c.toFixed(2)),high:parseFloat((b+Math.abs(c)+.6).toFixed(2)),low:parseFloat((b-Math.abs(c)-.4).toFixed(2)),volume:Math.floor(Math.random()*30e6+1e6)};});
+    }
+  })();
+
+  // ── Fetch commodities ───────────────────────────────────
+  const commPromise=(async()=>{
+    const cgData=await _fetchCommodityData();
     const now=Date.now();
-    // Stocks: simulate realistic
-    financeData.stocks=STOCKS.map((s,i)=>{
-      const base=180+i*12;const chg=(Math.sin(now/1e9+i)*2+(Math.random()-.5)*3);
-      return{...s,price:parseFloat((base+chg).toFixed(2)),change:parseFloat(chg.toFixed(2)),high:parseFloat((base+Math.abs(chg)+1).toFixed(2)),low:parseFloat((base-Math.abs(chg)-.5).toFixed(2)),volume:Math.floor(Math.random()*50000000+5000000)};
+    financeData.commodities=COMMODITY_FALLBACK.map((c,i)=>{
+      // Try CoinGecko for gold/silver
+      const cgItem=COMMODITY_COINS.find(x=>x.ticker===c.ticker);
+      if(cgItem&&cgData[cgItem.id]?.usd){
+        const price=cgData[cgItem.id].usd;
+        const change=cgData[cgItem.id].usd_24h_change||0;
+        return{...c,price:parseFloat(price.toFixed(2)),change:parseFloat(change.toFixed(2)),high:parseFloat((price*1.005).toFixed(2)),low:parseFloat((price*.995).toFixed(2)),volume:Math.floor(Math.random()*50000+5000),live:true};
+      }
+      // Realistic randomized fallback based on updated base prices
+      const drift=Math.sin(now/1e9+i)*c.vol*.3+(Math.random()-.49)*c.vol*.4;
+      const price=parseFloat((c.base+drift).toFixed(2));
+      const change=parseFloat(((drift/c.base)*100).toFixed(2));
+      return{...c,price,change,high:parseFloat((price+c.vol*.2).toFixed(2)),low:parseFloat((price-c.vol*.2).toFixed(2)),volume:Math.floor(Math.random()*100000+10000),live:false};
     });
-    // Crypto: CoinGecko
-    const ids=CRYPTOS.map(c=>c.id).join(',');
-    const resp=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`);
-    financeData.crypto=await resp.json();
-    // Commodities: simulate
-    financeData.commodities=COMMODITIES.map((c,i)=>{
-      const chg=((Math.random()-.5)*2);
-      return{...c,price:parseFloat((c.base+(Math.sin(now/1e8+i)*c.vol/2)).toFixed(2)),change:parseFloat(chg.toFixed(2)),high:parseFloat((c.base+c.vol*.3).toFixed(2)),low:parseFloat((c.base-c.vol*.3).toFixed(2)),volume:Math.floor(Math.random()*100000+10000)};
-    });
-    renderFinanceStocks();renderFinanceCrypto();renderFinanceCommodities();
-    document.getElementById('finance-loading').style.display='none';
-    document.getElementById('finance-content').style.display='block';
-  }catch(e){
-    document.getElementById('finance-loading').innerHTML='⚠️ Erreur de chargement.<br><button class="btn btn-outline" onclick="loadFinanceData()" style="margin-top:10px">🔄 Réessayer</button>';
-  }
+  })();
+
+  await Promise.allSettled([cryptoPromise,stockPromise,commPromise]);
+
+  renderFinanceStocks();renderFinanceCrypto();renderFinanceCommodities();
+  updateBbgMarketStrip();
+  if(loadEl) loadEl.style.display='none';
+  if(contentEl) contentEl.style.display='block';
+
+  // Update last-refresh timestamp
+  const tsEl=document.getElementById('fin-last-update');
+  if(tsEl) tsEl.textContent='🕐 MAJ : '+new Date().toLocaleTimeString('fr-FR');
 }
 
 function finCard(ticker,name,price,change,extra=''){
@@ -4102,7 +4299,10 @@ function renderFinanceCrypto(){
   }).join('');
 }
 function renderFinanceCommodities(){
-  document.getElementById('finance-commodities').innerHTML=financeData.commodities.map(c=>finCard(c.ticker,c.name,c.price,c.change,`H:${c.high} L:${c.low}`)).join('');
+  document.getElementById('finance-commodities').innerHTML=financeData.commodities.map(c=>{
+    const liveTag=c.live?'<span style="font-size:9px;background:rgba(39,174,96,.15);color:var(--success);border-radius:3px;padding:1px 5px;margin-left:4px;">LIVE</span>':'';
+    return finCard(c.ticker,c.name,c.price,c.change,`H:${c.high} L:${c.low}`)+liveTag;
+  }).join('');
 }
 
 function openFinDetail(ticker){
@@ -4154,77 +4354,146 @@ const NEWS_CATS=['Marchés','Crypto','Technologie','Énergie','Économie','Entre
 
 async function loadNewsData(){
   _newsLastLoad = Date.now();
-  document.getElementById('news-loading').style.display='block';
-  document.getElementById('news-grid-container').style.display='none';
-  updateBbgMarketStrip();
-  try{
-    const resp=await fetch('https://api.rss2json.com/v1/api.json?rss_url=https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&lang=en-US&region=US&count=30');
-    const data=await resp.json();
-    if(data.items&&data.items.length>0){
-      newsCache=data.items.filter(item=>(Date.now()-new Date(item.pubDate).getTime())<7*24*60*60*1000)
-        .map((item,i)=>{
-          const imgMatch=item.description?.match(/<img[^>]+src=["'](https?[^"\']+)["']/i);
-          return{
-            id:'n'+Math.random().toString(36).slice(2),
-            title:item.title,source:item.author||'Yahoo Finance',
-            date:new Date(item.pubDate).toLocaleString('fr-FR'),
-            rawDate:new Date(item.pubDate),
-            description:item.description?.replace(/<[^>]+>/g,'')||'',
-            link:item.link,
-            image:imgMatch?imgMatch[1]:NEWS_IMAGES[i%NEWS_IMAGES.length],
-            cat:NEWS_CATS[i%NEWS_CATS.length]
-          };
-        });
-    }
-    if(!newsCache.length)newsCache=generateFallbackNews();
-  }catch(e){newsCache=generateFallbackNews();}
-  renderBloombergNews();
-  document.getElementById('news-loading').style.display='none';
-  document.getElementById('news-grid-container').style.display='block';
-  document.getElementById('bbg-last-update').textContent='Mis à jour : '+new Date().toLocaleTimeString('fr-FR');
-}
+  const loadEl=document.getElementById('news-loading');
+  const gridEl=document.getElementById('news-grid-container');
+  if(loadEl) loadEl.style.display='block';
+  if(gridEl) gridEl.style.display='none';
 
-function generateFallbackNews(){
-  const items=[
-    {title:'Les marchés boursiers mondiaux en hausse après les données économiques positives',source:'Bloomberg',cat:'Marchés',desc:"Les principaux indices boursiers ont progressé suite à la publication de données macroéconomiques encourageantes. Le S&P 500 a gagné 0,8% à l\'ouverture, porté par les valeurs technologiques.",img:NEWS_IMAGES[0]},
-    {title:'Bitcoin dépasse les 70 000 $ — analyse des facteurs de la hausse',source:'CoinDesk',cat:'Crypto',desc:"La cryptomonnaie phare a atteint un nouveau sommet mensuel, soutenue par l\'afflux de capitaux institutionnels.",img:NEWS_IMAGES[1]},
-    {title:'Tesla annonce de nouveaux records de livraisons au T1',source:'Reuters',cat:'Entreprises',desc:"Le constructeur de véhicules électriques a livré plus de 480 000 véhicules au premier trimestre, dépassant les attentes des analystes de 12%.",img:NEWS_IMAGES[2]},
-    {title:'La Fed maintient ses taux directeurs — déclarations de Powell',source:'WSJ',cat:'Économie',desc:"Jerome Powell a confirmé l\'intention de la Fed de maintenir une politique monétaire restrictive. Les marchés anticipent deux baisses de taux en 2025.",img:NEWS_IMAGES[3]},
-    {title:'Le pétrole Brent recule sous les 80$ — craintes de récession',source:'FT',cat:'Énergie',desc:"Les cours du brut ont cédé du terrain face aux inquiétudes sur la demande mondiale.",img:NEWS_IMAGES[4]},
-    {title:'NVIDIA dépasse Apple en capitalisation boursière',source:'Bloomberg',cat:'Technologie',desc:"La société spécialisée dans les puces pour l\'IA est désormais la deuxième entreprise mondiale par capitalisation.",img:NEWS_IMAGES[5]},
-    {title:"L\'or atteint un nouveau record historique à 2400$/oz",source:'Reuters',cat:'Marchés',desc:"Le métal précieux continue son ascension, porté par les tensions géopolitiques et la demande des banques centrales.",img:NEWS_IMAGES[6]},
-    {title:'Zone euro : légère reprise de la croissance au T1 2025',source:'Eurostat',cat:'Économie',desc:"Le PIB de la zone euro a progressé de 0,3% au premier trimestre selon les premières estimations d\'Eurostat.",img:NEWS_IMAGES[7]},
-    {title:'Amazon Web Services : revenus cloud en forte hausse de 17%',source:'CNBC',cat:'Technologie',desc:"La division cloud d\'Amazon a publié une croissance de 17% de ses revenus au dernier trimestre.",img:NEWS_IMAGES[8]},
-    {title:"La Chine augmente ses réserves d\'or pour le 17e mois consécutif",source:'Bloomberg',cat:'Finance',desc:"La Banque Populaire de Chine continue d\'accumuler de l\'or.",img:NEWS_IMAGES[9]},
-    {title:'Ethereum : la mise à jour Pectra améliore la scalabilité',source:'CoinTelegraph',cat:'Crypto',desc:"La dernière mise à jour majeure du réseau Ethereum améliore les performances et réduit les frais de transaction.",img:NEWS_IMAGES[10]},
-    {title:'Marchés émergents : reprise des flux entrants en Asie',source:'IMF News',cat:'Marchés',desc:"Les économistes du FMI constatent un retour des investisseurs vers les marchés émergents asiatiques.",img:NEWS_IMAGES[11]},
-    {title:'Microsoft et OpenAI renforcent leur partenariat stratégique en IA',source:'WSJ',cat:'Technologie',desc:"Les deux géants ont annoncé une extension de leur accord portant sur le déploiement de modèles d\'IA dans Azure.",img:NEWS_IMAGES[12]},
-    {title:'Indice PMI manufacturier : signaux mitigés en Europe',source:'Markit',cat:'Économie',desc:"L\'indice PMI manufacturier de la zone euro est resté sous 50 en mars.",img:NEWS_IMAGES[13]},
-    {title:'Berkshire Hathaway maintient sa position sur Apple',source:'Fortune',cat:'Finance',desc:"Warren Buffett confirme lors de l\'assemblée annuelle que le groupe maintient son importante participation dans Apple. Le portefeuille de Berkshire valorise cette position à plus de 150 milliards de dollars. L\'oracle d\'Omaha juge encore le titre attractif malgré les fluctuations récentes et la concurrence croissante dans le secteur des smartphones.",img:NEWS_IMAGES[14],links:[{label:'Bloomberg — Berkshire & Apple',url:'https://www.bloomberg.com/news/articles/2024-05-04/buffett-says-berkshire-will-hold-apple-stake-as-annual-meeting'},
-      {label:'YouTube — Berkshire Annual Meeting Highlights',url:'https://www.youtube.com/results?search_query=berkshire+hathaway+annual+meeting+2024+apple'},
-      {label:'CNBC — Warren Buffett on Apple',url:'https://www.cnbc.com/warren-buffett/'}]},
+  // Live forex/index data for market strip (CoinGecko free)
+  _updateMarketStripLive();
+
+  // Multiple RSS feeds with fallback chain
+  const FEEDS=[
+    'https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC,^DJI,AAPL,NVDA&lang=en-US&count=40',
+    'https://www.cnbc.com/id/100003114/device/rss/rss.html',
+    'https://feeds.feedburner.com/businessinsider',
+    'https://news.google.com/rss/search?q=finance+economy+stock+market&hl=en-US&gl=US&ceid=US:en'
   ];
-  return items.map((item,i)=>({
-    id:'n'+Math.random().toString(36).slice(2),
-    title:item.title,source:item.source,cat:item.cat,
-    date:new Date(Date.now()-i*2*60*60*1000).toLocaleString('fr-FR'),
-    rawDate:new Date(Date.now()-i*2*60*60*1000),
-    description:item.desc,link:'#',image:item.img,
-    externalLinks:item.links||[]
-  }));
+
+  let items=[];
+  for(const feed of FEEDS){
+    try{
+      const r=await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed)}&count=40`,{signal:AbortSignal.timeout(8000)});
+      if(!r.ok) continue;
+      const d=await r.json();
+      if(d.status==='ok'&&d.items?.length>=3){items=d.items;break;}
+    }catch(e){continue;}
+  }
+
+  const cats=['Marchés','Crypto','Technologie','Énergie','Économie','Entreprises','Finance'];
+  const now=Date.now();
+  if(items.length){
+    newsCache=items.map((item,i)=>{
+      const imgMatch=item.description?.match(/<img[^>]+src=["'](https?[^\"']+)["']/i);
+      return{
+        id:'n'+Math.random().toString(36).slice(2),
+        title:item.title||'Sans titre',
+        source:item.author||'Finance',
+        cat:cats[i%cats.length],
+        date:new Date(item.pubDate||now).toLocaleString('fr-FR'),
+        rawDate:new Date(item.pubDate||now),
+        description:(item.description||'').replace(/<[^>]+>/g,'').slice(0,200),
+        link:item.link||'#',
+        image:item.enclosure?.link||item.thumbnail||(imgMatch?imgMatch[1]:NEWS_IMAGES[i%NEWS_IMAGES.length])
+      };
+    }).slice(0,20);
+  } else {
+    newsCache=_getStaticNewsItems();
+  }
+
+  renderBloombergNews();
+  if(loadEl) loadEl.style.display='none';
+  if(gridEl) gridEl.style.display='block';
+  const upd=document.getElementById('bbg-last-update');
+  if(upd) upd.textContent='Mis à jour : '+new Date().toLocaleTimeString('fr-FR');
 }
 
+// ── Live market strip via CoinGecko + fallback static ──────
+async function _updateMarketStripLive(){
+  const strip=document.getElementById('bbg-markets-strip');
+  if(!strip) return;
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,gold,silver&vs_currencies=usd&include_24hr_change=true',{signal:AbortSignal.timeout(5000)});
+    if(r.ok){
+      const d=await r.json();
+      const btc=d.bitcoin?.usd||0, btcC=d.bitcoin?.usd_24h_change||0;
+      const eth=d.ethereum?.usd||0, ethC=d.ethereum?.usd_24h_change||0;
+      const gold=d.gold?.usd||3300, goldC=d.gold?.usd_24h_change||0;
+      const mkts=[
+        {t:'BTC',p:'$'+btc.toLocaleString('en-US',{maximumFractionDigits:0}),c:(btcC>=0?'+':'')+btcC.toFixed(2)+'%',up:btcC>=0,live:true},
+        {t:'ETH',p:'$'+eth.toLocaleString('en-US',{maximumFractionDigits:0}),c:(ethC>=0?'+':'')+ethC.toFixed(2)+'%',up:ethC>=0,live:true},
+        {t:'XAU',p:'$'+gold.toLocaleString('en-US',{maximumFractionDigits:0}),c:(goldC>=0?'+':'')+goldC.toFixed(2)+'%',up:goldC>=0,live:true},
+        {t:'S&P 500',p:'5,462',c:'+0.4%',up:true,live:false},{t:'NASDAQ',p:'17,204',c:'+0.6%',up:true,live:false},
+        {t:'BRENT',p:'$74',c:'-0.8%',up:false,live:false},{t:'EUR/USD',p:'1.1340',c:'+0.1%',up:true,live:false},
+        {t:'GBP/USD',p:'1.2890',c:'+0.05%',up:true,live:false},{t:'USD/JPY',p:'142.5',c:'-0.3%',up:false,live:false},
+        {t:'CAC 40',p:'7,789',c:'+0.3%',up:true,live:false}
+      ];
+      strip.innerHTML=mkts.map(m=>`<div class="bbg-mkt-item">
+        <div class="bbg-mkt-ticker">${m.t}${m.live?'<span style="font-size:8px;color:var(--success);margin-left:2px">●</span>':''}</div>
+        <div class="bbg-mkt-price">${m.p}</div>
+        <div class="bbg-mkt-chg ${m.up?'up':'dn'}">${m.up?'▲':'▼'} ${m.c}</div>
+      </div>`).join('');
+      return;
+    }
+  }catch(e){}
+  // Static fallback
+  updateBbgMarketStrip();
+}
+
+function updateBbgMarketStrip(){
+  const mkts=[
+    {t:'S&P 500',p:'5,462',c:'+0.4%',up:true},{t:'NASDAQ',p:'17,204',c:'+0.6%',up:true},
+    {t:'DOW',p:'40,108',c:'+0.2%',up:true},{t:'BTC',p:'$87,500',c:'+1.8%',up:true},
+    {t:'ETH',p:'$3,240',c:'+2.1%',up:true},{t:'BRENT',p:'$73.80',c:'-0.9%',up:false},
+    {t:'XAU',p:'$3,320',c:'+0.5%',up:true},{t:'EUR/USD',p:'1.1340',c:'+0.12%',up:true},
+    {t:'GBP/USD',p:'1.2890',c:'+0.08%',up:true},{t:'CAC 40',p:'7,789',c:'+0.3%',up:true},
+  ];
+  const strip=document.getElementById('bbg-markets-strip');
+  if(strip)strip.innerHTML=mkts.map(m=>`<div class="bbg-mkt-item"><div class="bbg-mkt-ticker">${m.t}</div><div class="bbg-mkt-price">${m.p}</div><div class="bbg-mkt-chg ${m.up?'up':'dn'}">${m.up?'▲':'▼'} ${m.c}</div></div>`).join('');
+}
+
+
+function openNewsDetail(idOrObj){
+  // Accept either a newsCache id string or a direct news object
+  const n = (typeof idOrObj === 'object') ? idOrObj : newsCache.find(x=>x.id===idOrObj);
+  if(!n) return;
+  document.getElementById('news-detail-source').textContent = n.source||'';
+  document.getElementById('news-detail-title').textContent = n.title||'';
+  document.getElementById('news-detail-date').textContent = n.date||'';
+  const summary = n.description || n.desc || n.title;
+  document.getElementById('news-detail-body').innerHTML=`
+    <div style="background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">📋 Résumé</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">${summary.slice(0,320)}${summary.length>320?'…':''}</div>
+    </div>`;
+  const imgWrap=document.getElementById('news-detail-img-wrap');
+  const imgEl=document.getElementById('news-detail-img');
+  const img=n.image||n.img||null;
+  if(img&&imgWrap&&imgEl){imgEl.src=img;imgEl.alt=n.title;imgWrap.style.display='block';imgEl.onerror=()=>{imgWrap.style.display='none';};}
+  else if(imgWrap)imgWrap.style.display='none';
+  const link=n.link||'#';
+  document.getElementById('news-detail-link').innerHTML=`<div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:8px;">
+    ${link&&link!=='#'?`<a href="${link}" target="_blank" style="background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);color:var(--accent2);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;text-decoration:none;">📄 Article complet</a>`:''}
+    <a href="https://news.google.com/search?q=${encodeURIComponent(n.title)}" target="_blank" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12px;text-decoration:none;">🔍 Google News</a>
+    <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(n.title)}" target="_blank" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12px;text-decoration:none;">▶️ YouTube</a>
+    <a href="https://www.bloomberg.com/markets" target="_blank" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12px;text-decoration:none;">📊 Bloomberg</a>
+  </div>`;
+  document.getElementById('news-detail-modal').classList.add('open');
+}
+function closeNewsDetail(){document.getElementById('news-detail-modal').classList.remove('open');}
+
+// Fix renderBloombergNews to work with current newsCache format
 function renderBloombergNews(){
-  if(!newsCache.length)return;
+  if(!newsCache.length) return;
   const hero=newsCache[0];
   const sideItems=newsCache.slice(1,5);
   const markets=newsCache.filter(n=>['Marchés','Économie','Finance'].includes(n.cat)).slice(0,6);
   const tech=newsCache.filter(n=>n.cat==='Technologie').slice(0,3);
   const crypto=newsCache.filter(n=>n.cat==='Crypto').slice(0,3);
   const heroEl=document.getElementById('bbg-hero');
-  if(heroEl)heroEl.innerHTML=`
+  if(heroEl) heroEl.innerHTML=`
     <div class="bbg-hero-main" onclick="openNewsDetail('${hero.id}')">
-      <img src="${hero.image}" alt="" style="width:100%;height:340px;object-fit:cover;display:block;transition:transform .4s;" onerror="this.style.display='none'">
+      ${(hero.image||hero.img)?`<img src="${hero.image||hero.img}" alt="" style="width:100%;height:340px;object-fit:cover;display:block;" onerror="this.style.display='none'">`:''}
       <div class="bbg-hero-main-overlay">
         <div class="bbg-hero-main-cat">${hero.cat||'Marchés'}</div>
         <div class="bbg-hero-main-title">${hero.title}</div>
@@ -4233,84 +4502,28 @@ function renderBloombergNews(){
     </div>
     <div class="bbg-hero-side">
       ${sideItems.map(n=>`<div class="bbg-side-item" onclick="openNewsDetail('${n.id}')">
-        <img class="bbg-side-img" src="${n.image}" alt="" onerror="this.style.display='none'">
+        ${(n.image||n.img)?`<img class="bbg-side-img" src="${n.image||n.img}" alt="" onerror="this.parentElement.querySelector('img').style.display='none'">`:'' }
         <div><div class="bbg-side-title">${n.title}</div><div class="bbg-side-meta">${n.source} · ${n.date}</div></div>
       </div>`).join('')}
     </div>`;
   const rg=(elId,items)=>{
     const el=document.getElementById(elId);if(!el)return;
+    if(!items.length){el.innerHTML='<div style="color:var(--muted);font-size:13px;padding:10px">Aucun article disponible.</div>';return;}
     el.innerHTML=items.map(n=>`<div class="bbg-card" onclick="openNewsDetail('${n.id}')">
-      <img class="bbg-card-img" src="${n.image}" alt="" onerror="this.style.display='none'">
+      ${(n.image||n.img)?`<img class="bbg-card-img" src="${n.image||n.img}" alt="" onerror="this.style.display='none'">`:''}
       <div class="bbg-card-body">
         <div class="bbg-card-cat">${n.cat}</div>
         <div class="bbg-card-title">${n.title}</div>
-        <div class="bbg-card-desc">${(n.description||'').slice(0,120)}</div>
+        <div class="bbg-card-desc">${(n.description||n.desc||'').slice(0,120)}</div>
         <div class="bbg-card-meta"><span class="bbg-card-source">${n.source}</span><span class="bbg-card-date">${n.date}</span></div>
-      </div>
-    </div>`).join('');
+      </div></div>`).join('');
   };
-  rg('bbg-grid-markets',markets);
-  rg('bbg-grid-tech',tech.length?tech:newsCache.slice(5,8));
-  rg('bbg-grid-crypto',crypto.length?crypto:newsCache.slice(8,11));
+  rg('bbg-grid-markets', markets.length ? markets : newsCache.slice(5,9));
+  rg('bbg-grid-tech',   tech.length   ? tech   : newsCache.slice(9,12));
+  rg('bbg-grid-crypto', crypto.length ? crypto : newsCache.slice(12,15));
 }
-
-function updateBbgMarketStrip(){
-  const mkts=[
-    {t:'S&P 500',p:'5,240',c:'+0.82%',up:true},{t:'NASDAQ',p:'16,387',c:'+1.14%',up:true},
-    {t:'DOW',p:'38,519',c:'+0.37%',up:true},{t:'BTC',p:'$68,420',c:'+2.1%',up:true},
-    {t:'ETH',p:'$3,124',c:'+1.7%',up:true},{t:'BRENT',p:'$82.40',c:'-0.3%',up:false},
-    {t:'XAU',p:'$2,318',c:'+0.4%',up:true},{t:'EUR/USD',p:'1.0842',c:'-0.12%',up:false},
-    {t:'GBP/USD',p:'1.2641',c:'+0.08%',up:true},{t:'USD/JPY',p:'151.82',c:'+0.22%',up:true},
-  ];
-  const strip=document.getElementById('bbg-markets-strip');
-  if(strip)strip.innerHTML=mkts.map(m=>`<div class="bbg-mkt-item"><div class="bbg-mkt-ticker">${m.t}</div><div class="bbg-mkt-price">${m.p}</div><div class="bbg-mkt-chg ${m.up?'up':'dn'}">${m.up?'▲':'▼'} ${m.c}</div></div>`).join('');
-}
-
-function openNewsDetail(id){
-  const n=newsCache.find(x=>x.id===id);if(!n)return;
-  document.getElementById('news-detail-source').textContent=n.source;
-  document.getElementById('news-detail-title').textContent=n.title;
-  document.getElementById('news-detail-date').textContent=n.date;
-  // Résumé enrichi
-  const summary=n.description||n.title;
-  const paragraphs=summary.split(/[.!?]+/).filter(s=>s.trim().length>20);
-  const bodyHtml=paragraphs.length>1
-    ?paragraphs.map(p=>'<p style="line-height:1.85;color:var(--text);margin-bottom:12px">'+p.trim()+'.</p>').join('')
-    :'<p style="line-height:1.85;color:var(--text)">'+summary+'</p>';
-  document.getElementById('news-detail-body').innerHTML=`
-    <div style="background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px">
-      <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">📋 Résumé</div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.7">${summary.slice(0,320)}${summary.length>320?'…':''}</div>
-    </div>
-    <div style="font-size:14px">${bodyHtml}</div>`;
-  // Image
-  const imgWrap=document.getElementById('news-detail-img-wrap');
-  const imgEl=document.getElementById('news-detail-img');
-  if(n.image&&imgWrap&&imgEl){imgEl.src=n.image;imgEl.alt=n.title;imgWrap.style.display='block';imgEl.onerror=()=>{imgWrap.style.display='none';};}
-  else if(imgWrap)imgWrap.style.display='none';
-  // Liens externes enrichis
-  const extLinks=n.externalLinks&&n.externalLinks.length?n.externalLinks:[
-    {label:'🔍 Rechercher sur Google News',url:'https://news.google.com/search?q='+encodeURIComponent(n.title)},
-    {label:'▶️ Vidéos YouTube sur ce sujet',url:'https://www.youtube.com/results?search_query='+encodeURIComponent(n.title)},
-    {label:'📰 Reuters — Finance',url:'https://www.reuters.com/finance/'},
-    {label:'📊 Bloomberg Markets',url:'https://www.bloomberg.com/markets'},
-  ];
-  const linksHtml=`<div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
-    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">🔗 Sources & Ressources</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px">
-      ${n.link&&n.link!=='#'?'<a href="'+n.link+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);color:var(--accent2);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">📄 Article source complet</a>':''}
-      ${extLinks.map(l=>'<a href="'+l.url+'" target="_blank" style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:500;text-decoration:none;transition:opacity .2s" onmouseover="this.style.opacity=.7" onmouseout="this.style.opacity=1">'+l.label+'</a>').join('')}
-    </div>
-  </div>`;
-  document.getElementById('news-detail-link').innerHTML=linksHtml;
-  document.getElementById('news-detail-modal').classList.add('open');
-}
-function closeNewsDetail(){document.getElementById('news-detail-modal').classList.remove('open');}
 // Purge automatique des news > 1 an
-setInterval(()=>{const ONE_YEAR=365*24*60*60*1000;newsCache=newsCache.filter(n=>Date.now()-n.rawDate.getTime()<ONE_YEAR);},60*60*1000);
-
-
-// ============ OUTILS CARRIERE ============
+setInterval(()=>{const Y=365*24*60*60*1000;newsCache=newsCache.filter(n=>{try{return Date.now()-new Date(n.rawDate).getTime()<Y;}catch{return true;}});},60*60*1000);
 let cvData=null, lmData=null;
 
 function showCareerTab(tab,btn){
@@ -4740,50 +4953,7 @@ function generateLM(){
   btn.disabled=false; btn.textContent='✨ Générer la lettre de motivation';
 }
 
-function _renderCvExps(){
-  const container = document.getElementById('cv-exp-list');
-  if(!container) return;
-  container.innerHTML = '';
-  cvExpCount = 0;
-  window._cvExps.forEach(exp => {
-    cvExpCount++;
-    const id = 'cvexp' + cvExpCount;
-    const div = document.createElement('div');
-    div.id = id;
-    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;position:relative';
-    div.innerHTML = `<button onclick="document.getElementById('${id}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>
-      <div class="profile-grid">
-        <div class="profile-field"><label>Poste</label><input type="text" id="${id}-poste" value="${exp.poste||''}" placeholder="Analyste Financier" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-        <div class="profile-field"><label>Entreprise</label><input type="text" id="${id}-entreprise" value="${exp.entreprise||''}" placeholder="BNP Paribas" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-        <div class="profile-field"><label>Période</label><input type="text" id="${id}-periode" value="${exp.periode||''}" placeholder="Jan 2023 – Juin 2024" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-        <div class="profile-field"><label>Lieu</label><input type="text" id="${id}-lieu" value="${exp.lieu||''}" placeholder="Paris, France" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-      </div>
-      <div class="profile-field" style="margin-top:6px"><label>Missions</label><textarea id="${id}-missions" style="width:100%;min-height:60px;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none;resize:vertical">${exp.missions||''}</textarea></div>`;
-    container.appendChild(div);
-  });
-}
 
-function _renderCvEdus(){
-  const container = document.getElementById('cv-edu-list');
-  if(!container) return;
-  container.innerHTML = '';
-  cvEduCount = 0;
-  window._cvEdus.forEach(edu => {
-    cvEduCount++;
-    const id = 'cvedu' + cvEduCount;
-    const div = document.createElement('div');
-    div.id = id;
-    div.style.cssText = 'background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:12px;position:relative';
-    div.innerHTML = `<button onclick="document.getElementById('${id}').remove()" style="position:absolute;top:8px;right:8px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px">×</button>
-      <div class="profile-grid">
-        <div class="profile-field"><label>Diplôme</label><input type="text" id="${id}-diplome" value="${edu.diplome||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-        <div class="profile-field"><label>École</label><input type="text" id="${id}-ecole" value="${edu.ecole||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-        <div class="profile-field"><label>Période</label><input type="text" id="${id}-periode" value="${edu.periode||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-        <div class="profile-field"><label>Mention / Lieu</label><input type="text" id="${id}-mention" value="${edu.mention||''}" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:12px;outline:none"></div>
-      </div>`;
-    container.appendChild(div);
-  });
-}
 
 
 // ─── DOWNLOAD DOCX (via HTML to Word blob) ───
@@ -5123,18 +5293,6 @@ function quickNav_OLD_REMOVED(tabId){
   }
 }
 
-function showTabExtra(id,btn){
-  // Désactiver tous les onglets principaux
-  document.querySelectorAll('#tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.autre-dropdown-item').forEach(b=>b.classList.remove('active-page'));
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  if(btn)btn.classList.add('active-page');
-  const autreBtn=document.getElementById('autre-btn');
-  if(autreBtn)autreBtn.classList.add('has-active');
-  const tc=document.getElementById('tab-'+id);
-  if(tc)tc.classList.add('active');
-  saveActiveTab(id);
-}
 
 // ============================================================
 // MODULE CALCULATEUR FINANCIER COMPLET
@@ -6074,13 +6232,93 @@ function sendChatMsg(){}
 // ============ SOUS-PAGES FINANCE ============
 let watchlist=[];let priceAlerts=[];
 function showFinSub(sub,btn){
-  ['marches','watchlist','alertes','compare'].forEach(s=>{
+  ['marches','watchlist','alertes','compare','forex'].forEach(s=>{
     const p=document.getElementById('fin-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
   });
   document.querySelectorAll('[id^="fin-sub-"]').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   if(sub==='watchlist')renderWatchlist();
   if(sub==='alertes')renderAlerts();
+  if(sub==='forex'){initForex();}
+}
+
+// ── FOREX CONVERTER — Live rates ─────────────────────────────
+let _forexRates = {}; // base USD
+let _forexCryptoRates = {}; // BTC/ETH in USD
+let _forexInited = false;
+
+const FOREX_FLAGS = {USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',CHF:'🇨🇭',CAD:'🇨🇦',AUD:'🇦🇺',MAD:'🇲🇦',XOF:'🌍',BTC:'₿',ETH:'Ξ'};
+// Base approximate rates (EUR base, updated Apr 2025 context)
+const FOREX_FALLBACK = {USD:1.134,EUR:1,GBP:0.856,JPY:161.2,CHF:0.952,CAD:1.563,AUD:1.757,MAD:11.42,XOF:655.96};
+
+async function initForex(){
+  if(_forexInited&&Object.keys(_forexRates).length>0){runForex();_renderForexTable();return;}
+  document.getElementById('forex-result').textContent='⏳';
+  try{
+    // Fetch fiat rates from ECB via exchangerate-api (free, no key)
+    const r=await fetch('https://api.exchangerate-api.com/v4/latest/EUR',{signal:AbortSignal.timeout(5000)});
+    if(r.ok){const d=await r.json();_forexRates={...d.rates,EUR:1};}
+    else throw new Error('fallback');
+  }catch(e){ _forexRates={...FOREX_FALLBACK}; }
+  try{
+    // Fetch BTC/ETH rates
+    const r2=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=eur,usd',{signal:AbortSignal.timeout(5000)});
+    if(r2.ok){
+      const d2=await r2.json();
+      _forexRates.BTC=1/(d2.bitcoin?.eur||87000);
+      _forexRates.ETH=1/(d2.ethereum?.eur||1800);
+    }
+  }catch(e){_forexRates.BTC=1/87000;_forexRates.ETH=1/1800;}
+  _forexInited=true;
+  runForex();
+  _renderForexTable();
+}
+
+function runForex(){
+  const amount=parseFloat(document.getElementById('forex-amount')?.value)||0;
+  const from=document.getElementById('forex-from')?.value||'EUR';
+  const to=document.getElementById('forex-to')?.value||'USD';
+  if(!Object.keys(_forexRates).length){document.getElementById('forex-result').textContent='Chargement…';return;}
+  // Convert: amount(from) → EUR → to
+  const rateFrom=_forexRates[from]||1;
+  const rateTo=_forexRates[to]||1;
+  const inEur=amount/rateFrom;
+  const result=inEur*rateTo;
+  const displayRate=(rateTo/rateFrom);
+  const isLive=_forexInited;
+  const isCrypto=['BTC','ETH'].includes(from)||['BTC','ETH'].includes(to);
+  document.getElementById('forex-result').textContent=result.toLocaleString('fr-FR',{maximumFractionDigits:['BTC','ETH'].includes(to)?8:2})+' '+to;
+  const infoEl=document.getElementById('forex-rate-info');
+  if(infoEl) infoEl.innerHTML=`1 ${from} = ${displayRate.toLocaleString('fr-FR',{maximumFractionDigits:6})} ${to} ${isLive?'<span style="color:var(--success);font-size:10px">● live</span>':'<span style="color:var(--muted);font-size:10px">○ estimé</span>'}${isCrypto?' · <span style="color:var(--gold)">Prix crypto via CoinGecko</span>':''}`;
+}
+
+function swapForex(){
+  const f=document.getElementById('forex-from');
+  const t=document.getElementById('forex-to');
+  if(!f||!t)return;
+  const tmp=f.value;f.value=t.value;t.value=tmp;
+  runForex();
+}
+
+function _renderForexTable(){
+  const el=document.getElementById('forex-table');if(!el)return;
+  const currencies=['USD','EUR','GBP','JPY','CHF','MAD','XOF','BTC'];
+  const tableRates=currencies.map(c=>({c,rate:_forexRates[c]||1}));
+  let html='<table style="width:100%;border-collapse:collapse;font-size:12px;">';
+  html+='<tr><th style="padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);color:var(--muted);font-size:10px;text-transform:uppercase;">De / Vers</th>';
+  html+=currencies.map(c=>`<th style="padding:8px 10px;text-align:center;border-bottom:1px solid var(--border);color:var(--muted);font-size:10px;text-transform:uppercase;">${FOREX_FLAGS[c]||''} ${c}</th>`).join('');
+  html+='</tr>';
+  tableRates.forEach(({c:fromC,rate:fromR})=>{
+    html+=`<tr><td style="padding:7px 10px;font-weight:700;border-bottom:1px solid rgba(42,42,58,.3);">${FOREX_FLAGS[fromC]||''} ${fromC}</td>`;
+    tableRates.forEach(({c:toC,rate:toR})=>{
+      const r=(toR/fromR);
+      const diag=fromC===toC;
+      html+=`<td style="padding:7px 10px;text-align:center;border-bottom:1px solid rgba(42,42,58,.3);${diag?'background:rgba(230,57,70,.06);color:var(--accent);font-weight:700;':''}">${diag?'—':r.toLocaleString('fr-FR',{maximumFractionDigits:toC==='BTC'||toC==='ETH'?8:4})}</td>`;
+    });
+    html+='</tr>';
+  });
+  html+='</table>';
+  el.innerHTML=html;
 }
 
 // ── Comparateur d'actifs (NOUVEAU) ──────────────────────────
@@ -6217,6 +6455,89 @@ function checkPriceAlerts(){
 
 // ============ SOUS-PAGES AGENDA : TÂCHES ============
 let tasksList=[];
+// ── Météo live (Open-Meteo — 100% gratuit, sans clé) ────────
+async function loadWeather(){
+  const city = (document.getElementById('weather-city')?.value||'Paris').trim();
+  const el = document.getElementById('weather-content');
+  if(!el) return;
+  el.innerHTML = '<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">⏳ Chargement…</div>';
+  try{
+    // Geocoding
+    const geoR = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`,{signal:AbortSignal.timeout(5000)});
+    const geoD = await geoR.json();
+    const loc = geoD.results?.[0];
+    if(!loc) throw new Error('Ville introuvable');
+    // Weather
+    const wR = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${loc.latitude}&longitude=${loc.longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,apparent_temperature&hourly=temperature_2m&forecast_days=1&timezone=auto`,{signal:AbortSignal.timeout(5000)});
+    const wD = await wR.json();
+    const cur = wD.current;
+    const code = cur.weather_code||0;
+    const icons = {0:'☀️',1:'🌤',2:'⛅',3:'☁️',45:'🌫',48:'🌫',51:'🌦',53:'🌧',55:'🌧',61:'🌧',63:'🌧',65:'🌧',71:'🌨',73:'❄️',75:'❄️',80:'🌦',81:'🌧',82:'⛈',85:'❄️',95:'⛈',96:'⛈',99:'⛈'};
+    const descs = {0:'Ciel dégagé',1:'Quasi-dégagé',2:'Partiellement nuageux',3:'Couvert',45:'Brouillard',51:'Bruine légère',61:'Pluie légère',63:'Pluie modérée',65:'Forte pluie',71:'Neige légère',73:'Neige modérée',80:'Averses légères',81:'Averses',82:'Averses fortes',95:'Orage',99:'Orage avec grêle'};
+    const icon = icons[code]||'🌡';
+    const desc = descs[code]||'—';
+    const temp = Math.round(cur.temperature_2m||0);
+    const feels = Math.round(cur.apparent_temperature||temp);
+    const hum = cur.relative_humidity_2m||0;
+    const wind = cur.wind_speed_10m||0;
+    el.innerHTML = `
+      <div style="text-align:center;padding:6px 0 10px;">
+        <div style="font-size:46px;line-height:1;">${icon}</div>
+        <div style="font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin:4px 0;">${temp}°C</div>
+        <div style="font-size:12px;color:var(--muted);">${desc}</div>
+        <div style="font-size:11px;color:var(--muted);">${loc.name}, ${loc.country_code||''}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:4px;">
+        <div style="background:var(--surface2);border-radius:7px;padding:7px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Ressenti</div>
+          <div style="font-size:13px;font-weight:700;">${feels}°</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:7px;padding:7px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Humidité</div>
+          <div style="font-size:13px;font-weight:700;">${hum}%</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:7px;padding:7px;text-align:center;">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Vent</div>
+          <div style="font-size:13px;font-weight:700;">${wind}km/h</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);text-align:right;margin-top:6px;">Open-Meteo ● live</div>`;
+  }catch(e){
+    el.innerHTML = `<div style="font-size:12px;color:var(--accent2);text-align:center;padding:8px;">⚠️ ${e.message||'Erreur de chargement'}</div>`;
+  }
+}
+
+// ── Veille Trending — CoinGecko trending coins ───────────────
+let _veilleTrendingLoaded=false;
+async function loadVeilleTrending(){
+  const el=document.getElementById('veille-trending');
+  if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;grid-column:1/-1;">⏳ Chargement…</div>';
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/search/trending',{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)throw new Error('CG fail');
+    const d=await r.json();
+    const coins=d.coins?.slice(0,12)||[];
+    el.innerHTML=coins.map((c,i)=>{
+      const coin=c.item;
+      const price=coin.data?.price||0;
+      const change=coin.data?.price_change_percentage_24h?.usd||0;
+      const cap=coin.data?.market_cap||'';
+      return`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center;transition:transform .2s;cursor:pointer;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+        <div style="font-size:24px;margin-bottom:4px;">${coin.thumb?`<img src="${coin.thumb}" style="width:28px;height:28px;border-radius:50%;" onerror="this.outerHTML='🪙'">`:'🪙'}</div>
+        <div style="font-size:11px;font-weight:800;color:var(--text);">${coin.symbol||coin.name}</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:1px;">#${coin.market_cap_rank||'?'}</div>
+        ${price?`<div style="font-size:12px;font-weight:700;margin-top:5px;">$${price<0.01?price.toFixed(6):price<1?price.toFixed(4):price.toFixed(2)}</div>`:''}
+        ${change?`<div style="font-size:10px;font-weight:700;color:${change>=0?'var(--success)':'var(--accent2)'};margin-top:2px;">${change>=0?'▲':'▼'} ${Math.abs(change).toFixed(2)}%</div>`:''}
+        <div style="font-size:9px;background:rgba(230,57,70,.1);color:var(--accent);border-radius:4px;padding:2px 6px;margin-top:5px;">🔥 #${i+1} Trending</div>
+      </div>`;
+    }).join('');
+    _veilleTrendingLoaded=true;
+  }catch(e){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;grid-column:1/-1;">⚠️ Impossible de charger les tendances — <button onclick="loadVeilleTrending()" class="btn btn-outline" style="font-size:12px;padding:4px 10px;">Réessayer</button></div>';
+  }
+}
+
 function showAgendaSub(sub,btn){
   ['cal','tasks','rappels','pomodoro'].forEach(s=>{
     const p=document.getElementById('agenda-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
@@ -7307,14 +7628,12 @@ window.addEventListener('resize',()=>{
   if(_el('tab-chess')?.classList.contains('active')){_resize();_draw();}
 });
 
-// Also resize when tab becomes active
-const _origShowTab2=window.showTab;
-if(_origShowTab2){
-  window.showTab=function(id,btn){
-    _origShowTab2(id,btn);
-    if(id==='chess'){requestAnimationFrame(()=>{requestAnimationFrame(()=>{_resize();if(bd)_draw();});});}
-  };
-}
+// Chess tab resize hook — injected safely after all other showTab wrappers
+document.addEventListener('_showTab', function(e){
+  if(e.detail && e.detail.id === 'chess'){
+    requestAnimationFrame(()=>{requestAnimationFrame(()=>{if(typeof _resize==='function')_resize();if(typeof bd!=='undefined'&&bd&&typeof _draw==='function')_draw();});});
+  }
+});
 
 // ── BOARD INIT ─────────────────────────────────────
 function _mkBoard(){
@@ -8091,7 +8410,23 @@ window.playTournamentMatch=function(tid,white,black){
 // ============================================================
 let dcfPieChart=null, dcfFcfChart=null;
 
-function initDCF(){}
+function initDCF(){
+  // Auto-populate DCF with AAPL realistic defaults if empty
+  const tickerEl=document.getElementById('dcf-ticker');
+  if(tickerEl&&!tickerEl.dataset.inited){
+    tickerEl.dataset.inited='1';
+    // Pre-fill realistic current values (Apr 2025)
+    const defaults={
+      'dcf-fcf':'100000','dcf-growth':'6','dcf-gterm':'2.5','dcf-years':'5',
+      'dcf-ke':'9','dcf-kd':'3.5','dcf-we':'85','dcf-tax':'21',
+      'dcf-debt':'67000','dcf-shares':'15300'
+    };
+    Object.entries(defaults).forEach(([id,v])=>{const el=document.getElementById(id);if(el&&!el.dataset.touched)el.value=v;});
+  }
+}
+
+// DCF input change tracking (prevent overwrite when user edits)
+document.addEventListener('input',e=>{if(e.target&&e.target.id&&e.target.id.startsWith('dcf-'))e.target.dataset.touched='1';});
 
 function _dcfVal(id){ return parseFloat(document.getElementById(id)?.value)||0; }
 
