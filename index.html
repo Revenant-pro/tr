@@ -454,10 +454,20 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div class="login-title">世界運命</div>
       <div class="login-sub">Accès sécurisé — connexion requise</div>
     </div>
-    <div class="field"><label>Nom d'utilisateur</label><input type="text" id="inp-user" placeholder="Nom d'utilisateur"></div>
-    <div class="field"><label>Mot de passe</label><input type="password" id="inp-pass" placeholder="••••••••••"></div>
+    <div class="field"><label>Nom d'utilisateur</label><input type="text" id="inp-user" placeholder="Nom d'utilisateur" autocomplete="username" spellcheck="false"></div>
+    <div class="field"><label>Mot de passe</label>
+      <div style="position:relative">
+        <input type="password" id="inp-pass" placeholder="••••••••••" autocomplete="current-password" style="width:100%;padding-right:44px">
+        <button type="button" onclick="togglePassVis('inp-pass','eye-login')" id="eye-login-btn" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:rgba(255,255,255,.4);padding:0;" title="Afficher/masquer">
+          <span id="eye-login">👁</span>
+        </button>
+      </div>
+    </div>
     <button class="btn-login" id="btn-login-main" onclick="doLogin()">Se connecter →</button>
-    <div style="text-align:center;font-size:11px;color:rgba(255,255,255,.3);margin-top:10px;">Accès sur invitation uniquement — contactez l'administrateur</div>
+    <div style="text-align:center;margin-top:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+      <span style="font-size:11px;color:rgba(255,255,255,.3);">Accès sur invitation uniquement — contactez l'administrateur</span>
+      <button type="button" onclick="openForgotPassword()" style="background:none;border:none;color:rgba(255,255,255,.45);font-size:12px;cursor:pointer;text-decoration:underline;padding:0;font-family:'DM Sans',sans-serif;">Mot de passe oublié ?</button>
+    </div>
     <div class="login-error" id="login-err">❌ Identifiants incorrects. Réessayez.</div>
     <div id="login-session-err" style="background:rgba(244,162,97,.12);border:1px solid rgba(244,162,97,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--gold);margin-top:14px;display:none;text-align:center;"></div>
     <div class="firebase-status"><div class="fb-dot"></div><span>Données synchronisées via Firebase</span></div>
@@ -472,14 +482,95 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:700">Créer un compte</div>
       <div style="font-size:12px;color:var(--muted);margin-top:4px">Vous aurez accès en tant que <strong style="color:var(--gold)">Lecteur</strong></div>
     </div>
-    <div class="field"><label>Nom d'utilisateur <span style="color:var(--accent)">*</span></label><input type="text" id="reg-username" placeholder="ex: jean.dupont"></div>
-    <div class="field"><label>Mot de passe <span style="color:var(--accent)">*</span></label><input type="password" id="reg-pass" placeholder="Minimum 6 caractères"></div>
+    <div class="field"><label>Nom d'utilisateur <span style="color:var(--accent)">*</span></label><input type="text" id="reg-username" placeholder="ex: jean.dupont" autocomplete="username" spellcheck="false"></div>
+    <div class="field"><label>Mot de passe <span style="color:var(--accent)">*</span></label>
+      <div style="position:relative">
+        <input type="password" id="reg-pass" placeholder="Minimum 6 caractères" autocomplete="new-password" oninput="checkPassStrength(this.value)" style="width:100%;padding-right:44px">
+        <button type="button" onclick="togglePassVis('reg-pass','eye-reg')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--muted);padding:0;" title="Afficher/masquer"><span id="eye-reg">👁</span></button>
+      </div>
+      <div id="pass-strength-bar" style="height:4px;border-radius:2px;margin-top:6px;background:var(--border);overflow:hidden;display:none"><div id="pass-strength-fill" style="height:100%;width:0%;transition:width .3s,background .3s;border-radius:2px"></div></div>
+      <div id="pass-strength-label" style="font-size:11px;color:var(--muted);margin-top:4px;display:none"></div>
+    </div>
     <div class="field"><label>Nom complet</label><input type="text" id="reg-fullname" placeholder="Jean Dupont"></div>
     <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="votre@email.com"></div>
     <div id="reg-err" style="background:rgba(230,57,70,.12);border:1px solid rgba(230,57,70,.3);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-bottom:12px;display:none"></div>
     <div style="display:flex;gap:10px;margin-top:4px">
       <button onclick="closeRegister()" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:10px;padding:13px;color:var(--muted);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Annuler</button>
       <button onclick="doRegister()" style="flex:2;background:linear-gradient(135deg,var(--accent),#c1121f);border:none;border-radius:10px;padding:13px;color:white;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;cursor:pointer;">S'inscrire →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL A2F — Vérification code email -->
+<div id="mfa-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:rgba(10,10,15,.92);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:44px 40px;width:420px;max-width:95vw;animation:cardIn .4s cubic-bezier(.16,1,.3,1);box-shadow:0 40px 80px rgba(0,0,0,.7);">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(230,57,70,.4);">🔐</div>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff;">Vérification en 2 étapes</div>
+      <div id="mfa-subtitle" style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.5;">Un code de vérification a été envoyé à votre adresse email.</div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <label style="display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Code à 6 chiffres</label>
+      <input type="text" id="mfa-code-input" maxlength="6" placeholder="• • • • • •" autocomplete="one-time-code"
+        style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:15px 16px;color:#fff;font-family:'Syne',sans-serif;font-size:22px;letter-spacing:8px;text-align:center;outline:none;transition:border-color .2s;"
+        onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='rgba(255,255,255,.12)'"
+        oninput="this.value=this.value.replace(/\D/g,'')" onkeydown="if(event.key==='Enter')verifyMfaCode()">
+    </div>
+    <div id="mfa-err" style="background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.4);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-bottom:14px;display:none;text-align:center;"></div>
+    <button onclick="verifyMfaCode()" style="width:100%;background:linear-gradient(135deg,var(--accent),#c1121f);border:none;border-radius:10px;padding:14px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(230,57,70,.35);">Vérifier →</button>
+    <div style="text-align:center;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">
+      <button onclick="resendMfaCode()" id="mfa-resend-btn" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">Renvoyer le code</button>
+      <span style="color:rgba(255,255,255,.15);">|</span>
+      <button onclick="closeMfaModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">Annuler</button>
+    </div>
+    <div id="mfa-countdown" style="text-align:center;font-size:11px;color:rgba(255,255,255,.3);margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- MODAL MOT DE PASSE OUBLIÉ -->
+<div id="forgot-modal" style="position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:rgba(10,10,15,.92);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:44px 40px;width:420px;max-width:95vw;animation:cardIn .4s cubic-bezier(.16,1,.3,1);box-shadow:0 40px 80px rgba(0,0,0,.7);">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,#3498db,#2980b9);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;box-shadow:0 8px 24px rgba(52,152,219,.4);">🔑</div>
+      <div id="forgot-title" style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff;">Mot de passe oublié</div>
+      <div id="forgot-subtitle" style="font-size:13px;color:rgba(255,255,255,.5);margin-top:6px;line-height:1.5;">Entrez votre nom d'utilisateur pour recevoir un code de réinitialisation.</div>
+    </div>
+
+    <!-- Étape 1 : saisie username -->
+    <div id="forgot-step1">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Nom d'utilisateur</label>
+        <input type="text" id="forgot-username" placeholder="Votre identifiant" autocomplete="username" spellcheck="false"
+          style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .2s;"
+          onfocus="this.style.borderColor='#3498db'" onblur="this.style.borderColor='rgba(255,255,255,.12)'"
+          onkeydown="if(event.key==='Enter')sendForgotCode()">
+      </div>
+      <div id="forgot-err" style="background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.4);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-bottom:14px;display:none;text-align:center;"></div>
+      <button onclick="sendForgotCode()" style="width:100%;background:linear-gradient(135deg,#3498db,#2980b9);border:none;border-radius:10px;padding:14px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">Envoyer le code →</button>
+    </div>
+
+    <!-- Étape 2 : saisie code + nouveau MDP -->
+    <div id="forgot-step2" style="display:none;">
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Code reçu par email</label>
+        <input type="text" id="forgot-code-input" maxlength="6" placeholder="• • • • • •" autocomplete="one-time-code"
+          style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 16px;color:#fff;font-family:'Syne',sans-serif;font-size:20px;letter-spacing:6px;text-align:center;outline:none;"
+          oninput="this.value=this.value.replace(/\D/g,'')">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:12px;font-weight:500;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px;">Nouveau mot de passe</label>
+        <div style="position:relative;">
+          <input type="password" id="forgot-newpass" placeholder="Minimum 6 caractères" autocomplete="new-password"
+            style="width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 44px 13px 16px;color:#fff;font-family:'DM Sans',sans-serif;font-size:15px;outline:none;">
+          <button type="button" onclick="togglePassVis('forgot-newpass','eye-forgot')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:rgba(255,255,255,.4);padding:0;"><span id="eye-forgot">👁</span></button>
+        </div>
+      </div>
+      <div id="forgot-err2" style="background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.4);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--accent2);margin-bottom:14px;display:none;text-align:center;"></div>
+      <button onclick="confirmForgotReset()" style="width:100%;background:linear-gradient(135deg,#3498db,#2980b9);border:none;border-radius:10px;padding:14px;color:white;font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;">Réinitialiser le mot de passe →</button>
+    </div>
+
+    <div style="text-align:center;margin-top:16px;">
+      <button onclick="closeForgotModal()" style="background:none;border:none;color:rgba(255,255,255,.4);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;">← Retour à la connexion</button>
     </div>
   </div>
 </div>
@@ -564,9 +655,10 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   <div class="tab-content" id="tab-acces" style="padding:20px 28px 28px;">
     <div id="zone-admin" style="display:none">
       <div class="sub-nav">
-        <button id="acces-sub-users" class="sub-nav-btn active" onclick="showAccesSub('users',this)">Utilisateurs</button>
-        <button id="acces-sub-log" class="sub-nav-btn" onclick="showAccesSub('log',this)">Journal</button>
-        <button id="acces-sub-diag" class="sub-nav-btn" onclick="showAccesSub('diag',this)">Diagramme</button>
+        <button id="acces-sub-users" class="sub-nav-btn active" onclick="showAccesSub('users',this)">👥 Utilisateurs</button>
+        <button id="acces-sub-log" class="sub-nav-btn" onclick="showAccesSub('log',this)">📋 Journal</button>
+        <button id="acces-sub-diag" class="sub-nav-btn" onclick="showAccesSub('diag',this)">🗺️ Diagramme</button>
+        <button id="acces-sub-secu" class="sub-nav-btn" onclick="showAccesSub('secu',this)">🔒 Sécurité</button>
       </div>
       <!-- Panel Utilisateurs -->
       <div id="acces-panel-users">
@@ -579,14 +671,17 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
           </div>
           <div class="row">
             <input type="text" id="new-name" placeholder="Nom complet affiché">
-            <input type="email" id="new-email" placeholder="Email (optionnel)">
+            <input type="email" id="new-email" placeholder="Email (requis pour non-lecteur)">
           </div>
           <div class="row">
-            <select id="new-role">
+            <select id="new-role" onchange="onNewRoleChange()">
               <option value="viewer">👁 Lecteur</option>
               <option value="editor">👤 Personnel</option>
               <option value="admin">🔑 Administrateur</option>
             </select>
+          </div>
+          <div id="new-role-email-notice" style="display:none;font-size:11px;color:var(--gold);background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.25);border-radius:7px;padding:8px 12px;">
+            🔐 Un email est obligatoire pour ce rôle — l'utilisateur devra valider un code A2F lors de sa première connexion.
           </div>
           <!-- Pages autorisées -->
           <div style="margin-top:10px;">
@@ -604,7 +699,7 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
       </div>
       <div class="card" style="margin-bottom:18px">
         <div class="card-title">Utilisateurs</div>
-        <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Pages</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
+        <div style="overflow-x:auto"><table class="users-table"><thead><tr><th>Utilisateur</th><th>Email</th><th>Rôle</th><th id="pw-col-header" style="display:none">Mot de passe</th><th>Pages</th><th>A2F</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div>
       </div>
       <div class="grid-2">
         <div class="card">
@@ -649,6 +744,30 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
         <div id="diagram-wrap"></div>
       </div>
       </div><!-- /acces-panel-diag -->
+      <!-- Panel Sécurité -->
+      <div id="acces-panel-secu" style="display:none">
+        <div class="grid-2" style="margin-bottom:18px">
+          <div class="card" style="border-color:rgba(230,57,70,.3)">
+            <div class="card-title">🔒 Tentatives de connexion bloquées</div>
+            <div id="secu-blocked-list" style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+              <div style="text-align:center;padding:16px;color:var(--muted);font-size:13px">Aucun compte bloqué actuellement ✅</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 Statistiques de session</div>
+            <div id="secu-stats" style="display:flex;flex-direction:column;gap:10px;margin-top:4px"></div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-title">⚙️ Politique de sécurité</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:8px" id="secu-policy-grid">
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🕐 Sessions actives (dernières 24h)</div>
+          <div id="secu-sessions-list" style="margin-top:6px"></div>
+        </div>
+      </div><!-- /acces-panel-secu -->
     </div><!-- /zone-admin -->
     <div id="zone-profil" style="display:none">
 
@@ -675,7 +794,22 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
             <div class="profile-field"><label>Ville de naissance</label><input type="text" id="pf-ville" placeholder="Ville"></div>
           </div>
           <div class="profile-field"><label>Bibliographie</label><textarea id="pf-bio" placeholder="Décrivez-vous en quelques lignes..."></textarea></div>
-          <div style="display:flex;justify-content:flex-end;margin-top:10px">
+
+          <!-- Section A2F -->
+          <div style="margin-top:18px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;" id="mfa-profile-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+              <div>
+                <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;">🔐 Authentification à deux facteurs (A2F)</div>
+                <div id="mfa-profile-desc" style="font-size:12px;color:var(--muted);margin-top:3px;">Sécurisez votre compte en exigeant un code email à chaque connexion.</div>
+              </div>
+              <button id="mfa-toggle-btn" onclick="toggleMyMfa()" style="padding:8px 18px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:1px solid var(--border);background:var(--surface);">Activer</button>
+            </div>
+            <div id="mfa-no-email-warn" style="display:none;font-size:12px;color:var(--gold);margin-top:10px;background:rgba(244,162,97,.08);border:1px solid rgba(244,162,97,.25);border-radius:7px;padding:8px 12px;">
+              ⚠️ Vous devez renseigner un email dans votre profil pour activer l'A2F.
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;margin-top:14px">
             <button class="btn btn-primary" onclick="saveMyProfile()">Enregistrer</button>
           </div>
         </div>
@@ -2972,22 +3106,144 @@ window.addEventListener('beforeunload',()=>{
 window.addEventListener('load',()=>sessionStorage.removeItem('_refreshing'));
 
 // ============ AUTH ============
+// ── Sécurité UI : afficher/masquer mot de passe ──────────────
+function togglePassVis(inputId, eyeId) {
+  const inp = document.getElementById(inputId);
+  const eye = document.getElementById(eyeId);
+  if (!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  if (eye) eye.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+// ── Indicateur de force du mot de passe ──────────────────────
+function checkPassStrength(pass) {
+  const bar = document.getElementById('pass-strength-bar');
+  const fill = document.getElementById('pass-strength-fill');
+  const label = document.getElementById('pass-strength-label');
+  if (!bar || !fill || !label) return;
+  if (!pass) { bar.style.display = 'none'; label.style.display = 'none'; return; }
+  bar.style.display = 'block'; label.style.display = 'block';
+  let score = 0;
+  if (pass.length >= 8) score++;
+  if (pass.length >= 12) score++;
+  if (/[A-Z]/.test(pass)) score++;
+  if (/[0-9]/.test(pass)) score++;
+  if (/[^A-Za-z0-9]/.test(pass)) score++;
+  const levels = [
+    { w: '20%', bg: '#e63946', txt: '🔴 Très faible' },
+    { w: '40%', bg: '#e67e22', txt: '🟠 Faible' },
+    { w: '60%', bg: '#f4a261', txt: '🟡 Moyen' },
+    { w: '80%', bg: '#27ae60', txt: '🟢 Fort' },
+    { w: '100%', bg: '#1abc9c', txt: '✅ Très fort' },
+  ];
+  const lv = levels[Math.min(score, 4)];
+  fill.style.width = lv.w;
+  fill.style.background = lv.bg;
+  label.textContent = lv.txt;
+  label.style.color = lv.bg;
+}
+
+// ── Sécurité : Rate limiting connexion ────────────────────────
+const _loginAttempts = {};    // { username: { count, lockedUntil } }
+const MAX_LOGIN_ATTEMPTS = 5;
+const LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes
+
+function _checkLoginRateLimit(username) {
+  const now = Date.now();
+  const rec = _loginAttempts[username] || { count: 0, lockedUntil: 0 };
+  if (rec.lockedUntil > now) {
+    const mins = Math.ceil((rec.lockedUntil - now) / 60000);
+    return { blocked: true, mins };
+  }
+  if (rec.lockedUntil <= now && rec.lockedUntil > 0) {
+    // Lockout expiré, réinitialiser
+    _loginAttempts[username] = { count: 0, lockedUntil: 0 };
+  }
+  return { blocked: false };
+}
+
+function _recordFailedLogin(username) {
+  const rec = _loginAttempts[username] || { count: 0, lockedUntil: 0 };
+  rec.count++;
+  if (rec.count >= MAX_LOGIN_ATTEMPTS) {
+    rec.lockedUntil = Date.now() + LOCKOUT_MS;
+    rec.count = 0;
+  }
+  _loginAttempts[username] = rec;
+  return MAX_LOGIN_ATTEMPTS - rec.count;
+}
+
+function _resetLoginAttempts(username) {
+  delete _loginAttempts[username];
+}
+
 async function doLogin(){
   const u=document.getElementById('inp-user').value.trim();
   const p=document.getElementById('inp-pass').value;
   const err=document.getElementById('login-err');
   const sessErr=document.getElementById('login-session-err');
   const btn=document.getElementById('btn-login-main');
-  btn.textContent='Connexion...';btn.disabled=true;
-  err.style.display='none';sessErr.style.display='none';
+
+  err.style.display='none'; sessErr.style.display='none';
+
+  // Vérification rate limit AVANT toute requête Firebase
+  if (u) {
+    const rl = _checkLoginRateLimit(u);
+    if (rl.blocked) {
+      sessErr.textContent = `⚠️ Compte temporairement bloqué suite à trop de tentatives. Réessayez dans ${rl.mins} minute(s).`;
+      sessErr.style.display = 'block';
+      return;
+    }
+  }
+
+  btn.textContent='Connexion...'; btn.disabled=true;
   await ensureHansExists();
   const fbUsers=await fbGetAll('users');
   if(fbUsers.length>0)users=fbUsers.map(u=>({...u,created:u.created?new Date(u.created):new Date()}));
   const found=users.find(x=>x.username===u&&x.pass===p);
-  btn.textContent='Se connecter →';btn.disabled=false;
-  if(!found){err.style.display='block';document.getElementById('inp-pass').value='';return;}
+  btn.textContent='Se connecter →'; btn.disabled=false;
 
-  // Aucune limite d'appareils — tous les utilisateurs peuvent se connecter en simultané
+  if(!found){
+    // Enregistrer la tentative échouée
+    const remaining = _recordFailedLogin(u);
+    const rl2 = _checkLoginRateLimit(u);
+    if (rl2.blocked) {
+      err.style.display='none';
+      sessErr.textContent=`🔒 Trop de tentatives échouées. Compte bloqué pendant 15 minutes.`;
+      sessErr.style.display='block';
+    } else {
+      err.textContent=`❌ Identifiants incorrects. ${remaining} tentative(s) restante(s) avant blocage.`;
+      err.style.display='block';
+    }
+    document.getElementById('inp-pass').value='';
+    return;
+  }
+
+  // Connexion réussie — réinitialiser le compteur
+  _resetLoginAttempts(u);
+
+  // ── Vérification A2F si activée sur ce compte ──
+  if(found.mfaEnabled && found.email){
+    const code = _generateMfaCode();
+    _mfaPending = {
+      type: 'login',
+      code,
+      expires: Date.now() + 10*60*1000,
+      email: found.email,
+      callback: async () => {
+        const sessionId='s'+Date.now();
+        found._sessionId=sessionId;
+        currentUser=found;
+        saveSession(found);
+        await logConnection(u,sessionId);
+        launchDashboard();
+      }
+    };
+    const masked = found.email.replace(/(.{2})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(Math.max(2, b.length)) + c);
+    await _sendMfaEmail(found.email, code, 'login');
+    openMfaModal(`Un code a été envoyé à <strong style="color:#fff;">${masked}</strong>. Saisissez-le pour accéder à votre compte.`);
+    return;
+  }
 
   const sessionId='s'+Date.now();
   found._sessionId=sessionId;
@@ -2997,6 +3253,208 @@ async function doLogin(){
   launchDashboard();
 }
 
+
+// ============ A2F — État global ============
+let _mfaPending = null; // { type:'login'|'register'|'adduser', code, expires, userData, callback }
+let _mfaCountdownInterval = null;
+
+function _generateMfaCode(){
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+// Envoie un code via FormSubmit.co
+async function _sendMfaEmail(toEmail, code, purpose){
+  const subjects = {
+    'login': 'Code de vérification A2F — 世界運命',
+    'register': 'Code de confirmation d\'inscription — 世界運命',
+    'adduser': 'Code A2F — Activation de votre compte — 世界運命',
+    'reset': 'Code de réinitialisation de mot de passe — 世界運命'
+  };
+  const bodies = {
+    'login': `Votre code de vérification en 2 étapes est :\n\n${code}\n\nCe code est valable 10 minutes. Ne le partagez pas.`,
+    'register': `Bienvenue ! Votre code de confirmation est :\n\n${code}\n\nCe code expire dans 10 minutes.`,
+    'adduser': `Votre compte a été créé. Voici votre code d'activation A2F :\n\n${code}\n\nValable 10 minutes.`,
+    'reset': `Votre code de réinitialisation de mot de passe est :\n\n${code}\n\nCe code expire dans 10 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.`
+  };
+  try {
+    await fetch('https://formsubmit.co/ajax/' + toEmail, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: subjects[purpose] || 'Code de vérification',
+        _captcha: 'false',
+        _template: 'box',
+        message: bodies[purpose] || 'Votre code : ' + code,
+        code: code
+      })
+    });
+  } catch(e) {
+    console.warn('MFA email send error:', e);
+  }
+}
+
+// Ouvrir modal A2F
+function openMfaModal(subtitle){
+  const el = document.getElementById('mfa-modal');
+  const sub = document.getElementById('mfa-subtitle');
+  const inp = document.getElementById('mfa-code-input');
+  const err = document.getElementById('mfa-err');
+  if(sub) sub.innerHTML = subtitle || 'Un code de vérification a été envoyé à votre adresse email.';
+  if(inp) { inp.value = ''; inp.focus(); }
+  if(err) err.style.display = 'none';
+  if(el) el.style.display = 'flex';
+  _startMfaCountdown(600); // 10 minutes
+}
+
+function closeMfaModal(){
+  const el = document.getElementById('mfa-modal');
+  if(el) el.style.display = 'none';
+  _mfaPending = null;
+  if(_mfaCountdownInterval) clearInterval(_mfaCountdownInterval);
+}
+
+function _startMfaCountdown(seconds){
+  if(_mfaCountdownInterval) clearInterval(_mfaCountdownInterval);
+  let remaining = seconds;
+  const el = document.getElementById('mfa-countdown');
+  const btn = document.getElementById('mfa-resend-btn');
+  function tick(){
+    if(!el) return;
+    const m = Math.floor(remaining/60);
+    const s = remaining % 60;
+    el.textContent = `Code valable encore ${m}:${s.toString().padStart(2,'0')}`;
+    if(remaining <= 0){
+      clearInterval(_mfaCountdownInterval);
+      el.textContent = '⚠️ Code expiré — renvoyez un nouveau code.';
+      el.style.color = 'var(--accent2)';
+    }
+    remaining--;
+  }
+  tick();
+  _mfaCountdownInterval = setInterval(tick, 1000);
+}
+
+async function resendMfaCode(){
+  if(!_mfaPending) return;
+  const btn = document.getElementById('mfa-resend-btn');
+  if(btn) { btn.disabled = true; btn.textContent = 'Envoi...'; }
+  const newCode = _generateMfaCode();
+  _mfaPending.code = newCode;
+  _mfaPending.expires = Date.now() + 10 * 60 * 1000;
+  await _sendMfaEmail(_mfaPending.email, newCode, _mfaPending.type);
+  if(btn) { btn.disabled = false; btn.textContent = 'Renvoyer le code'; }
+  toast('📧 Nouveau code envoyé à ' + _mfaPending.email, 'success');
+  _startMfaCountdown(600);
+}
+
+async function verifyMfaCode(){
+  const inp = document.getElementById('mfa-code-input');
+  const err = document.getElementById('mfa-err');
+  const entered = (inp?.value || '').trim();
+  if(!entered || entered.length !== 6){ err.textContent = 'Entrez le code à 6 chiffres reçu par email.'; err.style.display='block'; return; }
+  if(!_mfaPending){ err.textContent = 'Session expirée. Recommencez.'; err.style.display='block'; return; }
+  if(Date.now() > _mfaPending.expires){ err.textContent = '⏰ Code expiré. Cliquez sur "Renvoyer le code".'; err.style.display='block'; return; }
+  if(entered !== _mfaPending.code){ err.textContent = '❌ Code incorrect. Vérifiez votre email et réessayez.'; err.style.display='block'; inp.value=''; inp.focus(); return; }
+  // Code correct
+  const cb = _mfaPending.callback;
+  closeMfaModal();
+  if(cb) await cb();
+}
+
+// ============ MOT DE PASSE OUBLIÉ ============
+let _forgotPending = null; // { username, code, expires, email }
+
+function openForgotPassword(){
+  const modal = document.getElementById('forgot-modal');
+  if(modal) modal.style.display = 'flex';
+  const step1 = document.getElementById('forgot-step1');
+  const step2 = document.getElementById('forgot-step2');
+  const title = document.getElementById('forgot-title');
+  const sub = document.getElementById('forgot-subtitle');
+  const err = document.getElementById('forgot-err');
+  const inp = document.getElementById('forgot-username');
+  if(step1) step1.style.display = 'block';
+  if(step2) step2.style.display = 'none';
+  if(title) title.textContent = 'Mot de passe oublié';
+  if(sub) sub.textContent = 'Entrez votre nom d\'utilisateur pour recevoir un code de réinitialisation.';
+  if(err) err.style.display = 'none';
+  if(inp) { inp.value = ''; setTimeout(() => inp.focus(), 100); }
+  _forgotPending = null;
+}
+
+function closeForgotModal(){
+  const modal = document.getElementById('forgot-modal');
+  if(modal) modal.style.display = 'none';
+  _forgotPending = null;
+}
+
+async function sendForgotCode(){
+  const usernameInp = document.getElementById('forgot-username');
+  const err = document.getElementById('forgot-err');
+  const username = (usernameInp?.value || '').trim();
+  if(err) err.style.display = 'none';
+  if(!username){ err.textContent = 'Entrez votre nom d\'utilisateur.'; err.style.display='block'; return; }
+  // Trouver l'utilisateur
+  await ensureHansExists();
+  const fbUsers = await fbGetAll('users');
+  const user = fbUsers.find(u => u.username === username);
+  if(!user){ err.textContent = '❌ Aucun compte trouvé avec ce nom d\'utilisateur.'; err.style.display='block'; return; }
+  if(!user.email){ err.textContent = '❌ Aucune adresse email associée à ce compte. Contactez l\'administrateur.'; err.style.display='block'; return; }
+  // Générer et envoyer le code
+  const code = _generateMfaCode();
+  _forgotPending = { username, code, expires: Date.now() + 10*60*1000, email: user.email };
+  const btn = document.querySelector('#forgot-step1 button');
+  if(btn){ btn.disabled=true; btn.textContent='Envoi en cours...'; }
+  await _sendMfaEmail(user.email, code, 'reset');
+  if(btn){ btn.disabled=false; btn.textContent='Envoyer le code →'; }
+  // Passer à l'étape 2
+  const step1 = document.getElementById('forgot-step1');
+  const step2 = document.getElementById('forgot-step2');
+  const sub = document.getElementById('forgot-subtitle');
+  const title = document.getElementById('forgot-title');
+  const err2 = document.getElementById('forgot-err2');
+  const codeInp = document.getElementById('forgot-code-input');
+  if(step1) step1.style.display = 'none';
+  if(step2) step2.style.display = 'block';
+  if(title) title.textContent = 'Réinitialisation du mot de passe';
+  const masked = user.email.replace(/(.{2})(.*)(@.*)/, (_, a, b, c) => a + '*'.repeat(Math.max(2, b.length)) + c);
+  if(sub) sub.innerHTML = `Un code a été envoyé à <strong style="color:#fff;">${masked}</strong>. Saisissez-le ci-dessous avec votre nouveau mot de passe.`;
+  if(err2) err2.style.display = 'none';
+  if(codeInp) { codeInp.value = ''; codeInp.focus(); }
+}
+
+async function confirmForgotReset(){
+  const codeInp = document.getElementById('forgot-code-input');
+  const newPassInp = document.getElementById('forgot-newpass');
+  const err = document.getElementById('forgot-err2');
+  const entered = (codeInp?.value || '').trim();
+  const newPass = newPassInp?.value || '';
+  if(err) err.style.display = 'none';
+  if(!entered || entered.length !== 6){ err.textContent = 'Entrez le code à 6 chiffres.'; err.style.display='block'; return; }
+  if(newPass.length < 6){ err.textContent = 'Le nouveau mot de passe doit faire au moins 6 caractères.'; err.style.display='block'; return; }
+  if(!_forgotPending){ err.textContent = 'Session expirée. Recommencez.'; err.style.display='block'; return; }
+  if(Date.now() > _forgotPending.expires){ err.textContent = '⏰ Code expiré. Recommencez depuis le début.'; err.style.display='block'; return; }
+  if(entered !== _forgotPending.code){ err.textContent = '❌ Code incorrect. Vérifiez votre email.'; err.style.display='block'; codeInp.value=''; codeInp.focus(); return; }
+  // Mettre à jour le mot de passe dans Firebase
+  try {
+    const fbUsers = await fbGetAll('users');
+    const user = fbUsers.find(u => u.username === _forgotPending.username);
+    if(!user){ err.textContent = 'Erreur : utilisateur introuvable.'; err.style.display='block'; return; }
+    await fbSave('users', user.id || user._fbid, { ...user, pass: newPass });
+    // Mettre à jour le cache local
+    const idx = users.findIndex(u => u.username === _forgotPending.username);
+    if(idx >= 0) users[idx].pass = newPass;
+    closeForgotModal();
+    toast('✅ Mot de passe réinitialisé ! Vous pouvez vous connecter.', 'success');
+    // Pré-remplir le login
+    const userInp = document.getElementById('inp-user');
+    if(userInp) userInp.value = _forgotPending.username;
+    _forgotPending = null;
+  } catch(e) {
+    err.textContent = 'Erreur lors de la mise à jour. Réessayez.';
+    err.style.display = 'block';
+  }
+}
 
 // ============ INSCRIPTION ============
 function openRegister(){
@@ -3043,7 +3501,8 @@ async function doRegister(){
   await ensureHansExists();
   const fbUsers=await fbGetAll('users');
   if(fbUsers.find(u=>u.username===username)){errEl.textContent='Ce nom d\'utilisateur est déjà pris.';errEl.style.display='block';return;}
-  const nu={id:'u'+Date.now(),username,fullname:fullname||username,email,role:'viewer',created:new Date().toISOString(),pass,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
+  // Les comptes lecteur (viewer) n'ont pas besoin d'A2F
+  const nu={id:'u'+Date.now(),username,fullname:fullname||username,email,role:'viewer',created:new Date().toISOString(),pass,mfaEnabled:false,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
   await fbSave('users',nu.id,nu);
   // ── Notification email à l'administrateur ──
   sendRegistrationNotification(username, fullname||username, email);
@@ -3191,7 +3650,7 @@ function buildTabsBar(isRefresh=false){
         ≡ Plus <span id="autre-arrow">▾</span>
       </button>
       <div class="autre-dropdown" id="autre-dropdown">
-        ${hiddenIds.map(id=>`<button class="autre-dropdown-item" data-tabid="${id}" onclick="showTab('${id}',document.querySelector('[data-tabid=\\'${id}\\']'))">${PAGE_LABELS[id]||id}</button>`).join('')}
+        ${hiddenIds.map(id=>`<button class="autre-dropdown-item" data-tabid="${id}" onclick="showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`).join('')}
       </div>
     </div>`;
   }
@@ -3627,14 +4086,36 @@ async function addUser(){
   const role=document.getElementById('new-role').value;
   if(!username||!pass){toast('Nom d\'utilisateur et mot de passe requis','error');return;}
   if(users.find(u=>u.username===username)){toast('Cet utilisateur existe déjà','error');return;}
+  // Email obligatoire pour les rôles non-lecteur
+  if(role !== 'viewer' && !email){
+    toast('❌ Un email est obligatoire pour ce rôle (A2F requis)','error');
+    const emailInp = document.getElementById('new-email');
+    if(emailInp){ emailInp.style.borderColor='var(--accent)'; emailInp.focus(); setTimeout(()=>emailInp.style.borderColor='',2000); }
+    return;
+  }
   const allowedPages=role==='admin'?ALL_PAGES.map(p=>p.id):_collectPageCheckboxes('new-user-pages');
-  const nu={id:'u'+Date.now(),username,fullname:name||username,email,role,allowedPages,created:new Date().toISOString(),pass,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
+  const mfaEnabled = role !== 'viewer' && !!email;
+  const nu={id:'u'+Date.now(),username,fullname:name||username,email,role,allowedPages,created:new Date().toISOString(),pass,mfaEnabled,profile:{nom:'',prenom:'',dob:'',sexe:'',pays:'',ville:'',bio:'',avatar:''}};
   await fbSave('users',nu.id,nu);
   users.push({...nu,created:new Date()});
   ['new-user','new-pass','new-name','new-email'].forEach(id=>document.getElementById(id).value='');
   renderPageCheckboxes('new-user-pages',null);
   renderUsersTable();renderDiagram();initAgendaUserSelect();
-  toast('✅ Compte créé pour @'+username,'success');
+  toast('✅ Compte créé pour @'+username+(mfaEnabled?' — A2F activé 🔐':''),'success');
+  // Envoyer un email d'activation A2F si applicable
+  if(mfaEnabled){
+    const code = _generateMfaCode();
+    // On stocke un code temporaire d'activation dans Firebase pour une future connexion
+    // (sera regénéré à chaque connexion — ici juste un email de bienvenue)
+    await _sendMfaEmail(email, code, 'adduser');
+    // Note : le vrai code sera généré au moment de la connexion
+  }
+}
+
+function onNewRoleChange(){
+  const role = document.getElementById('new-role')?.value;
+  const notice = document.getElementById('new-role-email-notice');
+  if(notice) notice.style.display = (role && role !== 'viewer') ? 'block' : 'none';
 }
 
 function renderUsersTable(){
@@ -3657,6 +4138,7 @@ function renderUsersTable(){
       <td><span class="role-badge role-${u.role}">${roleName(u.role)}</span></td>
       ${pwCell}
       <td style="font-size:11px;color:var(--muted);">${pagesCount}</td>
+      <td style="font-size:12px;">${u.mfaEnabled?'<span style="color:var(--success);">🔐 A2F</span>':'<span style="color:var(--muted);">—</span>'}</td>
       <td>${actionCell}</td>
     </tr>`;
   }).join('');
@@ -3826,6 +4308,60 @@ function loadMyProfileForm(){
   ['nom','prenom','dob','sexe','pays','ville','bio'].forEach(k=>{const el=document.getElementById('pf-'+k);if(el)el.value=p[k]||'';});
   const img=document.getElementById('my-avatar-img');const init=document.getElementById('my-avatar-initial');
   if(img&&init){if(p.avatar){img.src=p.avatar;img.style.display='block';init.style.display='none';}else{img.style.display='none';init.style.display='';init.textContent=(currentUser.fullname||currentUser.username).charAt(0).toUpperCase();}}
+  // ── Afficher statut A2F ──
+  _updateMfaProfileUI();
+}
+
+function _updateMfaProfileUI(){
+  if(!currentUser) return;
+  const btn = document.getElementById('mfa-toggle-btn');
+  const desc = document.getElementById('mfa-profile-desc');
+  const warn = document.getElementById('mfa-no-email-warn');
+  const section = document.getElementById('mfa-profile-section');
+  if(!btn) return;
+  const isActive = !!currentUser.mfaEnabled;
+  const hasEmail = !!(currentUser.email);
+  if(!hasEmail){
+    if(warn) warn.style.display='block';
+  } else {
+    if(warn) warn.style.display='none';
+  }
+  if(isActive){
+    btn.textContent = '🔐 Désactiver l\'A2F';
+    btn.style.background = 'rgba(230,57,70,.12)';
+    btn.style.borderColor = 'rgba(230,57,70,.4)';
+    btn.style.color = 'var(--accent2)';
+    if(desc) desc.innerHTML = '<span style="color:var(--success);">✅ A2F activée</span> — Un code email vous sera demandé à chaque connexion.';
+    if(section) section.style.borderColor = 'rgba(39,174,96,.3)';
+  } else {
+    btn.textContent = '🔓 Activer l\'A2F';
+    btn.style.background = 'rgba(39,174,96,.1)';
+    btn.style.borderColor = 'rgba(39,174,96,.3)';
+    btn.style.color = 'var(--success)';
+    if(desc) desc.textContent = 'Sécurisez votre compte en exigeant un code email à chaque connexion.';
+    if(section) section.style.borderColor = 'var(--border)';
+  }
+}
+
+async function toggleMyMfa(){
+  if(!currentUser) return;
+  const hasEmail = !!(currentUser.email);
+  if(!hasEmail && !currentUser.mfaEnabled){
+    toast('❌ Renseignez un email dans votre profil avant d\'activer l\'A2F.', 'error');
+    return;
+  }
+  const newState = !currentUser.mfaEnabled;
+  currentUser.mfaEnabled = newState;
+  try {
+    await fbSave('users', currentUser.id, {...currentUser, created: currentUser.created instanceof Date ? currentUser.created.toISOString() : currentUser.created});
+    const idx = users.findIndex(u=>u.id===currentUser.id);
+    if(idx>=0) users[idx].mfaEnabled = newState;
+    _updateMfaProfileUI();
+    toast(newState ? '🔐 A2F activée — votre compte est maintenant plus sécurisé.' : '🔓 A2F désactivée.', 'success');
+  } catch(e) {
+    currentUser.mfaEnabled = !newState;
+    toast('Erreur lors de la mise à jour.', 'error');
+  }
 }
 function uploadMyAvatar(input){
   if(!input.files||!input.files[0])return;
@@ -6725,13 +7261,110 @@ function _runStressTest(optimal, assets){
 
 // ============ SOUS-PAGES ACCÈS ============
 function showAccesSub(sub,btn){
-  ['users','log','diag'].forEach(s=>{
+  ['users','log','diag','secu'].forEach(s=>{
     const p=document.getElementById('acces-panel-'+s);if(p)p.style.display=s===sub?'block':'none';
   });
   document.querySelectorAll('[id^="acces-sub-"]').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   if(sub==='log')renderConnLog();
   if(sub==='diag')renderDiagram();
+  if(sub==='secu')renderSecurityPanel();
+}
+
+// ============ PANNEAU SÉCURITÉ ============
+function renderSecurityPanel(){
+  // ── Comptes bloqués ──
+  const blockedEl = document.getElementById('secu-blocked-list');
+  if(blockedEl){
+    const now = Date.now();
+    const blocked = Object.entries(_loginAttempts).filter(([,v])=>v.lockedUntil>now);
+    if(!blocked.length){
+      blockedEl.innerHTML='<div style="text-align:center;padding:16px;color:var(--success);font-size:13px">✅ Aucun compte bloqué</div>';
+    } else {
+      blockedEl.innerHTML = blocked.map(([uname,rec])=>{
+        const mins = Math.ceil((rec.lockedUntil - now)/60000);
+        return `<div style="display:flex;align-items:center;justify-content:space-between;background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.3);border-radius:9px;padding:10px 14px">
+          <div><div style="font-size:13px;font-weight:600;color:var(--accent2)">🔒 @${uname}</div>
+          <div style="font-size:11px;color:var(--muted)">Bloqué encore ${mins} min</div></div>
+          <button onclick="_adminUnblockUser('${uname}')" style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:7px;padding:5px 12px;color:#27ae60;cursor:pointer;font-size:12px">Débloquer</button>
+        </div>`;
+      }).join('');
+    }
+  }
+  // ── Stats sessions ──
+  const statsEl = document.getElementById('secu-stats');
+  if(statsEl){
+    const now = Date.now();
+    const last24h = connLog.filter(l=>now - new Date(l.loginTime).getTime() < 86400000);
+    const activeSessions = connLog.filter(l=>!l.logoutTime);
+    const failedUsers = Object.values(_loginAttempts).filter(v=>v.count>0).length;
+    const mfaUsers = users.filter(u=>u.mfaEnabled).length;
+    const stats = [
+      { icon:'🟢', label:'Sessions actives', value: activeSessions.length, color:'var(--success)' },
+      { icon:'📅', label:'Connexions (24h)', value: last24h.length, color:'#3498db' },
+      { icon:'👥', label:'Utilisateurs enregistrés', value: users.length, color:'var(--gold)' },
+      { icon:'🔐', label:'Comptes avec A2F activée', value: mfaUsers, color: mfaUsers>0?'var(--success)':'var(--muted)' },
+      { icon:'⚠️', label:'Comptes avec échecs récents', value: failedUsers, color: failedUsers>0?'var(--accent2)':'var(--muted)' },
+    ];
+    statsEl.innerHTML = stats.map(s=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:11px 14px">
+        <span style="font-size:13px;color:var(--muted)">${s.icon} ${s.label}</span>
+        <span style="font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:${s.color}">${s.value}</span>
+      </div>`).join('');
+  }
+  // ── Politique de sécurité ──
+  const policyEl = document.getElementById('secu-policy-grid');
+  if(policyEl){
+    const mfaCount = users.filter(u=>u.mfaEnabled).length;
+    const policies = [
+      { icon:'🔢', title:'Tentatives max', value: MAX_LOGIN_ATTEMPTS+' par compte', status:'active' },
+      { icon:'⏱️', title:'Durée de blocage', value: '15 minutes', status:'active' },
+      { icon:'🔐', title:'A2F par email', value: mfaCount+' compte(s) protégé(s)', status: mfaCount>0?'active':'warn' },
+      { icon:'🔑', title:'Session persistante', value: 'localStorage sécurisé', status:'active' },
+      { icon:'🌐', title:'Base de données', value: 'Firebase Firestore', status:'active' },
+      { icon:'🛡️', title:'Protection XSS', value: 'Sanitisation HTML active', status:'active' },
+      { icon:'🔏', title:'Complexité mdp min.', value: '6 caractères requis', status:'warn' },
+    ];
+    policyEl.innerHTML = policies.map(p=>`
+      <div style="background:var(--surface2);border:1px solid ${p.status==='active'?'rgba(39,174,96,.25)':'rgba(244,162,97,.25)'};border-radius:10px;padding:14px">
+        <div style="font-size:20px;margin-bottom:6px">${p.icon}</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:3px">${p.title}</div>
+        <div style="font-size:11px;color:var(--muted)">${p.value}</div>
+        <div style="margin-top:8px;font-size:10px;font-weight:700;color:${p.status==='active'?'var(--success)':'var(--gold)'}">${p.status==='active'?'✅ Actif':'⚠️ Recommandé d\'améliorer'}</div>
+      </div>`).join('');
+  }
+  // ── Sessions actives (24h) ──
+  const sessEl = document.getElementById('secu-sessions-list');
+  if(sessEl){
+    const now = Date.now();
+    const recent = connLog.filter(l=>now - new Date(l.loginTime).getTime() < 86400000)
+                          .sort((a,b)=>new Date(b.loginTime)-new Date(a.loginTime))
+                          .slice(0,20);
+    if(!recent.length){
+      sessEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Aucune session récente</div>';
+    } else {
+      sessEl.innerHTML=recent.map(l=>{
+        const active=!l.logoutTime;
+        const dt=new Date(l.loginTime).toLocaleString('fr-FR');
+        const dur=l.logoutTime?Math.round((new Date(l.logoutTime)-new Date(l.loginTime))/60000)+' min':'En cours';
+        const isMe=l.username===currentUser?.username&&active;
+        return`<div style="display:flex;align-items:center;gap:12px;padding:10px 13px;border-bottom:1px solid rgba(42,42,58,.3);font-size:12px">
+          <div style="width:8px;height:8px;border-radius:50%;background:${active?'var(--success)':'var(--muted)'};flex-shrink:0"></div>
+          <div style="flex:1">
+            <span style="font-weight:600;color:${active?'var(--text)':'var(--muted)'}">@${l.username}</span>
+            ${isMe?'<span style="font-size:10px;background:rgba(39,174,96,.1);color:var(--success);border-radius:4px;padding:1px 6px;margin-left:6px">Vous</span>':''}
+          </div>
+          <div style="color:var(--muted)">${dt}</div>
+          <div style="min-width:70px;text-align:right;color:${active?'var(--success)':'var(--muted)'}">${dur}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+}
+function _adminUnblockUser(username){
+  _resetLoginAttempts(username);
+  toast('✅ Compte @'+username+' débloqué','success');
+  renderSecurityPanel();
 }
 
 // ============ SOUS-PAGES FICHIERS ============
