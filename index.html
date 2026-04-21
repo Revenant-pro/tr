@@ -110,7 +110,8 @@ body.light-mode{--topbar-h:64px;--tabsbar-h:48px;--nav-h:112px;}
 .btn-logout:hover{border-color:var(--accent);color:var(--accent);}
 
 /* TABS */
-.tabs-bar{display:flex;align-items:center;padding:0;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:var(--topbar-h);z-index:99;height:var(--tabsbar-h);}
+.tabs-bar{display:flex;align-items:center;padding:0;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;overflow-y:hidden;position:sticky;top:var(--topbar-h);z-index:99;height:var(--tabsbar-h);scrollbar-width:none;-ms-overflow-style:none;}
+.tabs-bar::-webkit-scrollbar{display:none;}
 .tab-btn{display:flex;align-items:center;gap:7px;padding:0 16px;height:var(--tabsbar-h);border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;flex-shrink:0;}
 .tab-btn:hover{color:var(--text);}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
@@ -398,50 +399,12 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 .brand-dropdown-item:hover{background:var(--surface2);color:var(--accent);}
 .brand-dropdown-sep{height:1px;background:var(--border);margin:4px 0;}
 
-/* BOUTON AUTRE DROPDOWN */
-.autre-wrap{position:static;}
-.autre-btn{display:flex;align-items:center;gap:7px;padding:0 16px;height:var(--tabsbar-h);border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:color .2s;border-bottom:2px solid transparent;flex-shrink:0;}
-.autre-btn:hover{color:var(--text);}
-.autre-btn.has-active{color:var(--accent);border-bottom-color:var(--accent);}
-/* Dropdown affiché SOUS la tabs-bar en position fixed pour couvrir le contenu */
-.autre-dropdown{
-  position:fixed;
-  top:var(--nav-h); /* juste sous topbar+tabsbar */
-  right:0;
-  left:0;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  border-top:1px solid var(--border);
-  box-shadow:0 12px 40px rgba(0,0,0,.45);
-  z-index:9998;
-  display:none;
-  flex-wrap:wrap;
-  gap:0;
-  padding:10px 16px;
-  animation:fadeIn .18s ease;
-}
-.autre-dropdown-item{
-  display:flex;align-items:center;gap:8px;
-  padding:10px 14px;
-  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
-  color:var(--text);cursor:pointer;transition:background .15s,color .15s;
-  border:none;background:transparent;
-  border-radius:9px;
-  white-space:nowrap;
-  flex:0 0 calc(20% - 4px); /* 5 par ligne */
-  min-width:140px;
-}
-.autre-dropdown-item:hover{background:var(--surface2);color:var(--accent);}
-.autre-dropdown-item.active-page,.autre-dropdown-item.active{color:var(--accent);font-weight:600;background:rgba(230,57,70,.06);}
-@media(max-width:900px){.autre-dropdown-item{flex:0 0 calc(33.33% - 4px);}}
-/* Backdrop pour menu Plus */
-#autre-backdrop{position:fixed;inset:0;top:var(--nav-h);background:rgba(0,0,0,.3);z-index:9997;display:none;}
+/* BOUTON AUTRE DROPDOWN — supprimé, toutes les pages sont dans la barre */
 </style>
 </head>
 <body>
 
 <!-- LOGIN -->
-<div id="autre-backdrop" onclick="closeAllDropdowns()"></div>
 <div id="login-page" style="display:none">
   <video id="login-video-bg" autoplay muted loop playsinline>
     <source src="https://motionbgs.com/media/7006/edge-of-the-event-horizon.960x540.mp4" type="video/mp4">
@@ -575,10 +538,26 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
   </div>
 </div>
 
-<!-- LOADING SCREEN -->
-<div id="loading-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
-  <div class="login-logo" style="width:60px;height:60px;font-size:24px;animation:pulse 1s infinite">H</div>
-  <div style="font-family:'Syne',sans-serif;font-size:16px;color:var(--muted)">Chargement...</div>
+<!-- ÉCRAN D'ACCUEIL / LOADING -->
+<div id="loading-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;background:var(--bg);position:relative;overflow:hidden;">
+  <!-- Fond animé -->
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 30% 40%,rgba(230,57,70,.07) 0%,transparent 65%),radial-gradient(ellipse 50% 50% at 75% 70%,rgba(244,162,97,.05) 0%,transparent 60%);pointer-events:none;"></div>
+  <!-- Particules décoratives -->
+  <div style="position:absolute;top:15%;left:12%;width:3px;height:3px;background:rgba(230,57,70,.4);border-radius:50%;animation:pulse 2s infinite;"></div>
+  <div style="position:absolute;top:70%;left:80%;width:4px;height:4px;background:rgba(244,162,97,.35);border-radius:50%;animation:pulse 2.5s infinite .6s;"></div>
+  <div style="position:absolute;top:40%;right:10%;width:2px;height:2px;background:rgba(230,57,70,.3);border-radius:50%;animation:pulse 3s infinite 1s;"></div>
+  <!-- Contenu centré -->
+  <div style="position:relative;text-align:center;animation:cardIn .6s cubic-bezier(.16,1,.3,1) both;">
+    <div style="width:72px;height:72px;background:linear-gradient(135deg,var(--accent),var(--gold));border-radius:18px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:28px;margin:0 auto 28px;box-shadow:0 12px 36px rgba(230,57,70,.4);animation:pulse 2s infinite;">H</div>
+    <div id="welcome-greeting" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:3px;margin-bottom:12px;opacity:.8;">Bienvenue</div>
+    <div id="welcome-name" style="font-family:'Syne',sans-serif;font-size:36px;font-weight:800;color:var(--text);line-height:1.1;margin-bottom:8px;">世界運命</div>
+    <div id="welcome-role" style="font-size:13px;color:var(--muted);margin-bottom:36px;"></div>
+    <!-- Barre de progression -->
+    <div style="width:180px;height:3px;background:var(--border);border-radius:99px;margin:0 auto;overflow:hidden;">
+      <div id="welcome-progress" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:99px;transition:width .4s ease;"></div>
+    </div>
+    <div id="welcome-status" style="font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:.5px;">Chargement...</div>
+  </div>
 </div>
 
 <!-- DASHBOARD -->
@@ -3579,14 +3558,48 @@ document.getElementById('inp-user').addEventListener('keydown',e=>{if(e.key==='E
 // ============ LAUNCH ============
 function launchDashboard(isRefresh=false){
   currentAgendaUser=currentUser.username;
-  document.getElementById('loading-screen').style.display='none';
-  document.getElementById('login-page').style.display='none';
-  document.getElementById('dashboard').style.display='block';
-  document.getElementById('topbar-username').textContent=currentUser.fullname||currentUser.username;
-  const aiBtn=document.getElementById('ai-btn');
-  if(aiBtn)aiBtn.style.display='flex';
-  buildTabsBar(isRefresh);
-  initDashboard(isRefresh);
+  const displayName = currentUser.fullname || currentUser.username;
+  const roleLabels = {admin:'Administrateur',editor:'Personnel',viewer:'Lecteur'};
+  const roleLabel = roleLabels[currentUser.role]||currentUser.role;
+
+  if(!isRefresh){
+    // Écran d'accueil animé
+    const nameEl = document.getElementById('welcome-name');
+    const roleEl = document.getElementById('welcome-role');
+    const progressEl = document.getElementById('welcome-progress');
+    const statusEl = document.getElementById('welcome-status');
+    if(nameEl) nameEl.textContent = displayName;
+    if(roleEl) roleEl.textContent = roleLabel;
+    if(progressEl) progressEl.style.width='30%';
+    if(statusEl) statusEl.textContent = 'Connexion sécurisée...';
+    setTimeout(()=>{
+      if(progressEl) progressEl.style.width='65%';
+      if(statusEl) statusEl.textContent = 'Chargement des données...';
+    }, 400);
+    setTimeout(()=>{
+      if(progressEl) progressEl.style.width='100%';
+      if(statusEl) statusEl.textContent = 'Prêt !';
+    }, 900);
+    setTimeout(()=>{
+      document.getElementById('loading-screen').style.display='none';
+      document.getElementById('login-page').style.display='none';
+      document.getElementById('dashboard').style.display='block';
+      document.getElementById('topbar-username').textContent=displayName;
+      const aiBtn=document.getElementById('ai-btn');
+      if(aiBtn)aiBtn.style.display='flex';
+      buildTabsBar(isRefresh);
+      initDashboard(isRefresh);
+    }, 1300);
+  } else {
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('dashboard').style.display='block';
+    document.getElementById('topbar-username').textContent=displayName;
+    const aiBtn=document.getElementById('ai-btn');
+    if(aiBtn)aiBtn.style.display='flex';
+    buildTabsBar(isRefresh);
+    initDashboard(isRefresh);
+  }
 }
 
 // ── Page definitions (used for permission control) ────────────
@@ -3635,25 +3648,10 @@ function buildTabsBar(isRefresh=false){
     about:'👤 À propos',divertissement:'🎮 Divertissement',dcf:'📊 DCF',markowitz:'📈 Portefeuille',nlp:'🤖 NLP',
   };
 
-  // Show first N tabs directly, rest in dropdown
-  const MAX_VISIBLE = 8;
-  const visibleIds = allowed.slice(0, MAX_VISIBLE);
-  const hiddenIds = allowed.slice(MAX_VISIBLE);
-
-  let html = visibleIds.map(id =>
+  // Tout afficher directement — scroll horizontal si nécessaire
+  const html = allowed.map(id =>
     `<button class="tab-btn" data-tabid="${id}" onclick="showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`
   ).join('');
-
-  if(hiddenIds.length > 0){
-    html += `<div class="autre-wrap" id="autre-wrap">
-      <button class="autre-btn" id="autre-btn" onclick="toggleAutreDropdown(event)">
-        ≡ Plus <span id="autre-arrow">▾</span>
-      </button>
-      <div class="autre-dropdown" id="autre-dropdown">
-        ${hiddenIds.map(id=>`<button class="autre-dropdown-item" data-tabid="${id}" onclick="event.stopPropagation();showTab('${id}',this)">${PAGE_LABELS[id]||id}</button>`).join('')}
-      </div>
-    </div>`;
-  }
 
   bar.innerHTML = html;
 
@@ -3662,31 +3660,11 @@ function buildTabsBar(isRefresh=false){
   document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
   const tc=document.getElementById('tab-'+defaultTab);
   if(tc)tc.classList.add('active');
-  bar.querySelectorAll('.tab-btn, .autre-dropdown-item').forEach(b=>{
-    const t=b.dataset.tabid;
-    if(t===defaultTab)b.classList.add('active');
+  bar.querySelectorAll('.tab-btn').forEach(b=>{
+    if(b.dataset.tabid===defaultTab)b.classList.add('active');
   });
-  // If default tab is in hidden, mark "Autre" btn as active
-  if(hiddenIds.includes(defaultTab)){
-    const ab=document.getElementById('autre-btn');
-    if(ab)ab.classList.add('has-active');
-  }
 }
 
-function toggleAutreDropdown(e){
-  e.stopPropagation();
-  const dd=document.getElementById('autre-dropdown');
-  const ar=document.getElementById('autre-arrow');
-  const bd=document.getElementById('autre-backdrop');
-  if(!dd)return;
-  const isOpen=dd.style.display==='flex';
-  closeAllDropdowns();
-  if(!isOpen){
-    dd.style.display='flex';
-    if(ar)ar.textContent='▴';
-    if(bd)bd.style.display='block';
-  }
-}
 
 async function loadAboutFromFirebase(){
   try{
@@ -3754,18 +3732,62 @@ function _setupFirebaseListeners(){
   try {
     // Listen to messages in real-time
     window.firebaseDB.collection('messages').onSnapshot(snap => {
+      const prev = messages.slice();
       messages = snap.docs.map(d=>({...d.data(), _fbid:d.id}));
+      // Détecter les nouveaux messages reçus
+      const newMsgs = messages.filter(m =>
+        m.to === currentUser.username &&
+        !m.readBy?.includes(currentUser.username) &&
+        !prev.find(p => p.id === m.id)
+      );
+      if(newMsgs.length > 0){
+        newMsgs.forEach(m => {
+          _showEmailNotif('💬 Nouveau message', `De @${m.from} — ${m.subject||'(sans objet)'}`);
+        });
+      }
       updateMsgBadge();
-      // Ne re-render preview que si le panel est ouvert
       const panel = document.getElementById('msg-panel');
       if(panel?.classList.contains('open')) renderMsgPreview();
     });
-    // Listen to inbox emails — uniquement si l'onglet email est actif
+    // Listen to inbox emails — notifier en temps réel
+    let _emailFirstLoad = true;
     window.firebaseDB.collection('emails_inbox').onSnapshot(snap => {
+      const prev = (emailInboxList||[]).slice();
       emailInboxList = snap.docs.map(d=>({...d.data(),_fbid:d.id}));
+      if(_emailFirstLoad){ _emailFirstLoad=false; }
+      else {
+        // Détecter les nouveaux emails pour cet utilisateur
+        const newEmails = emailInboxList.filter(m =>
+          m.toUsername === currentUser.username &&
+          !m.readBy?.includes(currentUser.username) &&
+          !prev.find(p => p.id === m.id)
+        );
+        if(newEmails.length > 0){
+          newEmails.forEach(m => {
+            _showEmailNotif('📧 Nouvel email reçu', `De ${m.fromName||m.from} — ${m.subject||'(sans objet)'}`);
+          });
+          // Mettre à jour le badge ✉️
+          const badge = document.getElementById('msg-badge');
+          const unreadCount = emailInboxList.filter(m=>m.toUsername===currentUser.username&&!m.readBy?.includes(currentUser.username)).length;
+          if(badge){ badge.textContent=unreadCount; badge.classList.toggle('hidden', unreadCount===0); }
+        }
+      }
       if(loadActiveTab() === 'email') emailRenderList();
     });
   } catch(e) { console.warn('Firebase listeners error:', e); }
+}
+
+// Notification visuelle pour les emails (bannière en haut)
+function _showEmailNotif(title, body){
+  const wrap = document.getElementById('toasts');
+  if(!wrap) return;
+  const el = document.createElement('div');
+  el.className = 'toast success';
+  el.style.cssText = 'cursor:pointer;max-width:320px;';
+  el.innerHTML = `<span style="font-size:18px;">✉️</span><div><div style="font-weight:700;font-size:13px;">${title}</div><div style="font-size:11px;color:var(--muted);margin-top:2px;">${body}</div></div>`;
+  el.onclick = () => { showTab('email', document.querySelector('#tabs-bar [data-tabid="email"]')); el.remove(); };
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .4s'; setTimeout(()=>el.remove(),400); }, 6000);
 }
 
 async function _periodicRefresh(){
@@ -3840,22 +3862,11 @@ setInterval(updateAgendaClock,1000);
 
 // ============ TABS ============
 function showTab(id,btn){
-  // Mémoriser si le bouton vient du dropdown AVANT de fermer (closeAllDropdowns retire le dropdown du DOM visible)
-  const fromDropdown = btn && (btn.closest('#autre-dropdown') !== null || btn.dataset?.tabid);
-  const isInAutreDropdown = btn && btn.classList.contains('autre-dropdown-item');
-  closeAllDropdowns();
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('#tabs-bar .tab-btn, #tabs-bar .autre-dropdown-item').forEach(b=>b.classList.remove('active'));
-  const auBtn=document.getElementById('autre-btn');
-  if(auBtn)auBtn.classList.remove('has-active');
+  document.querySelectorAll('#tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
   const tc=document.getElementById('tab-'+id);
   if(tc)tc.classList.add('active');
-  if(btn){
-    btn.classList.add('active');
-    if(isInAutreDropdown){
-      if(auBtn)auBtn.classList.add('has-active');
-    }
-  }
+  if(btn) btn.classList.add('active');
   saveActiveTab(id);
   if(id==='acces')showAccessOrProfile();
   if(id==='agenda'){initAgendaUserSelect();renderCalendar();}
@@ -3871,7 +3882,6 @@ function showTab(id,btn){
   if(id==='markowitz'){initMarkowitz();}
   if(id==='nlp'){initNLP();}
   if(id==='veille'){loadVeilleTrending();}
-  // Dispatch event for chess resize hook
   document.dispatchEvent(new CustomEvent('_showTab',{detail:{id}}));
 }
 
@@ -3883,35 +3893,33 @@ function showAccessOrProfile(){
     showAccesSub('users',document.getElementById('acces-sub-users'));
     renderUsersTable();renderActivityChart();renderPromoteSelect();
     if(!document.querySelector('#new-user-pages input'))renderPageCheckboxes('new-user-pages',null);
-  } else {loadMyProfileForm();}
+  } else {
+    loadMyProfileForm();
+  }
 }
 
 function goToProfile(){
   const isAdmin=currentUser&&currentUser.role==='admin';
-  // Naviguer vers l'onglet acces
+  // Activer l'onglet acces manuellement (sans déclencher showAccessOrProfile qui affiche admin)
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
+  const tc=document.getElementById('tab-acces');
+  if(tc)tc.classList.add('active');
   const btn=document.querySelector('#tabs-bar [data-tabid="acces"]');
-  if(btn){
-    // Activer l'onglet sans déclencher showAccessOrProfile automatiquement
-    closeAllDropdowns();
-    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('#tabs-bar .tab-btn, #tabs-bar .autre-dropdown-item').forEach(b=>b.classList.remove('active'));
-    const tc=document.getElementById('tab-acces');
-    if(tc)tc.classList.add('active');
-    btn.classList.add('active');
-    saveActiveTab('acces');
-  }
+  if(btn)btn.classList.add('active');
+  saveActiveTab('acces');
+  // Toujours montrer le profil, même pour l'admin
+  document.getElementById('zone-admin').style.display='none';
+  document.getElementById('zone-profil').style.display='block';
+  loadMyProfileForm();
+  // Bouton retour vers gestion des accès pour l'admin uniquement
   if(isAdmin){
-    // Pour l'admin : afficher son profil avec bouton retour
-    document.getElementById('zone-admin').style.display='none';
-    document.getElementById('zone-profil').style.display='block';
-    loadMyProfileForm();
-    // Ajouter bouton retour vers gestion si pas déjà là
     let backBtn=document.getElementById('profile-back-to-admin');
     if(!backBtn){
       backBtn=document.createElement('button');
       backBtn.id='profile-back-to-admin';
       backBtn.className='btn btn-outline';
-      backBtn.style.cssText='font-size:13px;margin-bottom:18px;';
+      backBtn.style.cssText='font-size:13px;margin-bottom:18px;display:inline-flex;align-items:center;gap:6px;';
       backBtn.innerHTML='← Retour à la gestion des accès';
       backBtn.onclick=()=>{
         document.getElementById('zone-admin').style.display='block';
@@ -3923,10 +3931,7 @@ function goToProfile(){
       const zoneP=document.getElementById('zone-profil');
       if(zoneP)zoneP.insertBefore(backBtn,zoneP.firstChild);
     }
-  } else {
-    document.getElementById('zone-admin').style.display='none';
-    document.getElementById('zone-profil').style.display='block';
-    loadMyProfileForm();
+    backBtn.style.display='inline-flex';
   }
 }
 
@@ -5578,13 +5583,7 @@ function downloadLM(){
 // Fermer tous les dropdowns
 function closeAllDropdowns(){
   const bd=document.getElementById('brand-dropdown');
-  const ad=document.getElementById('autre-dropdown');
-  const ar=document.getElementById('autre-arrow');
-  const bk=document.getElementById('autre-backdrop');
   if(bd)bd.style.display='none';
-  if(ad)ad.style.display='none';
-  if(ar)ar.textContent='▾';
-  if(bk)bk.style.display='none';
 }
 
 // Toggle menu Bienvenue — contenu dynamique selon le rôle
@@ -5623,26 +5622,8 @@ function toggleBrandMenu(e){
   bd.style.display='flex';
 }
 
-// Toggle menu Autre
-function toggleAutreMenu(e){
-  e.stopPropagation();
-  const ad=document.getElementById('autre-dropdown');
-  const bd=document.getElementById('brand-dropdown');
-  if(!ad)return;
-  const isOpen=ad.style.display==='flex';
-  if(bd)bd.style.display='none';
-  ad.style.display=isOpen?'none':'flex';
-}
-
 // Fermer au clic en dehors
 document.addEventListener('click',function(e){
-  const dd = document.getElementById('autre-dropdown');
-  if(dd && dd.style.display === 'flex') {
-    // Ne pas fermer si le clic est dans le dropdown lui-même ou sur le bouton "Plus"
-    if(!e.target.closest('#autre-dropdown') && !e.target.closest('#autre-btn') && !e.target.closest('#autre-wrap')) {
-      closeAllDropdowns();
-    }
-  }
   if(!e.target.closest('#topbar-brand-wrap')) {
     const bd = document.getElementById('brand-dropdown');
     if(bd) bd.style.display = 'none';
@@ -5652,21 +5633,11 @@ document.addEventListener('click',function(e){
 function quickNav(tabId){
   closeAllDropdowns();
   const btn=document.querySelector(`#tabs-bar [data-tabid="${tabId}"]`);
-  if(btn){showTab(tabId,btn);}
-}
-
-function showTabExtra(id,btn){
-  closeAllDropdowns();
-  document.querySelectorAll('#tabs-bar .tab-btn').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.autre-dropdown-item').forEach(b=>b.classList.remove('active-page'));
-  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
-  if(btn)btn.classList.add('active-page');
-  const autreBtn=document.getElementById('autre-btn');
-  if(autreBtn)autreBtn.classList.add('has-active');
-  const tc=document.getElementById('tab-'+id);
-  if(tc)tc.classList.add('active');
-  saveActiveTab(id);
-  if(id==='about')loadAboutPage();
+  if(btn) showTab(tabId,btn);
+  else {
+    // Fallback: activer sans bouton
+    showTab(tabId, null);
+  }
 }
 
 // ============ À PROPOS — ADMIN EDITOR / PUBLIC VIEW ============
@@ -5863,19 +5834,6 @@ function buildAboutHtml(data){
       </div>`:''}
     </div>`;
 }
-
-// placeholder_removed
-function quickNav_OLD_REMOVED(tabId){
-  // Chercher l'onglet dans la barre
-  const btn=Array.from(document.querySelectorAll('#tabs-bar .tab-btn')).find(b=>b.getAttribute('onclick')?.includes("'"+tabId+"'"));
-  if(btn){showTab(tabId,btn);}
-  else{
-    // Onglet dans le menu Autre
-    const extraBtn=Array.from(document.querySelectorAll('.autre-dropdown-item')).find(b=>b.getAttribute('onclick')?.includes("'"+tabId+"'"));
-    if(extraBtn)showTabExtra(tabId,extraBtn);
-  }
-}
-
 
 // ============================================================
 // MODULE CALCULATEUR FINANCIER COMPLET
