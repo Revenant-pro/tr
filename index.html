@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>世界運命</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e63946'/%3E%3Ctext x='16' y='23' text-anchor='middle' font-family='Arial,sans-serif' font-size='20' font-weight='800' fill='white'%3EH%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -16,12 +16,12 @@
   function _initFirebase(){
     try{
       const app=firebase.initializeApp({
-        apiKey:"AIzaSyAChtwstofSGIdNu1OGivoHcvymDODF0Co",
-        authDomain:"site-revenant.firebaseapp.com",
-        projectId:"site-revenant",
-        storageBucket:"site-revenant.firebasestorage.app",
-        messagingSenderId:"492360431114",
-        appId:"1:492360431114:web:0546f252b9f89b3162d1f3"
+        apiKey:"AIzaSyCZHG2CLjxVFepUDSYQvYzj3EQ5V4iaDl0",
+        authDomain:"sup-tata-val.firebaseapp.com",
+        projectId:"sup-tata-val",
+        storageBucket:"sup-tata-val.firebasestorage.app",
+        messagingSenderId:"81131316890",
+        appId:"1:81131316890:web:6d87f4e9b9eacb5ada6123"
       });
       window.firebaseDB=firebase.firestore(app);
       window.firebaseReady=true;
@@ -400,87 +400,6 @@ input[type=date]::-webkit-calendar-picker-indicator{filter:invert(.5);cursor:poi
 .brand-dropdown-sep{height:1px;background:var(--border);margin:4px 0;}
 
 /* BOUTON AUTRE DROPDOWN — supprimé, toutes les pages sont dans la barre */
-
-/* ===========================
-   v13 RESPONSIVE + NAV FIX
-   =========================== */
-/* Tabs bar: scrolls horizontally, adapts to text content */
-.tabs-bar {
-  flex-wrap: nowrap !important;
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none !important;
-}
-.tabs-bar::-webkit-scrollbar { display: none !important; }
-.tab-btn {
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-  padding: 0 13px !important;
-}
-/* Tab content: consistent padding */
-.tab-content.active {
-  padding: 16px 24px 40px !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  overflow-x: hidden !important;
-}
-
-/* ── TABLET (768px) ── */
-@media (max-width: 768px) {
-  :root {
-    --topbar-h: 56px !important;
-    --tabsbar-h: 44px !important;
-    --nav-h: 100px !important;
-  }
-  .topbar {
-    padding: 0 10px !important;
-    height: 56px !important;
-    gap: 6px !important;
-    flex-wrap: nowrap !important;
-  }
-  .topbar-right {
-    gap: 5px !important;
-    flex-wrap: nowrap !important;
-    overflow: hidden;
-    flex-shrink: 1;
-  }
-  .topbar-right .btn-logout { display: none !important; }
-  #global-search { display: none !important; }
-  #ai-btn { padding: 6px 9px !important; font-size: 11px !important; }
-  .tab-btn { padding: 0 9px !important; font-size: 12px !important; }
-  .grid-2, .grid-3 { grid-template-columns: 1fr !important; }
-  .dcf-grid2, .nlp-2col, .mk-charts-row { grid-template-columns: 1fr !important; }
-  .profile-grid, .dcf-inline-grid { grid-template-columns: 1fr !important; }
-  .calc-layout { flex-direction: column !important; }
-  .calc-sidebar { width: 100% !important; max-height: 220px; overflow-y: auto; }
-  #email-root { flex-direction: column !important; }
-  #email-sidebar { display: none !important; }
-  #email-list-panel { width: 100% !important; min-width: 0 !important; max-height: 280px; }
-  #media-root { flex-direction: column !important; height: auto !important; }
-  #media-player-col { width: 100% !important; min-width: 0 !important; }
-  #freemusic-col { width: 100% !important; min-width: 0 !important; max-height: 320px; }
-  #chess-root { flex-direction: column !important; height: auto !important; }
-  #chess-right { width: 100% !important; max-height: 280px; }
-  .login-card { padding: 28px 18px !important; width: 92vw !important; }
-  .agenda-layout { grid-template-columns: 1fr !important; }
-  .bbg-hero { grid-template-columns: 1fr !important; }
-  .bbg-grid { grid-template-columns: 1fr !important; }
-  .finance-grid { grid-template-columns: repeat(2,1fr) !important; }
-  .cv-tpl-grid { grid-template-columns: repeat(2,1fr) !important; }
-  .mk-stats-row { grid-template-columns: 1fr 1fr !important; }
-  .tab-content.active { padding: 12px 12px 30px !important; }
-  .topbar-brand-wrap { font-size: 15px !important; }
-  .user-badge span:last-child { max-width: 80px; overflow: hidden; text-overflow: ellipsis; }
-}
-
-/* ── MOBILE (480px) ── */
-@media (max-width: 480px) {
-  .tab-btn { padding: 0 7px !important; font-size: 11px !important; }
-  #dark-toggle { display: none !important; }
-  .finance-grid { grid-template-columns: 1fr !important; }
-  .mk-stats-row { grid-template-columns: 1fr 1fr !important; }
-  .login-card { padding: 22px 14px !important; }
-}
 </style>
 </head>
 <body>
@@ -3156,7 +3075,7 @@ window.addEventListener('beforeunload',()=>{
   const loginTimeStr=connLog.find(l=>l._logId===logId)?.loginTime instanceof Date
     ?connLog.find(l=>l._logId===logId).loginTime.toISOString():new Date().toISOString();
   const entry={id:logId,username:currentUser.username,loginTime:loginTimeStr,logoutTime:new Date().toISOString(),sessionId:sess?.sessionId||''};
-  const projectId='site-revenant';
+  const projectId='sup-tata-val';
   const body=JSON.stringify({fields:{id:{stringValue:logId},username:{stringValue:currentUser.username},loginTime:{stringValue:entry.loginTime},logoutTime:{stringValue:entry.logoutTime},sessionId:{stringValue:entry.sessionId}}});
   navigator.sendBeacon&&navigator.sendBeacon(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/connlog/${logId}`,new Blob([body],{type:'application/json'}));
   // NE PAS effacer la session — tryAutoLogin la retrouvera au rechargement
@@ -10605,160 +10524,5 @@ function renderSentEmails(){emailRenderList();}  // compat
 
 
 </script>
-
-
-<script id="v13-patch">
-/* ============================================================
-   app_v13 — Patches:
-   1. Bouton S'inscrire sur la page de connexion
-   2. Tous les users voient toutes leurs pages autorisées
-   3. Nouveau type Lecteur (auto-inscription) = pages limitées
-   4. Nav bar adaptée au texte
-   5. Site responsive PC + mobile
-   ============================================================ */
-(function v13() {
-  "use strict";
-
-  /* ---- 1. INSCRIPTION BUTTON ---- */
-  function injectInscBtn() {
-    var lc = document.querySelector('.login-card');
-    if (!lc || document.getElementById('btn-open-register')) return;
-    var d = document.createElement('div');
-    d.style.cssText = [
-      'text-align:center',
-      'margin-top:16px',
-      'padding-top:14px',
-      'border-top:1px solid rgba(255,255,255,.12)',
-      'display:flex',
-      'align-items:center',
-      'justify-content:center',
-      'gap:10px'
-    ].join(';');
-    d.innerHTML =
-      '<span style="font-size:12px;color:rgba(255,255,255,.4);">Pas encore de compte&#160;?</span>' +
-      '<button id="btn-open-register" type="button" onclick="openRegister()" ' +
-        'style="background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.4);' +
-        'color:#ff6b6b;font-size:13px;cursor:pointer;border-radius:8px;' +
-        'padding:6px 16px;font-family:DM Sans,sans-serif;font-weight:600;' +
-        'transition:all .2s;" ' +
-        'onmouseover="this.style.background='rgba(230,57,70,.28)'" ' +
-        'onmouseout="this.style.background='rgba(230,57,70,.15)'">S'inscrire &#8594;</button>';
-    lc.appendChild(d);
-  }
-  /* Fire as soon as possible */
-  document.addEventListener('firebase-ready', function () { setTimeout(injectInscBtn, 60); });
-  if (document.readyState !== 'loading') setTimeout(injectInscBtn, 60);
-  else document.addEventListener('DOMContentLoaded', function () { setTimeout(injectInscBtn, 60); });
-
-  /* ---- 2+3. VIEWER LIMITED PAGES ---- */
-  var VIEWER_DEFAULT_PAGES = ['finance', 'careertools', 'calculator', 'nlp', 'markowitz', 'dcf'];
-
-  /* ---- 4. PATCH _getUserAllowedPages + buildTabsBar ---- */
-  function applyPatches() {
-    if (typeof ALL_PAGES === 'undefined') { setTimeout(applyPatches, 150); return; }
-
-    /* Override _getUserAllowedPages */
-    window._getUserAllowedPages = function (user) {
-      if (!user) return [];
-      var all = ALL_PAGES;
-      /* Admin: everything */
-      if (user.role === 'admin') return all.map(function (p) { return p.id; });
-      /* Viewer: limited (or custom allowedPages if set by admin) */
-      if (user.role === 'viewer') {
-        if (user.allowedPages && user.allowedPages.length > 0)
-          return user.allowedPages.filter(function (id) {
-            return !all.find(function (p) { return p.id === id && p.adminOnly; });
-          });
-        return VIEWER_DEFAULT_PAGES;
-      }
-      /* Editor (personnel) + others: ALL non-admin pages */
-      if (user.allowedPages && user.allowedPages.length > 0)
-        return user.allowedPages.filter(function (id) {
-          return !all.find(function (p) { return p.id === id && p.adminOnly; });
-        });
-      return all.filter(function (p) { return !p.adminOnly; }).map(function (p) { return p.id; });
-    };
-
-    /* Override buildTabsBar — cleaner labels, horizontal scroll */
-    window.buildTabsBar = function (isRefresh) {
-      var bar = document.getElementById('tabs-bar');
-      var user = (typeof currentUser !== 'undefined') ? currentUser : null;
-      if (!bar || !user) return;
-
-      var isAdmin = user.role === 'admin';
-      var allowed = window._getUserAllowedPages(user);
-
-      var LABELS = {
-        fichiers:       '&#128193; Fichiers',
-        acces:          isAdmin ? '&#128273; Acc&#232;s' : '&#128100; Profil',
-        agenda:         '&#128197; Agenda',
-        compte:         '&#128176; Compte',
-        compta:         '&#128210; Comptab.',
-        finance:        '&#128200; Finance',
-        careertools:    '&#128188; Carri&#232;re',
-        calculator:     '&#129517; Calcul.',
-        goals:          '&#127919; Objectifs',
-        veille:         '&#128269; Veille',
-        email:          '&#9993;&#65039; Email',
-        about:          '&#128100; &#192; propos',
-        divertissement: '&#127918; Divert.',
-        dcf:            '&#128202; DCF',
-        markowitz:      '&#128200; Portefeuille',
-        nlp:            '&#129302; NLP',
-        news:           '&#128240; News'
-      };
-
-      bar.innerHTML = allowed.map(function (id) {
-        return '<button class="tab-btn" data-tabid="' + id + '" onclick="showTab('' + id + '',this)">' +
-          (LABELS[id] || id) + '</button>';
-      }).join('');
-
-      /* Restore previously active tab */
-      var saved = (isRefresh && typeof loadActiveTab === 'function') ? loadActiveTab() : null;
-      var def = (saved && allowed.indexOf(saved) >= 0) ? saved : (allowed[0] || 'finance');
-
-      document.querySelectorAll('.tab-content').forEach(function (tc) { tc.classList.remove('active'); });
-      var tc = document.getElementById('tab-' + def);
-      if (tc) tc.classList.add('active');
-      bar.querySelectorAll('.tab-btn').forEach(function (b) {
-        if (b.dataset && b.dataset.tabid === def) b.classList.add('active');
-      });
-      if (typeof saveActiveTab === 'function') saveActiveTab(def);
-    };
-
-    /* ---- 5. VIEWER DESCRIPTION in addUser form ---- */
-    setTimeout(function () {
-      var sel = document.getElementById('new-role');
-      if (!sel || document.getElementById('v13-vd')) return;
-      var desc = document.createElement('div');
-      desc.id = 'v13-vd';
-      desc.style.cssText = [
-        'display:none',
-        'font-size:11px',
-        'color:var(--muted)',
-        'background:rgba(107,107,133,.1)',
-        'border:1px solid rgba(107,107,133,.2)',
-        'border-radius:7px',
-        'padding:8px 12px',
-        'margin-top:6px',
-        'line-height:1.6'
-      ].join(';');
-      desc.innerHTML =
-        '<strong style="color:var(--text)">&#128065; Lecteur (auto-inscrit)</strong>' +
-        ' &#8212; Acc&#232;s par d&#233;faut limit&#233;&#160;: Finance, Carri&#232;re, ' +
-        'Calculateur, NLP, Portefeuille, DCF. L'admin peut &#233;tendre les acc&#232;s.';
-      sel.parentNode.insertAdjacentElement('afterend', desc);
-      sel.addEventListener('change', function () {
-        desc.style.display = this.value === 'viewer' ? 'block' : 'none';
-      });
-    }, 1500);
-
-    console.log('[v13] All patches applied OK ✓');
-  }
-  setTimeout(applyPatches, 80);
-
-})();
-</script>
-
 </body>
 </html>
